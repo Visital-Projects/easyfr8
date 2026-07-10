@@ -8,6 +8,8 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: rootpassword
       MYSQL_DATABASE: easyfr8
+      MYSQL_USER: easyfr8
+      MYSQL_PASSWORD: easyfr8_password
     ports:
       - "3306:3306"
     volumes:
@@ -20,10 +22,19 @@ services:
     build:
       context: ./easyfr8_admin
       dockerfile: Dockerfile
+      args:
+        - NEXT_PUBLIC_API_BASE_URL=http://localhost:3001/api
+        - NEXT_PUBLIC_BASE_URL=http://localhost:3001
+        - NEXT_PUBLIC_SITE_URL=http://localhost:3001
+        - API_URL=http://localhost:3001
     container_name: easyfr8_admin
     restart: always
     env_file:
       - .env.docker
+    environment:
+      - NEXT_PUBLIC_API_BASE_URL=http://localhost:3001/api
+      - NEXT_PUBLIC_BASE_URL=http://localhost:3001
+      - API_URL=http://localhost:3001
     ports:
       - "3001:3001"
     depends_on:
@@ -40,7 +51,7 @@ services:
     container_name: easyfr8_user
     restart: always
     ports:
-      - "3000:3000"
+      - "3000:80"
     depends_on:
       - easyfr8_admin
     networks:

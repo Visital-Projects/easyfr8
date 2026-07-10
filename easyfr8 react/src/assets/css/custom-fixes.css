@@ -111,21 +111,27 @@ a:focus-visible {
 /* ─────────────────────────────────────────────────────────────────────────────
    Mobile Responsive Overflow Fixes (max-width: 767px)
    ───────────────────────────────────────────────────────────────────────────── */
-@media (max-width: 767px) {
-  html,
-  body,
-  #root,
-  #page {
-    width: 100% !important;
-    max-width: 100% !important;
-    overflow-x: hidden !important;
-    box-sizing: border-box !important;
-  }
+/* Global responsive & overflow prevention rules */
+html,
+body,
+#root,
+#page {
+  width: 100% !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
 
-  * {
-    box-sizing: border-box !important;
-  }
+* {
+  box-sizing: border-box;
+}
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   Mobile & Tablet Responsive Fixes (max-width: 768px)
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
   /* Container and Row resets */
   .container {
     width: 100% !important;
@@ -144,98 +150,637 @@ a:focus-visible {
   }
 
   /* Header and Navbar layout */
-  .site-header, 
-  .masthead, 
-  .header-v1, 
-  .header, 
-  .navbar {
+  #topbar {
+    display: none !important; /* Hide topbar on mobile/tablet */
+  }
+
+  .site-header {
+    position: relative !important;
+    top: 0 !important;
     width: 100% !important;
-    max-width: 100vw !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 70px !important;
+    background: #ffffff !important;
+    z-index: 1000 !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1) !important;
+    padding: 0 !important;
+  }
+
+  .header-main {
+    min-height: 70px !important;
+    padding: 0 15px !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  .header-main .container {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    position: relative !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+  }
+
+  .site-logo {
+    float: left !important;
+    width: auto !important;
+    max-width: 70% !important;
+    padding: 10px 0 !important;
+  }
+
+  .site-logo img {
+    max-height: 50px !important;
+  }
+
+  .site-menu {
+    display: none !important; /* Hide desktop nav */
+  }
+
+  /* Hamburger Toggle positioning */
+  .navbar-toggle {
+    display: block !important;
+    position: absolute !important;
+    right: 15px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    z-index: 1001 !important;
+    margin: 0 !important;
+    padding: 10px !important;
+  }
+
+  /* Mobile Nav slide-in menu */
+  .primary-mobile-nav {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100vh !important;
+    background: rgba(17, 17, 17, 0.98) !important;
+    z-index: 10000 !important;
+    transform: translateX(100%) !important;
+    transition: transform 0.3s ease-in-out !important;
+    display: block !important;
     box-sizing: border-box !important;
   }
 
-  /* Hero & Sliders */
+  .primary-mobile-nav.open {
+    transform: translateX(0) !important;
+  }
+
+  /* Container and Wrapper bounds override */
+  .container,
+  .wrapper,
+  section,
+  header {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  /* Hero Slider Fixes */
   .rev_slider_wrapper,
   .hero-slider-wrap,
   .hero-container,
-  .hero-slide-item,
-  .swiper,
-  .carousel {
-    width: 100% !important;
-    max-width: 100% !important;
+  .hero-slide-item {
+    width: 100vw !important;
+    max-width: 100vw !important;
     overflow: hidden !important;
+    position: relative !important;
     box-sizing: border-box !important;
+  }
+
+  .rev_slider_wrapper,
+  .hero-slider-wrap {
+    height: 80vh !important;
+    min-height: 480px !important;
+    max-height: 600px !important;
   }
 
   .hero-slide-item {
-    padding-left: 5% !important;
-    padding-right: 5% !important;
-  }
-
-  .hero-image,
-  .hero img {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
-  }
-
-  /* Hero content box sizing */
-  .hero-content,
-  .hero-content-box {
-    width: 90% !important;
-    max-width: 90% !important;
-    min-width: 90% !important;
-    left: 5% !important;
-    right: 5% !important;
-    padding: 20px !important;
-    box-sizing: border-box !important;
-    min-height: auto !important;
-  }
-
-  .hero-title {
-    font-size: 28px !important;
-    line-height: 1.2 !important;
-  }
-
-  .hero-sub-heading {
-    font-size: 18px !important;
-  }
-
-  .hero-description {
-    font-size: 14px !important;
-    max-width: 100% !important;
-  }
-
-  /* Freight Search widget spacing */
-  .hmtc {
-    padding: 20px 10px !important;
-    box-sizing: border-box !important;
-  }
-
-  .hmtc .container > div {
-    padding: 15px !important;
-    box-sizing: border-box !important;
-  }
-
-  .hmtc form {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 15px !important;
-  }
-
-  .hmtc form > div {
-    width: 100% !important;
-    min-width: 100% !important;
-  }
-
-  .hmtc form button {
-    width: 100% !important;
+    position: absolute !important;
+    inset: 0 !important;
+    padding: 0 !important;
+    display: flex !important;
+    align-items: center !important;
     justify-content: center !important;
   }
 
-  /* Off-screen mobile nav overflow protection */
-  .primary-mobile-nav {
-    max-width: 280px !important;
+  .hero-image {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+  }
+
+  .hero-overlay {
+    position: absolute !important;
+    inset: 0 !important;
+    background: rgba(0, 0, 0, 0.45) !important;
+    z-index: 1 !important;
+  }
+
+  /* Hero Content Box */
+  .hero-content {
+    position: absolute !important;
+    left: 20px !important;
+    right: 20px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: auto !important;
+    max-width: calc(100% - 40px) !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+    z-index: 10 !important;
+  }
+
+  .hero-content-box {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    padding: 24px !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    border-radius: 6px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Text responsiveness using clamp */
+  .hero-title {
+    font-size: clamp(26px, 8vw, 42px) !important;
+    line-height: 1.25 !important;
+    font-weight: 800 !important;
+    margin-bottom: 8px !important;
+    word-wrap: break-word !important;
+  }
+
+  .hero-sub-heading {
+    font-size: 20px !important;
+    line-height: 1.3 !important;
+    margin-bottom: 8px !important;
+  }
+
+  .hero-description {
+    font-size: 15px !important;
+    line-height: 1.45 !important;
+    max-width: 100% !important;
+    margin-bottom: 0 !important;
+  }
+
+  /* Quote CTA Button Fixes */
+  .hero-btn {
+    position: relative !important;
+    margin-top: 15px !important;
+    padding: 12px 24px !important;
+    font-size: 14px !important;
+    width: auto !important;
+    max-width: 160px !important;
+    text-align: center !important;
+    display: inline-block !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Slide indicator dots centering */
+  .hero-slider-wrap > div[style*="absolute"] {
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    bottom: 20px !important;
+  }
+
+  /* Booking Widget adjustments for Mobile */
+  .booking-outer-sec {
+    padding: 30px 0 !important;
   }
 }
+
+/* Remove body fixed width/centering constraints */
+body {
+  min-width: 0 !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Dedicated Mobile Small Screen Fixes (320px - 425px / max-width: 575px)
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 575px) {
+  html,
+  body,
+  #root,
+  #page {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  * {
+    box-sizing: border-box !important;
+  }
+
+  /* Override old Bootstrap container fixed widths */
+  .container,
+  .container-fluid {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .row {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  /* Hide desktop header & topbar modules */
+  .header-top,
+  .topbar,
+  #topbar,
+  .main-menu,
+  .desktop-navbar,
+  .desktop-menu,
+  .header-contact,
+  .topbar-left,
+  .topbar-right,
+  .site-menu {
+    display: none !important;
+  }
+
+  /* Mobile header positioning */
+  .site-header {
+    display: flex !important;
+    width: 100% !important;
+    height: 90px !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    background: #ffffff !important;
+    position: relative !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    padding: 0 10px !important;
+  }
+
+  .logo img, 
+  .site-logo img {
+    max-width: 130px !important;
+    height: auto !important;
+  }
+
+  .navbar-toggle {
+    position: absolute !important;
+    right: 20px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    display: block !important;
+  }
+
+  /* Revolution Slider Width & Layout fixes */
+  .rev_slider_wrapper,
+  .rev_slider,
+  .tp-fullwidth-forcer,
+  .tp-revslider-mainul,
+  .tp-revslider-slidesli {
+    width: 100% !important;
+    max-width: 100vw !important;
+    left: 0 !important;
+    right: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* Hero slide item & background covering */
+  .hero-slide-item,
+  .hero-slide-item img,
+  .hero-image {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .hero-slide-item img,
+  .hero-image {
+    height: 650px !important;
+    object-fit: cover !important;
+    object-position: center !important;
+  }
+
+  /* Hero text position and scaling */
+  .hero-content {
+    left: 20px !important;
+    right: 20px !important;
+    top: 45% !important;
+    transform: translateY(-50%) !important;
+    width: auto !important;
+    max-width: calc(100% - 40px) !important;
+  }
+
+  .hero-title {
+    font-size: 38px !important;
+    line-height: 1.1 !important;
+  }
+
+  .hero-subtitle, 
+  .hero-sub-heading {
+    font-size: 22px !important;
+  }
+
+  .hero-description {
+    font-size: 16px !important;
+  }
+
+  /* Quote CTA button spacing and overflow prevention */
+  .quote-btn, 
+  .get-quote-btn,
+  .hero-btn {
+    position: relative !important;
+    right: auto !important;
+    left: auto !important;
+    max-width: 140px !important;
+    width: 140px !important;
+    height: auto !important;
+    padding: 15px !important;
+    margin-top: 20px !important;
+    display: inline-block !important;
+  }
+
+  /* Navbar position protection */
+  .navbar,
+  .header,
+  .site-header {
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Old Boxed Layout, Wrapper and Container Mobile Overrides (max-width: 767px)
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .boxed_wrapper,
+  .page-wrapper,
+  .main-wrapper,
+  .wrapper,
+  #page,
+  #root {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .container {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  .header-area,
+  .header-upper,
+  .header-lower,
+  .main-header,
+  .site-header,
+  #masthead {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    left: 0 !important;
+    right: 0 !important;
+  }
+
+  .tp-fullwidth-forcer {
+    width: 100vw !important;
+  }
+
+  .rev_slider_wrapper {
+    width: 100vw !important;
+    left: 0 !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Mobile Hamburger Toggle and Header Overrides (max-width: 991px)
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 991px) {
+  /* Hide duplicate logo-dark image, show only logo-light */
+  .logo-dark,
+  .logo:not(:first-child),
+  .site-logo img:not(:first-child) {
+    display: none !important;
+  }
+  
+  .logo-light {
+    display: block !important;
+  }
+
+  /* Make header elements positioning roots and set height to 90px */
+  .mobile-header,
+  .site-header,
+  .header-main,
+  .navbar-header,
+  .masthead {
+    width: 100% !important;
+    height: 90px !important;
+    min-height: 90px !important;
+    padding: 0 20px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    position: relative !important;
+    background: #ffffff !important;
+  }
+
+  /* Bubble absolute coordinates up to site-header by making containers static */
+  .mobile_relative,
+  .header-main .container,
+  .container {
+    position: static !important;
+  }
+
+  /* Center logo horizontally and vertically */
+  .logo,
+  .site-logo,
+  .navbar-brand {
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    margin: 0 !important;
+    float: none !important;
+    width: auto !important;
+    display: block !important;
+    z-index: 9999 !important;
+  }
+
+  .logo img, 
+  .site-logo img,
+  .navbar-brand img {
+    width: 150px !important;
+    height: auto !important;
+    margin: 0 auto !important;
+    display: inline-block !important;
+  }
+
+  /* Force Hamburger to RIGHT SIDE of the screen */
+  .navbar-toggle,
+  .mobile-menu-toggle,
+  .menu-toggle {
+    position: absolute !important;
+    right: 20px !important;
+    left: auto !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 32px !important;
+    height: 25px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    background: none !important;
+    border: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    z-index: 999999 !important;
+    cursor: pointer !important;
+  }
+
+  /* Sibling Span Hamburger design - 3 black lines */
+  .navbar-toggle span,
+  .mobile-menu-toggle span,
+  .menu-toggle span {
+    display: block !important;
+    width: 32px !important;
+    height: 4px !important;
+    background: #000000 !important;
+    background-color: #000000 !important;
+    border-radius: 20px !important;
+    opacity: 1 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Remove any pseudo elements from toggle */
+  .navbar-toggle:before,
+  .navbar-toggle:after,
+  .mobile-menu-toggle:before,
+  .mobile-menu-toggle:after,
+  .navbar-toggle .navbars-line,
+  .navbar-toggle .navbars-line:before,
+  .navbar-toggle .navbars-line:after {
+    display: none !important;
+    content: none !important;
+  }
+
+  /* Remove white gap before hero banner */
+  .rev_slider_wrapper,
+  .rev_slider,
+  .hero-section,
+  .hero-slider {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+
+  .header-main + *,
+  .site-header + * {
+    margin-top: 0 !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Mobile Hero / Counters Subtitle Centering (max-width: 991px)
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 991px) {
+  .hero-content,
+  .banner-content,
+  .slider-content,
+  .hero-caption {
+    width: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+  }
+
+  .hero-content p,
+  .banner-content p,
+  .slider-content p,
+  .hero-caption p {
+    display: block !important;
+    width: 100% !important;
+    max-width: 360px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    text-align: center !important;
+    float: none !important;
+  }
+
+  /* Force the Homecounts counters subtitle to center align */
+  .homecounts h4 {
+    text-align: center !important;
+    justify-content: center !important;
+    display: block !important;
+    width: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-content p,
+  .banner-content p,
+  .slider-content p,
+  .hero-caption p {
+    max-width: 300px !important;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Mobile Menu Overlay Text Visibility (max-width: 991px)
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 991px) {
+  .offcanvas,
+  .offcanvas-menu,
+  .mobile-menu,
+  .navbar-collapse,
+  .primary-mobile-nav,
+  .mean-menu,
+  .canvas-menu {
+    color: #ffffff !important;
+  }
+
+  .offcanvas a,
+  .offcanvas-menu a,
+  .mobile-menu a,
+  .navbar-collapse a,
+  .primary-mobile-nav a,
+  .mean-menu a,
+  .canvas-menu a {
+    color: #ffffff !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+  }
+
+  .offcanvas li,
+  .offcanvas-menu li,
+  .mobile-menu li,
+  .navbar-collapse li,
+  .primary-mobile-nav li {
+    color: #ffffff !important;
+  }
+
+  .offcanvas .close,
+  .offcanvas button,
+  .mobile-menu button,
+  .primary-mobile-nav .close-canvas-mobile-panel {
+    color: #ffffff !important;
+    opacity: 1 !important;
+  }
+}
+
 

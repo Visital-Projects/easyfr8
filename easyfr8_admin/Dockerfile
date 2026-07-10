@@ -3,6 +3,14 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
+# Remove production env files from the image context to prevent Next.js from using them at build time
+RUN rm -f .env.production .env.local
+
+ENV NEXT_PUBLIC_API_BASE_URL=http://localhost:3001/api
+ENV NEXT_PUBLIC_BASE_URL=http://localhost:3001
+ENV NEXT_PUBLIC_SITE_URL=http://localhost:3001
+ENV API_URL=http://localhost:3001
+
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 RUN npm run build
@@ -19,4 +27,4 @@ COPY --from=builder /app/lib ./lib
 COPY --from=builder /app/tsconfig.json ./tsconfig.json
 
 EXPOSE 3001
-CMD ["npm", "run", "start"]
+CMD ["sh", "-c", "npm run db:init-safe && npm run start"]

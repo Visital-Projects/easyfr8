@@ -178,9 +178,9 @@ export default function Navbar() {
               className="navbar-toggle"
               onClick={(e) => { e.preventDefault(); setMobileOpen(!mobileOpen) }}
             >
-              <span className="navbar-icon">
-                <span className="navbars-line"></span>
-              </span>
+              <span></span>
+              <span></span>
+              <span></span>
             </a>
           </div>
         </div>

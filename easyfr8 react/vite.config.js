@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: "/",
   plugins: [react()],
   css: {
     lightningcss: {
@@ -20,5 +21,9 @@ export default defineConfig({
         secure: false,
       }
     }
+  },
+  build: {
+    cssCodeSplit: false,
+    cssMinify: false
   }
 })
