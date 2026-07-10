@@ -1,0 +1,973 @@
+{
+	"info": {
+		"_postman_id": "7f654b2a-7e3f-42e5-a22b-1014e7a89278",
+		"name": "EasyFr8 Admin APIs",
+		"description": "Comprehensive REST APIs collection for EasyFr8 Digital Freight Forwarder Admin Console. Supports CRUD operations for CMS, blogs, rates, enquiries, document compliance, system settings, and users.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Sign In Admin",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"biswa@easyfr8.com\",\n    \"password\": \"admin123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Authenticate administrative console user with pre-seeded credentials."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "CMS Layouts",
+			"item": [
+				{
+					"name": "Get CMS Config",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/cms",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"cms"
+							]
+						},
+						"description": "Fetch homepage structures, testimonials, about details, and active services."
+					},
+					"response": []
+				},
+				{
+					"name": "Update CMS Config",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"homepage\": {\n        \"heroTitle\": \"Connecting Global Freight Instantly\",\n        \"heroSubtitle\": \"Secure your ocean, road, and air containers via immediate routing.\"\n    },\n    \"aboutUs\": {\n        \"vision\": \"To digitize supply chain networks globally.\"\n    }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/cms",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"cms"
+							]
+						},
+						"description": "Save updated titles, text copies, phone details, and legal static scripts."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Blogs & Articles",
+			"item": [
+				{
+					"name": "Get Blogs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/blogs",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"blogs"
+							]
+						},
+						"description": "Retrieve all blog logs (published and drafts)."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Blog Post",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Customs Regulations Updates 2026\",\n    \"slug\": \"customs-regulations-updates-2026\",\n    \"body\": \"This is a detailed guide...\",\n    \"category\": \"Compliance Guides\",\n    \"tags\": \"customs, logistics\",\n    \"status\": \"Published\",\n    \"image\": \"https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=400&h=250\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/blogs",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"blogs"
+							]
+						},
+						"description": "Publish a new compliance or industry update article."
+					},
+					"response": []
+				},
+				{
+					"name": "Modify Blog Post",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"Draft\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/blogs/BLG-401",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"blogs",
+								"BLG-401"
+							]
+						},
+						"description": "Update specific properties (status toggles, categories) on a blog."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Blog Post",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/blogs/BLG-401",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"blogs",
+								"BLG-401"
+							]
+						},
+						"description": "Permanently remove a blog record."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Freight Rates",
+			"item": [
+				{
+					"name": "Get Rates List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/rates",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"rates"
+							]
+						},
+						"description": "Fetch active container shipping routes."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Rate Route",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"origin\": \"CNSHA (Shanghai)\",\n    \"destination\": \"INBOM (Mumbai)\",\n    \"container\": \"20ft GP\",\n    \"cost\": 1950,\n    \"transit\": 11,\n    \"validity\": \"2026-09-30\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/rates",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"rates"
+							]
+						},
+						"description": "Register a new port container shipping tariff."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Rate Route",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"cost\": 2300\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/rates/RTE-301",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"rates",
+								"RTE-301"
+							]
+						},
+						"description": "Modify cost, transit, validity parameters."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Rate Route",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/rates/RTE-301",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"rates",
+								"RTE-301"
+							]
+						},
+						"description": "Delete a freight pricing tariff."
+					},
+					"response": []
+				},
+				{
+					"name": "Bulk Upload Rates (CSV Payload)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"rates\": [\n        {\n            \"origin\": \"INNSV\",\n            \"destination\": \"NLRTM\",\n            \"container\": \"20ft GP\",\n            \"cost\": 1800,\n            \"transit\": 25,\n            \"validity\": \"2026-09-01\"\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/rates/bulk",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"rates",
+								"bulk"
+							]
+						},
+						"description": "Simulates importing CSV records in bulk."
+					},
+					"response": []
+				},
+				{
+					"name": "Export Rates CSV",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/rates/export",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"rates",
+								"export"
+							]
+						},
+						"description": "Get compiled ocean shipping route tariffs as a CSV file."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Enquiries",
+			"item": [
+				{
+					"name": "Get Enquiries",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/enquiries",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"enquiries"
+							]
+						},
+						"description": "List customer quote and booking queries."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Enquiry",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Alice Cooper\",\n    \"email\": \"alice@cooper.com\",\n    \"subject\": \"Request LCL rates from Jebel Ali to Mumbai\",\n    \"notes\": \"Prefers direct sailing without transshipment.\",\n    \"source\": \"Web Form\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/enquiries",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"enquiries"
+							]
+						},
+						"description": "Submit a customer enquiry."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Enquiry Status",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"In Progress\",\n    \"notes\": \"Under operator review. Maersk rate updated.\",\n    \"assignedTo\": \"Biswajit Shaw\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/enquiries/ENQ-1001",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"enquiries",
+								"ENQ-1001"
+							]
+						},
+						"description": "Transition enquiry statuses (New, In Progress, Responded, Closed) and assign operator."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Enquiry",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/enquiries/ENQ-1001",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"enquiries",
+								"ENQ-1001"
+							]
+						},
+						"description": "Permanently delete an enquiry from active list."
+					},
+					"response": []
+				},
+				{
+					"name": "Export Enquiries CSV",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/enquiries/export",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"enquiries",
+								"export"
+							]
+						},
+						"description": "Get compiled enquiries logs list as a CSV file."
+					},
+					"response": []
+				},
+				{
+					"name": "Import Enquiries CSV",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"rows\": [\n        {\n            \"Name\": \"Customer Name\",\n            \"Email\": \"client@mail.com\",\n            \"Subject\": \"Quote standard 40ft LCL\"\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/enquiries/import",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"enquiries",
+								"import"
+							]
+						},
+						"description": "Bulk import enquiries from a parsed CSV row array."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Documents Compliance",
+			"item": [
+				{
+					"name": "Get Documents",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/documents",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"documents"
+							]
+						},
+						"description": "Retrieve trade documents submitted for review."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Document Status",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"Approved\",\n    \"remarks\": \"Verified registry index match.\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/documents/DOC-201",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"documents",
+								"DOC-201"
+							]
+						},
+						"description": "Approve or Reject document logs, adding notes."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Document Upload",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"user\": \"Biswajit Shaw\",\n    \"type\": \"IEC License\",\n    \"name\": \"iec_cert.pdf\",\n    \"fileUrl\": \"data:application/pdf;base64,...\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/documents",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"documents"
+							]
+						},
+						"description": "Simulates uploading a document for review."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "User Operations",
+			"item": [
+				{
+					"name": "Get System Users",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
+						},
+						"description": "List dashboard operators, roles, registration times."
+					},
+					"response": []
+				},
+				{
+					"name": "Create System User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Sarah Connor\",\n    \"email\": \"sarah@easyfr8.com\",\n    \"role\": \"Manager\",\n    \"status\": \"Active\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/users",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users"
+							]
+						},
+						"description": "Add new manager or administrator profile."
+					},
+					"response": []
+				},
+				{
+					"name": "Update User Details",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"status\": \"Inactive\",\n    \"phone\": \"+91 9988776655\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/users/USR-082",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"USR-082"
+							]
+						},
+						"description": "Deactivate or modify dashboard login accesses."
+					},
+					"response": []
+				},
+				{
+					"name": "Reset User Password",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/users/USR-082/reset-password",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"users",
+								"USR-082",
+								"reset-password"
+							]
+						},
+						"description": "Triggers a simulated password reset email to the user."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "System Configurations",
+			"item": [
+				{
+					"name": "Get Settings",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/settings",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"settings"
+							]
+						},
+						"description": "Retrieve all system configuration settings."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Site Settings",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"siteName\": \"EasyFr8 Digital Platform\",\n    \"companyName\": \"EasyFr8 Logistics Solutions\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/settings/site",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"settings",
+								"site"
+							]
+						},
+						"description": "Update general company profile name, addresses."
+					},
+					"response": []
+				},
+				{
+					"name": "Update SMTP settings",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"host\": \"smtp.gmail.com\",\n    \"port\": 587,\n    \"enabled\": true\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/settings/smtp",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"settings",
+								"smtp"
+							]
+						},
+						"description": "Update outgoing mail SMTP configurations."
+					},
+					"response": []
+				},
+				{
+					"name": "Test SMTP Connection",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"test@receiver.com\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/settings/smtp/test",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"settings",
+								"smtp",
+								"test"
+							]
+						},
+						"description": "Dispatches a simulated diagnostic testing email."
+					},
+					"response": []
+				},
+				{
+					"name": "Update SMS Gateway settings",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"provider\": \"Twilio\",\n    \"apiKey\": \"AC_MOCK_ACCOUNT_SID\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/settings/sms",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"settings",
+								"sms"
+							]
+						},
+						"description": "Update Twilio or MSG91 keys."
+					},
+					"response": []
+				},
+				{
+					"name": "Test SMS Gateway Dispatch",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"phone\": \"+919900112233\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/settings/sms/test",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"settings",
+								"sms",
+								"test"
+							]
+						},
+						"description": "Send a mock diagnostic testing SMS message."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Payment Gateways settings",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"razorpay\": {\n        \"enabled\": true,\n        \"mode\": \"test\"\n    },\n    \"stripe\": {\n        \"enabled\": false\n    }\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/settings/payment",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"settings",
+								"payment"
+							]
+						},
+						"description": "Modify Razorpay, Stripe, and PayPal credentials."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Tax settings",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"gstEnabled\": true,\n    \"gstRate\": 18,\n    \"taxInclusive\": false\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/settings/tax",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"settings",
+								"tax"
+							]
+						},
+						"description": "Configure GST percentage rates and inclusive rules."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Audit Logging",
+			"item": [
+				{
+					"name": "Get Audit Logs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/audit-logs",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"audit-logs"
+							]
+						},
+						"description": "Fetch administrative activity trails."
+					},
+					"response": []
+				},
+				{
+					"name": "Clear Audit Logs",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/audit-logs/clear",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"audit-logs",
+								"clear"
+							]
+						},
+						"description": "Clears all activity logs database."
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

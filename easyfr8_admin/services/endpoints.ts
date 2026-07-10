@@ -1,0 +1,63 @@
+export const API_ENDPOINTS = {
+  AUTH: {
+    LOGIN: '/auth/login',
+    LOGOUT: '/auth/logout',
+    REGISTER: '/auth/register',
+    FORGOT_PASSWORD: '/auth/forgot-password',
+    RESET_PASSWORD: '/auth/reset-password',
+    REFRESH_TOKEN: '/auth/refresh-token',
+    PROFILE: '/auth/profile',
+    CHANGE_PASSWORD: '/auth/change-password',
+  },
+  CMS: {
+    HOMEPAGE: '/cms',
+    ABOUT_US: '/cms/about-us',
+    SERVICES: '/cms/services',
+    FAQS: '/cms/faqs',
+    CONTACT: '/cms/contact',
+    STATIC_PAGES: '/cms/static-pages',
+    MEDIA: '/cms/media',
+    HERO_SLIDES: '/cms/hero-slides',
+    ADMIN_HERO_SLIDES: '/admin/cms/hero-slides',
+    ADMIN_HERO_SLIDES_ID: (id: string) => `/admin/cms/hero-slides/${id}`,
+  },
+  MEDIA: {
+    LIST: '/media',
+    UPLOAD: '/media',
+    DELETE: (id: string) => `/media/${id}`,
+  },
+  ENQUIRIES: {
+    LIST: '/enquiries',
+    DETAIL: (id: string) => `/enquiries/${id}`,
+    UPDATE: (id: string) => `/enquiries/${id}`,
+    DELETE: (id: string) => `/enquiries/${id}`,
+  },
+  RATES: {
+    LIST: '/rates',
+    CREATE: '/rates',
+    UPDATE: (id: string) => `/rates/${id}`,
+    DELETE: (id: string) => `/rates/${id}`,
+    BULK_UPLOAD: '/rates/bulk',
+    HISTORY: '/rates/history',
+  },
+  USERS: {
+    LIST: '/users',
+    CREATE: '/users',
+    UPDATE: (id: string) => `/users/${id}`,
+    DELETE: (id: string) => `/users/${id}`,
+  },
+  DOCUMENTS: {
+    LIST: '/documents',
+    UPDATE: (id: string) => `/documents/${id}`,
+  },
+  BLOGS: {
+    LIST: '/blogs',
+    CREATE: '/blogs',
+    UPDATE: (id: string) => `/blogs/${id}`,
+    DELETE: (id: string) => `/blogs/${id}`,
+  },
+  AUDIT_LOGS: {
+    LIST: '/audit-logs',
+    CLEAR: '/audit-logs/clear',
+  },
+};

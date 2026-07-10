@@ -1,0 +1,102 @@
+================================================================================
+  EASYFR8 — AAPANEL PRODUCTION DEPLOYMENT MANUAL
+================================================================================
+
+PART 1: USER WEBSITE (React/Vite Static Site)
+════════════════════════════════════════════════════════════════════════════════
+Domain: https://easyfr8.vnvision.in
+
+1. In aaPanel → Website → Add Site:
+     Domain:      easyfr8.vnvision.in
+     Root Path:   /www/wwwroot/easyfr8.vnvision.in
+     PHP Version: Pure Static
+
+2. Upload "easyfr8_user_panel.zip" directly to:
+     /www/wwwroot/easyfr8.vnvision.in
+
+3. Extract the ZIP in that directory. Ensure "index.html" lies directly inside:
+     /www/wwwroot/easyfr8.vnvision.in/index.html
+
+4. Nginx Reverse Proxy & Route Configuration:
+   Go to Website Settings → Config (or URL Rewrite/Configuration) and add these blocks inside the server {} block:
+
+       # React Router SPA fallback
+       location / {
+           try_files $uri $uri/ /index.html;
+       }
+
+       # Proxy API calls to Next.js server
+       location /api/ {
+           proxy_pass http://127.0.0.1:3001;
+           proxy_http_version 1.1;
+           proxy_set_header Upgrade $http_upgrade;
+           proxy_set_header Connection 'upgrade';
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+           proxy_set_header X-Forwarded-Proto $scheme;
+           proxy_cache_bypass $http_upgrade;
+       }
+
+       # Proxy image uploads
+       location /images/ {
+           proxy_pass http://127.0.0.1:3001;
+           proxy_http_version 1.1;
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+           proxy_set_header X-Forwarded-Proto $scheme;
+       }
+
+       location /uploads/ {
+           proxy_pass http://127.0.0.1:3001;
+           proxy_http_version 1.1;
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+           proxy_set_header X-Forwarded-Proto $scheme;
+       }
+
+
+PART 2: ADMIN & API BACKEND (Next.js Node.js Server)
+════════════════════════════════════════════════════════════════════════════════
+Domain: https://adminfr8.vnvision.in
+
+1. Create a directory for the API files on your server:
+     /www/wwwroot/easyfr8_api
+
+2. Upload "easyfr8_admin_api.zip" to that directory:
+     /www/wwwroot/easyfr8_api
+
+3. Extract the ZIP. Bins like package.json, next.config.ts, proxy.ts, and .next/ should lie directly in the folder.
+
+4. Create your database connection file:
+     Copy ".env.production.example" to ".env.production"
+     Fill in your database and auth credentials.
+
+5. Execute deployment commands inside the SSH Terminal:
+
+     cd /www/wwwroot/easyfr8_api
+
+     # Install production dependencies
+     npm install
+
+     # Run compilation checks
+     npm run build
+
+     # Run database tables migrator (First time only)
+     node lib/migrate.js
+
+6. Start with PM2 Process Manager:
+     pm2 start npm --name "easyfr8_api" -- start
+
+7. Save PM2 processes to launch automatically on reboot:
+     pm2 save
+     pm2 startup
+
+8. If you change environment variables in the future, run:
+     pm2 restart easyfr8_api --update-env
+
+9. Reverse Proxy Setup for adminfr8.vnvision.in (in aaPanel Website Settings):
+     Redirect proxy traffic to Next.js local server:
+     http://127.0.0.1:3001

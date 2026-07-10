@@ -1,0 +1,241 @@
+/* Remove click focus border/outline on navbar and global links */
+.navbar a,
+.navbar a:focus,
+.navbar a:active,
+.nav-link,
+.nav-link:focus,
+.nav-link:active,
+button:focus,
+a,
+a:focus,
+a:active,
+a:hover {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.navbar-nav .nav-link:focus,
+.navbar-nav .nav-link.show {
+  color: inherit;
+  background: transparent;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* React Router focus outline removal */
+a:-webkit-any-link:focus-visible {
+  outline: none !important;
+}
+
+a:focus-visible {
+  outline: none !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Quote & Contact Form Styling Fixes
+   ───────────────────────────────────────────────────────────────────────────── */
+.fh-contact-form input,
+.fh-contact-form select,
+#contact-form input,
+#contact-form select,
+.fh-form input,
+.fh-form select {
+  height: 50px !important;
+  line-height: 50px !important;
+  display: flex !important;
+  align-items: center !important;
+  font-size: 16px !important;
+  font-family: inherit !important;
+  box-sizing: border-box !important;
+}
+
+.fh-contact-form select,
+#contact-form select,
+.fh-form select {
+  padding: 0 20px !important;
+  line-height: normal !important;
+  display: flex !important;
+  align-items: center !important;
+}
+
+.fh-contact-form input::placeholder,
+.fh-contact-form textarea::placeholder,
+#contact-form input::placeholder,
+#contact-form textarea::placeholder,
+.fh-form input::placeholder,
+.fh-form textarea::placeholder {
+  line-height: normal !important;
+  opacity: 1 !important;
+}
+
+.fh-contact-form textarea,
+#contact-form textarea,
+.fh-form textarea {
+  padding: 20px !important;
+  line-height: 1.5 !important;
+  font-size: 16px !important;
+  font-family: inherit !important;
+  box-sizing: border-box !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Partner Slider Layout Fixes
+   ───────────────────────────────────────────────────────────────────────────── */
+.slide-partener {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  flex-wrap: nowrap;
+}
+
+.slide-partener.owl-loaded {
+  display: block;
+}
+
+.partner-item {
+  width: 200px;
+  max-width: 100%;
+  height: 120px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+}
+
+.partner-item img {
+  max-width: 150px;
+  max-height: 80px;
+  object-fit: contain;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Mobile Responsive Overflow Fixes (max-width: 767px)
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  html,
+  body,
+  #root,
+  #page {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  * {
+    box-sizing: border-box !important;
+  }
+
+  /* Container and Row resets */
+  .container {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-left: 15px !important;
+    padding-right: 15px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    box-sizing: border-box !important;
+  }
+
+  .row {
+    margin-left: -15px !important;
+    margin-right: -15px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Header and Navbar layout */
+  .site-header, 
+  .masthead, 
+  .header-v1, 
+  .header, 
+  .navbar {
+    width: 100% !important;
+    max-width: 100vw !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Hero & Sliders */
+  .rev_slider_wrapper,
+  .hero-slider-wrap,
+  .hero-container,
+  .hero-slide-item,
+  .swiper,
+  .carousel {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  .hero-slide-item {
+    padding-left: 5% !important;
+    padding-right: 5% !important;
+  }
+
+  .hero-image,
+  .hero img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+  }
+
+  /* Hero content box sizing */
+  .hero-content,
+  .hero-content-box {
+    width: 90% !important;
+    max-width: 90% !important;
+    min-width: 90% !important;
+    left: 5% !important;
+    right: 5% !important;
+    padding: 20px !important;
+    box-sizing: border-box !important;
+    min-height: auto !important;
+  }
+
+  .hero-title {
+    font-size: 28px !important;
+    line-height: 1.2 !important;
+  }
+
+  .hero-sub-heading {
+    font-size: 18px !important;
+  }
+
+  .hero-description {
+    font-size: 14px !important;
+    max-width: 100% !important;
+  }
+
+  /* Freight Search widget spacing */
+  .hmtc {
+    padding: 20px 10px !important;
+    box-sizing: border-box !important;
+  }
+
+  .hmtc .container > div {
+    padding: 15px !important;
+    box-sizing: border-box !important;
+  }
+
+  .hmtc form {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 15px !important;
+  }
+
+  .hmtc form > div {
+    width: 100% !important;
+    min-width: 100% !important;
+  }
+
+  .hmtc form button {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+
+  /* Off-screen mobile nav overflow protection */
+  .primary-mobile-nav {
+    max-width: 280px !important;
+  }
+}
+

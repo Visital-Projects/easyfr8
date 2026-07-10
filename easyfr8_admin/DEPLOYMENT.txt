@@ -1,0 +1,210 @@
+================================================================================
+  EASYFR8 — PRODUCTION DEPLOYMENT GUIDE
+  Domain: https://easyfr8.vnvision.in
+  Server: aaPanel (Linux)
+  Generated: 2026-07-08
+================================================================================
+
+
+════════════════════════════════════════════════════════════════
+  PART 1 — FRONTEND (React/Vite Static Site)
+════════════════════════════════════════════════════════════════
+
+FILE:   easyfr8_frontend.zip
+UPLOAD: /www/wwwroot/easyfr8.vnvision.in
+
+STEPS:
+  1. In aaPanel → Website → Add Site
+       Domain:   easyfr8.vnvision.in
+       Root Dir: /www/wwwroot/easyfr8.vnvision.in
+       PHP:      Pure Static
+
+  2. In aaPanel → File Manager → navigate to /www/wwwroot/easyfr8.vnvision.in/
+  3. Delete any default placeholder files
+  4. Upload easyfr8_frontend.zip
+  5. Right-click ZIP → Extract (extract here)
+  6. Verify index.html is at: /www/wwwroot/easyfr8.vnvision.in/index.html
+
+NGINX SITE CONFIG (aaPanel → Website → Settings → Config):
+  Add inside the server { } block:
+
+      # React Router SPA fallback
+      location / {
+          try_files $uri $uri/ /index.html;
+      }
+
+      # Proxy API to Next.js backend
+      location /api/ {
+          proxy_pass http://127.0.0.1:3001;
+          proxy_http_version 1.1;
+          proxy_set_header Upgrade $http_upgrade;
+          proxy_set_header Connection 'upgrade';
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+          proxy_cache_bypass $http_upgrade;
+      }
+
+      # Proxy images from Next.js
+      location /images/ {
+          proxy_pass http://127.0.0.1:3001;
+          proxy_http_version 1.1;
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+      }
+
+      # Proxy uploads from Next.js
+      location /uploads/ {
+          proxy_pass http://127.0.0.1:3001;
+          proxy_http_version 1.1;
+          proxy_set_header Host $host;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Forwarded-Proto $scheme;
+      }
+
+
+════════════════════════════════════════════════════════════════
+  PART 2 — BACKEND API + ADMIN PANEL (Next.js on port 3001)
+════════════════════════════════════════════════════════════════
+
+FILE:   easyfr8_api.zip
+UPLOAD: /www/wwwroot/easyfr8_api
+
+STEPS:
+  1. Create directory (SSH terminal):
+       mkdir -p /www/wwwroot/easyfr8_api
+
+  2. In aaPanel → File Manager → navigate to /www/wwwroot/easyfr8_api/
+  3. Upload easyfr8_api.zip
+  4. Right-click ZIP → Extract (extract here)
+
+  5. Configure environment (SSH terminal):
+       cd /www/wwwroot/easyfr8_api
+       cp .env.production.example .env.production
+       nano .env.production
+
+     Fill in MySQL credentials from aaPanel:
+       DB_HOST=127.0.0.1
+       DB_PORT=3306
+       DB_DATABASE=easyfr8            ← your aaPanel DB name
+       DB_USERNAME=easyfr8_user       ← your aaPanel DB username
+       DB_PASSWORD=your_password      ← your aaPanel DB password
+
+     Set a strong JWT secret:
+       JWT_SECRET=change_to_long_random_string_here
+
+  6. Install dependencies:
+       npm install --production
+
+  7. Run database migration (FIRST TIME ONLY):
+       node lib/migrate.js
+
+  8. Start with PM2:
+       pm2 start npm --name "easyfr8-api" -- start
+       pm2 save
+       pm2 startup
+       (Run the command that pm2 startup prints)
+
+  9. Verify server is running:
+       pm2 status
+       pm2 logs easyfr8-api --lines 20
+
+
+════════════════════════════════════════════════════════════════
+  PART 3 — DATABASE SETUP
+════════════════════════════════════════════════════════════════
+
+  1. aaPanel → Database → Add Database
+       Name:     easyfr8
+       Username: easyfr8_user
+       Password: (strong password)
+
+  2. Import schema via SSH:
+       mysql -u easyfr8_user -p easyfr8 < /www/wwwroot/easyfr8_api/lib/schema.sql
+
+     OR let the migration script create tables automatically:
+       node /www/wwwroot/easyfr8_api/lib/migrate.js
+
+
+════════════════════════════════════════════════════════════════
+  PART 4 — PM2 PROCESS MANAGEMENT
+════════════════════════════════════════════════════════════════
+
+  Start:
+    pm2 start npm --name "easyfr8-api" -- start
+
+  Stop:
+    pm2 stop easyfr8-api
+
+  Restart:
+    pm2 restart easyfr8-api
+
+  View logs:
+    pm2 logs easyfr8-api
+
+  Monitor:
+    pm2 monit
+
+  Auto-start on reboot:
+    pm2 save
+    pm2 startup
+
+  API listens on: http://127.0.0.1:3001
+
+
+════════════════════════════════════════════════════════════════
+  PART 5 — SSL CERTIFICATE
+════════════════════════════════════════════════════════════════
+
+  1. aaPanel → Website → easyfr8.vnvision.in → Settings
+  2. Click SSL tab
+  3. Select Let's Encrypt → Apply
+  4. Enable Force HTTPS
+
+
+════════════════════════════════════════════════════════════════
+  PART 6 — UPLOADS DIRECTORY PERMISSIONS
+════════════════════════════════════════════════════════════════
+
+  chmod -R 755 /www/wwwroot/easyfr8_api/public/uploads
+  chown -R www:www /www/wwwroot/easyfr8_api/public/uploads
+
+
+════════════════════════════════════════════════════════════════
+  PART 7 — CMS DYNAMIC FLOW VERIFICATION
+════════════════════════════════════════════════════════════════
+
+  Test each endpoint after deployment:
+
+  Hero Slider    → GET https://easyfr8.vnvision.in/api/cms/hero-slides
+  Services       → GET https://easyfr8.vnvision.in/api/services
+  Partners       → GET https://easyfr8.vnvision.in/api/partners
+  Blogs          → GET https://easyfr8.vnvision.in/api/blogs
+  Footer CMS     → GET https://easyfr8.vnvision.in/api/cms/footer
+  Freight Rates  → GET https://easyfr8.vnvision.in/api/rates
+  Booking        → POST https://easyfr8.vnvision.in/api/bookings
+  Images         → https://easyfr8.vnvision.in/images/[filename]
+
+  Full CMS Flow:
+    Admin Panel → /api → MySQL → User Website
+
+
+════════════════════════════════════════════════════════════════
+  QUICK REFERENCE
+════════════════════════════════════════════════════════════════
+
+  Frontend files:   /www/wwwroot/easyfr8.vnvision.in/
+  API source:       /www/wwwroot/easyfr8_api/
+  Env config:       /www/wwwroot/easyfr8_api/.env.production
+  Uploads folder:   /www/wwwroot/easyfr8_api/public/uploads/
+  API port:         3001
+  PM2 name:         easyfr8-api
+  PM2 logs:         pm2 logs easyfr8-api
+
+================================================================================
+  Refer to API_DOCUMENTATION.md for full REST API endpoint reference
+================================================================================
