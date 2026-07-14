@@ -147,10 +147,22 @@ export function CmsProvider({ children }) {
           api.get(`/industries?t=${Date.now()}`),
         ]);
         
-        setCms(cmsData);
-        setBlogs(blogsData.filter(b => b.status === 'Published'));
-        setRates(ratesData);
-        setSlides(slidesData);
+        if (cmsData && typeof cmsData === 'object' && cmsData.contact) {
+          setCms(cmsData);
+        }
+        if (Array.isArray(blogsData)) {
+          setBlogs(blogsData.filter(b => b.status === 'Published'));
+        } else {
+          setBlogs([]);
+        }
+        if (Array.isArray(ratesData)) {
+          setRates(ratesData);
+        } else {
+          setRates([]);
+        }
+        if (Array.isArray(slidesData)) {
+          setSlides(slidesData);
+        }
         if (Array.isArray(partnersData)) setPartners(partnersData);
         if (Array.isArray(statisticsData)) setStatistics(statisticsData);
         if (Array.isArray(industriesData)) setIndustries(industriesData);

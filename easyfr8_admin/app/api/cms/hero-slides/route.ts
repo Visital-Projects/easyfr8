@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { readDb } from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const db = await readDb();
@@ -13,7 +15,9 @@ export async function GET() {
       status: 200,
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'no-store, max-age=0, must-revalidate',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
       },
     });
   } catch (error: any) {
@@ -21,7 +25,9 @@ export async function GET() {
       status: 500,
       headers: {
         'Content-Type': 'application/json',
-        'Cache-Control': 'no-store, max-age=0, must-revalidate',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
       },
     });
   }

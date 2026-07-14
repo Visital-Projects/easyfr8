@@ -16,7 +16,7 @@ export default defineConfig({
     proxy: {
       // Proxy API calls to local Next.js backend API
       '/api': {
-        target: 'http://localhost:3001',
+        target: 'http://localhost:3002',
         changeOrigin: true,
         secure: false,
       }

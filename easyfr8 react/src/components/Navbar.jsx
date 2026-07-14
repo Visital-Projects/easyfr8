@@ -55,8 +55,8 @@ export default function Navbar() {
             <div id="cargo-office-location-widget-2" className="widget cargo-office-location-widget">
               <div className="office-location clearfix">
                 <ul className="topbar-office active" style={{ paddingBottom: '5px' }}>
-                  <li><i className="flaticon-telephone" aria-hidden="true"></i>Phone {cms.contact.phones[0]}</li>
-                  <li><i className="flaticon-web" aria-hidden="true"></i>{cms.contact.emails[0]}</li>
+                  {cms?.contact?.phones?.[0] && <li><i className="flaticon-telephone" aria-hidden="true"></i>Phone {cms.contact.phones[0]}</li>}
+                  {cms?.contact?.emails?.[0] && <li><i className="flaticon-web" aria-hidden="true"></i>{cms.contact.emails[0]}</li>}
                 </ul>
               </div>
             </div>
@@ -65,9 +65,9 @@ export default function Navbar() {
           <div className="topbar-right topbar-widgets text-right" style={{ marginRight: '300px' }}>
             <div className="widget cargohub-social-links-widget">
               <div className="list-social style-1">
-                {cms.contact.socialLinks.facebook && <a href={cms.contact.socialLinks.facebook} target="_blank" rel="noreferrer"><i className="fa fa-facebook"></i></a>}
-                {cms.contact.socialLinks.linkedin && <a href={cms.contact.socialLinks.linkedin} target="_blank" rel="noreferrer"><i className="fa fa-linkedin"></i></a>}
-                {cms.contact.socialLinks.twitter && <a href={cms.contact.socialLinks.twitter} target="_blank" rel="noreferrer"><i className="fa fa-twitter"></i></a>}
+                {cms?.contact?.socialLinks?.facebook && <a href={cms.contact.socialLinks.facebook} target="_blank" rel="noreferrer"><i className="fa fa-facebook"></i></a>}
+                {cms?.contact?.socialLinks?.linkedin && <a href={cms.contact.socialLinks.linkedin} target="_blank" rel="noreferrer"><i className="fa fa-linkedin"></i></a>}
+                {cms?.contact?.socialLinks?.twitter && <a href={cms.contact.socialLinks.twitter} target="_blank" rel="noreferrer"><i className="fa fa-twitter"></i></a>}
               </div>
             </div>
             <div className="widget cargo-search-widget">
@@ -93,12 +93,12 @@ export default function Navbar() {
       >
         <div className="header-main clearfix">
           <div className="container mobile_relative">
-            <div className="row">
+            <div className="row" style={{ display: 'flex', alignItems: 'center' }}>
               {/* Logo */}
               <div className="site-logo col-md-3 col-sm-6 col-xs-6">
                 <Link to="/" className="logo">
-                  <img src={cms.contact?.logoImage ? getImageUrl(cms.contact.logoImage) : logoImg} alt="Easyfr8" className="logo-light show-logo" style={{ maxHeight: '60px', objectFit: 'contain' }} />
-                  <img src={cms.contact?.logoImage ? getImageUrl(cms.contact.logoImage) : logoImg} alt="Easyfr8" className="logo-dark hide-logo" style={{ maxHeight: '60px', objectFit: 'contain' }} />
+                  <img src={cms.contact?.logoImage ? getImageUrl(cms.contact.logoImage) : logoImg} alt="Easyfr8" className="logo-light show-logo" style={{ maxHeight: '95px', objectFit: 'contain', marginTop: '6px' }} />
+                  <img src={cms.contact?.logoImage ? getImageUrl(cms.contact.logoImage) : logoImg} alt="Easyfr8" className="logo-dark hide-logo" style={{ maxHeight: '95px', objectFit: 'contain', marginTop: '6px' }} />
                 </Link>
                 <h1 className="site-title"><Link to="/">Easyfr8</Link></h1>
                 <h2 className="site-description">Connecting Global Markets Seamlessly</h2>
@@ -108,7 +108,7 @@ export default function Navbar() {
               <div className="site-menu col-md-9 col-sm-6 col-xs-6">
                 <nav id="site-navigation" style={{ marginTop: '5px' }} className="main-nav primary-nav nav">
                   <ul className="menu">
-                    <li style={{ marginLeft: '50px' }}><Link to="/about">About us</Link></li>
+                    <li style={{ marginLeft: '30px' }}><Link to="/about">About us</Link></li>
 
                     <li className="has-children">
                       <Link to="#" className="dropdown-toggle">Services</Link>
@@ -116,7 +116,7 @@ export default function Navbar() {
                         <li className="has-children">
                           <a href="#">Core Services</a>
                           <ul className="sub-menu">
-                            {cms.services
+                            {(cms?.services || [])
                               .filter(s => s.active)
                               .filter((s, idx) => s.category ? s.category === 'core' : idx < 4)
                               .map(service => {
@@ -130,7 +130,7 @@ export default function Navbar() {
                         <li className="has-children">
                           <a href="#">Value Added Services</a>
                           <ul className="sub-menu">
-                            {cms.services
+                            {(cms?.services || [])
                               .filter(s => s.active)
                               .filter((s, idx) => s.category ? s.category === 'value-added' : idx >= 4)
                               .map(service => {
@@ -196,7 +196,7 @@ export default function Navbar() {
         <a href="#" className="close-canvas-mobile-panel" onClick={(e) => { e.preventDefault(); setMobileOpen(false) }}>×</a>
         <ul className="menu">
           <li><Link to="/about">About us</Link></li>
-          {cms.services.filter(s => s.active).map(service => {
+          {(cms?.services || []).filter(s => s.active).map(service => {
             const path = service.slug ? `/services/${service.slug}` : '/services';
             return (
               <li key={service.id}><Link to={path}>{service.title}</Link></li>

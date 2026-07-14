@@ -1,10 +1,6 @@
 @font-face {
     font-family: "Flaticon";
-    src: url("../fonts/Flaticon.html");
-    src: url("../fonts/Flaticond41d.html?#iefix") format("embedded-opentype"),
-    url("../fonts/Flaticon.woff") format("woff"),
-    url("../fonts/Flaticon-2.html") format("truetype"),
-    url("../fonts/Flaticon-3.html#Flaticon") format("svg");
+    src: url("../fonts/Flaticon.woff") format("woff");
     font-weight: normal;
     font-style: normal;
 }

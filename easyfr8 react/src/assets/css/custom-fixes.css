@@ -780,7 +780,108 @@ body {
   .primary-mobile-nav .close-canvas-mobile-panel {
     color: #ffffff !important;
     opacity: 1 !important;
+    visibility: visible !important;
   }
 }
 
+/* Pixel-Perfect Desktop Alignments */
+@media (min-width: 992px) {
+  /* Increase hero banner height */
+  .rev_slider_wrapper,
+  .hero-slider-wrap {
+    height: 780px !important;
+  }
+  
+  /* Reduce horizontal spacing between navbar menu items */
+  .primary-nav .menu > li {
+    margin-left: 20px !important;
+  }
 
+  /* "Welcome to Easyfr8" paragraph styling */
+  .haeadingpara {
+    font-family: 'Montserrat', sans-serif !important;
+    font-size: 15px !important;
+    line-height: 26px !important;
+    color: #666666 !important;
+    max-width: 1170px !important;
+    width: 100% !important;
+    margin: 0 auto 40px auto !important;
+    font-weight: 400 !important;
+    letter-spacing: normal !important;
+    word-spacing: normal !important;
+    opacity: 1 !important;
+    padding: 0 15px !important;
+  }
+}
+
+/* Services Section Pixel-Perfect Grid & Cards — production-safe */
+body .services-grid-container {
+  display: grid !important;
+  grid-template-columns: repeat(4, 1fr) !important;
+  gap: 30px !important;
+  margin-top: 30px !important;
+  list-style: none !important;
+  padding: 0 !important;
+}
+@media (max-width: 991px) {
+  body .services-grid-container {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+@media (max-width: 767px) {
+  body .services-grid-container {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+body .service-card-item {
+  background: #ffffff !important;
+  border: 1px solid #ececec !important;
+  padding: 40px 20px !important;
+  text-align: center !important;
+  transition: all 0.3s ease !important;
+  min-height: 200px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-decoration: none !important;
+  box-sizing: border-box !important;
+  color: inherit !important;
+  width: 100% !important;
+}
+
+body .service-card-item .fh-icon {
+  margin-bottom: 25px !important;
+  display: block !important;
+  line-height: 1 !important;
+  width: 100% !important;
+  text-align: center !important;
+}
+
+body .service-card-item .fh-icon i,
+body .service-card-item .fh-icon i:before {
+  font-size: 74px !important;
+  color: #0c1239 !important;
+  line-height: 1 !important;
+  display: inline-block !important;
+  font-family: "Flaticon" !important;
+}
+
+body .service-card-item .box-title {
+  font-size: 20px !important;
+  font-weight: 500 !important;
+  color: #222222 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  text-transform: capitalize !important;
+  font-family: 'Montserrat', sans-serif !important;
+}
+
+/* Hover effects */
+body .service-card-item:hover {
+  border-color: #d64238 !important;
+}
+body .service-card-item:hover .box-title {
+  color: #d64238 !important;
+}

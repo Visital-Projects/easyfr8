@@ -5,7 +5,8 @@ const ALLOWED_ORIGINS = [
   'https://easyfr8.vnvision.in',
   'https://adminfr8.vnvision.in',
   'http://localhost:3000',
-  'http://localhost:3001'
+  'http://localhost:3001',
+  'http://localhost:3002'
 ];
 
 export function proxy(request: NextRequest) {

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Fallback to localhost:3001 if VITE_API_URL is not set
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+// Fallback to localhost:3002 if VITE_API_URL is not set
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002/api';
 
 const api = axios.create({
   baseURL: API_URL,
@@ -51,16 +51,32 @@ api.interceptors.response.use(
  */
 export function getImageUrl(path) {
   if (!path) return '';
-  if (path.startsWith('data:') || path.startsWith('http://') || path.startsWith('https://')) {
-    return path;
+  
+  let targetPath = path;
+  
+  // Strip out hardcoded local backend domains if stored in DB to normalize them
+  if (targetPath.startsWith('http://localhost:3002/')) {
+    targetPath = targetPath.replace('http://localhost:3002/', '');
+  }
+  if (targetPath.startsWith('http://adminfr8.vnvision.in/')) {
+    targetPath = targetPath.replace('http://adminfr8.vnvision.in/', '');
   }
   
-  // Remove leading slash if any
-  const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+  // Resolve relative path using current configured API_URL
+  if (!targetPath.startsWith('data:') && !targetPath.startsWith('http://') && !targetPath.startsWith('https://')) {
+    const cleanPath = targetPath.startsWith('/') ? targetPath.slice(1) : targetPath;
+    const hostUrl = API_URL.replace(/\/api$/, '');
+    targetPath = `${hostUrl}/${cleanPath}`;
+  }
   
-  // The host URL is the API URL without the '/api' suffix
-  const hostUrl = API_URL.replace(/\/api$/, '');
-  return `${hostUrl}/${cleanPath}`;
+  // Force HTTPS upgrade for non-local HTTP assets if the user is on an HTTPS connection
+  if (typeof window !== 'undefined' && window.location.protocol === 'https:' && targetPath.startsWith('http://')) {
+    if (!targetPath.includes('localhost') && !targetPath.includes('127.0.0.1')) {
+      targetPath = targetPath.replace(/^http:\/\//, 'https://');
+    }
+  }
+  
+  return targetPath;
 }
 
 export default api;

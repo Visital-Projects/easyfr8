@@ -43,20 +43,6 @@ services:
       - uploads_data:/app/uploads
     networks:
       - easyfr8_network
-
-  easyfr8_user:
-    build:
-      context: ./easyfr8 react
-      dockerfile: Dockerfile
-    container_name: easyfr8_user
-    restart: always
-    ports:
-      - "3000:80"
-    depends_on:
-      - easyfr8_admin
-    networks:
-      - easyfr8_network
-
 volumes:
   mysql_data:
   uploads_data:

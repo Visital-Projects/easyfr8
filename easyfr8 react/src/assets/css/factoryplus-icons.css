@@ -1,10 +1,6 @@
 @font-face {
   font-family: 'factoryplus';
-  src:  url('../fonts/factoryplusb1ed.html?eh9c5e');
-  src:  url('../fonts/factoryplusb1ed.html?eh9c5e#iefix') format('embedded-opentype'),
-  url('../fonts/factoryplusb1ed.ttf?eh9c5e') format('truetype'),
-  url('../fonts/factoryplusb1ed-2.html?eh9c5e') format('woff'),
-  url('../fonts/factoryplusb1ed-3.html?eh9c5e#factoryplus') format('svg');
+  src: url('../fonts/factoryplusb1ed.ttf') format('truetype');
   font-weight: normal;
   font-style: normal;
 }

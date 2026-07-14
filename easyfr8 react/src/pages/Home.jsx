@@ -270,7 +270,7 @@ export default function Home() {
       {/* Responsive Slide Styles */}
       <style dangerouslySetInnerHTML={{__html: `        .hero-slider-wrap {
           position: relative;
-          height: 720px;
+          height: 780px;
           overflow: hidden;
         }
         .hero-content {
@@ -342,12 +342,12 @@ export default function Home() {
         .hero-overlay {
           position: absolute;
           inset: 0;
-          background: rgba(0,0,0,0.18);
+          background: rgba(10, 18, 45, 0.15);
           z-index: 1;
           pointer-events: none;
         }
         .hero-bg img, .hero-image {
-          filter: brightness(1);
+          filter: brightness(1.12) contrast(1.1) saturate(1.3);
         }
         @media (max-width: 1200px) {
           .hero-content {
@@ -395,19 +395,19 @@ export default function Home() {
         /* ── Exact CSS Layout Styles for Booking Widget ── */
         .booking-outer-sec {
           background: #02083b !important;
-          padding: 60px 0;
+          padding: 40px 0;
           box-sizing: border-box;
         }
         .booking-card-container {
-          width: 76%;
-          max-width: 1460px;
+          width: 100%;
+          max-width: 1200px;
           margin: 0 auto;
-          padding: 0;
+          padding: 0 15px;
           box-sizing: border-box;
         }
         .booking-card {
           background: #fff;
-          padding: 40px;
+          padding: 35px 40px;
           box-shadow: 0 8px 30px rgba(0,0,0,0.18);
           box-sizing: border-box;
           overflow: visible !important;
@@ -416,11 +416,11 @@ export default function Home() {
           display: flex;
           gap: 20px;
           justify-content: center;
-          margin-bottom: 25px;
+          margin-bottom: 15px;
           box-sizing: border-box;
         }
         .booking-mode-btn {
-          height: 58px;
+          height: 42px;
           font-weight: 600;
           font-size: 14px;
           cursor: pointer;
@@ -452,12 +452,12 @@ export default function Home() {
         .booking-shipment-tabs {
           display: flex;
           gap: 12px;
-          margin-bottom: 25px;
+          margin-bottom: 15px;
           justify-content: flex-start;
           box-sizing: border-box;
         }
         .booking-shipment-btn {
-          height: 48px;
+          height: 38px;
           width: 72px;
           font-weight: 600;
           font-size: 13px;
@@ -489,12 +489,12 @@ export default function Home() {
           box-sizing: border-box;
         }
         .booking-input-field {
-          height: 58px !important;
+          height: 42px !important;
           font-size: 14px;
           font-family: inherit;
           box-sizing: border-box;
           border: 1px solid #e0e0e0;
-          padding: 14px 16px;
+          padding: 10px 16px;
           width: 100%;
           background: white;
           color: #666;
@@ -517,27 +517,27 @@ export default function Home() {
           justify-content: center;
           gap: 8px;
           width: 100% !important;
-          height: 58px !important;
+          height: 42px !important;
           box-sizing: border-box;
         }
 
         @media (min-width: 1200px) {
           .booking-input-origin {
-            flex: 30 1 30% !important;
-            max-width: 30% !important;
+            flex: 32 1 32% !important;
+            max-width: 32% !important;
           }
           .booking-input-destination {
-            flex: 30 1 30% !important;
-            max-width: 30% !important;
+            flex: 32 1 32% !important;
+            max-width: 32% !important;
           }
           .booking-input-container {
-            flex: 25 1 25% !important;
-            max-width: 25% !important;
+            flex: 26 1 26% !important;
+            max-width: 26% !important;
           }
           .booking-input-button {
-            flex: 0 0 160px !important;
-            width: 160px !important;
-            max-width: 160px !important;
+            flex: 0 0 130px !important;
+            width: 130px !important;
+            max-width: 130px !important;
             flex-shrink: 0 !important;
           }
           .booking-form-row {
@@ -603,12 +603,12 @@ export default function Home() {
                 }}
               >
                  {/* Background image for this slide */}
-                <img 
-                  src={slide.image ? getImageUrl(slide.image) : slide3} 
-                  alt="Slide Background" 
-                  className="hero-image"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0, zIndex: 0 }} 
-                />
+                 <img 
+                   src={slide.image ? getImageUrl(slide.image) : slide3} 
+                   alt="Slide Background" 
+                   className="hero-image"
+                   style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 30%', position: 'absolute', top: 0, left: 0, zIndex: 0 }} 
+                 />
                  <div className="hero-overlay" />
                 
                 <div className="hero-content hero-text-box hero-content-box" style={{ color: 'white' }}>
@@ -634,7 +634,7 @@ export default function Home() {
           </div>
 
           {/* Slide nav dots */}
-          <div style={{ position: 'absolute', bottom: '40px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '8px', zIndex: 20 }}>
+          <div style={{ position: 'absolute', bottom: '30px', left: '50%', transform: 'translateX(-50%)', display: 'flex', gap: '8px', zIndex: 20 }}>
             {slides.map((_, i) => (
               <button key={i} onClick={() => setCurrentSlide(i)} style={{ width: '12px', height: '12px', borderRadius: '50%', border: 'none', background: i === currentSlide ? '#d64238' : 'rgba(255,255,255,0.6)', cursor: 'pointer', padding: 0 }} />
             ))}
@@ -644,7 +644,7 @@ export default function Home() {
 
       {/* ── Freight Booking Widget ─────────────────────────────────────────── */}
       <section className="booking-outer-sec">
-        <div className="booking-card-container">
+        <div className="container booking-card-container">
           <div className="booking-card">
 
             {/* ── Row 1: Freight Mode Tabs (centred) ── */}
@@ -799,73 +799,47 @@ export default function Home() {
       <div className="welcomesec secpadd">
         <div className="container">
           <div className="fh-section-title clearfix text-center version-dark paddbtm20">
-            <h2>{cms.homepage.welcomeTitle || 'Welcome to Easyfr8'}</h2>
+            <h2>WELCOME TO EASYFR<span style={{ color: '#d64238' }}>8</span></h2>
           </div>
           <p className="haeadingpara text-center paddbtm40">
-            {cms.homepage.welcomeDesc || 'Easyfr8 is more than just Rates. It uses AI, ML and other tools to bring best and desired results for you, be it rates, alternatives, comparisons, reports, trends, news, trade leads and so forth.'}
+            Easyfr8 is more than just Rates. It uses AI, ML and other tools to bring best and desired results for you, be it rates, alternatives, comparisons, reports, trends, news, trade leads and so forth.
           </p>
 
-          {/* First Row of Services */}
-          <div className="welservices row">
-            {cms.services
+          {/* Services Grid Container */}
+          {(() => {
+            const serviceMapping = {
+              'ocean freight forwarding': { title: 'Sea Freight', icon: 'flaticon-transport-4', order: 2 },
+              'air freight forwarding': { title: 'Air Freight', icon: 'flaticon-transport-3', order: 1 },
+              'road freight forwarding': { title: 'Road Transport', icon: 'flaticon-transport-5', order: 3 },
+              'warehousing': { title: 'Warehousing', icon: 'flaticon-transport-7', order: 4 },
+              'custom clearance': { title: 'Custom Clearance', icon: 'flaticon-transport-1', order: 5 },
+              'cfs': { title: 'CFS', icon: 'flaticon-transport-10', order: 6 },
+              'contract handling': { title: 'Contract Handling', icon: 'flaticon-business', order: 7 },
+              'cargo insurance': { title: 'Cargo Insurance', icon: 'flaticon-interface-1', order: 8 }
+            };
+            const processedServices = (cms.services || [])
               .filter(s => s.active)
-              .filter((s, idx) => s.category ? s.category === 'core' : idx < 4)
-              .map(service => {
-                const serviceIcons = {
-                  'anchor': 'flaticon-transport-4',
-                  'plane': 'flaticon-transport-3',
-                  'truck': 'flaticon-transport-5',
-                  'package': 'flaticon-transport-7',
-                  'shield': 'flaticon-transport-1',
-                  'box': 'flaticon-transport-10',
-                  'briefcase': 'flaticon-business',
-                  'umbrella': 'flaticon-interface-1'
-                };
-                const iconClass = service.icon?.startsWith('flaticon-') ? service.icon : (serviceIcons[service.icon] || 'flaticon-transport-1');
-                const path = service.slug ? `/services/${service.slug}` : '/services';
-                return (
-                  <div key={service.id} className="col-md-3 col-sm-6" style={{ marginBottom: '30px' }}>
-                    <div className="fh-icon-box icon-type-theme_icon style-1 version-dark hide-button icon-left bx" style={{ minHeight: '120px' }}>
-                      <a href={path}>
-                        <span className="fh-icon"><i className={iconClass}></i></span>
-                        <h4 className="box-title"><span>{service.title}</span></h4>
-                        <div className="desc"><p style={{ margin: 0, fontSize: '13px', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{service.desc}</p></div>
-                      </a>
-                    </div>
-                  </div>
-                );
-              })}
-          </div>
+              .map(s => {
+                const key = s.title.toLowerCase().trim();
+                const mapping = serviceMapping[key] || { title: s.title, icon: s.icon, order: 99 };
+                return { ...s, title: mapping.title, icon: mapping.icon, order: mapping.order };
+              })
+              .sort((a, b) => a.order - b.order);
 
-          {/* Second Row of Services */}
-          <div className="services-row" style={{ marginTop: '30px' }}>
-            {cms.services
-              .filter(s => s.active)
-              .filter((s, idx) => s.category ? s.category === 'value-added' : idx >= 4)
-              .map(service => {
-                const serviceIcons = {
-                  'anchor': 'flaticon-transport-4',
-                  'plane': 'flaticon-transport-3',
-                  'truck': 'flaticon-transport-5',
-                  'package': 'flaticon-transport-7',
-                  'shield': 'flaticon-transport-1',
-                  'box': 'flaticon-transport-10',
-                  'briefcase': 'flaticon-business',
-                  'umbrella': 'flaticon-interface-1'
-                };
-                const iconClass = service.icon?.startsWith('flaticon-') ? service.icon : (serviceIcons[service.icon] || 'flaticon-transport-1');
-                const path = service.slug ? `/services/${service.slug}` : '/services';
-                return (
-                  <div key={service.id} className="service-card fh-icon-box icon-type-theme_icon style-1 version-dark hide-button icon-left bx" style={{ minHeight: '120px' }}>
-                    <a href={path}>
-                      <span className="fh-icon"><i className={iconClass}></i></span>
+            return (
+              <div className="services-grid-container">
+                {processedServices.map(service => {
+                  const path = service.slug ? `/services/${service.slug}` : '/services';
+                  return (
+                    <a key={service.id} href={path} className="service-card-item">
+                      <span className="fh-icon"><i className={service.icon}></i></span>
                       <h4 className="box-title"><span>{service.title}</span></h4>
-                      <div className="desc"><p style={{ margin: 0, fontSize: '13px', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{service.desc}</p></div>
                     </a>
-                  </div>
-                );
-              })}
-          </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
 
           <div className="extra-menu-item menu-item-button-link" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', marginTop: '30px' }}>
             <a href="#" className="fh-btn btn">Know More</a>
@@ -897,22 +871,10 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Home Counters */}
       <section className="homecounts">
         <div className="container">
-          <h2 className="count-title"><span className="main-color">Easyfr8</span> {cms.homepage.countersTitle || 'Connecting Global Markets Seamlessly'}</h2>
+          <h2 className="count-title">Easyfr<span style={{ color: '#d64238' }}>8</span> {cms.homepage.countersTitle || 'Connecting Global Markets Seamlessly'}</h2>
           <h4 style={{ color: 'white', display: 'flex', justifyContent: 'center', fontSize: '14px' }}>{cms.homepage.countersSubtitle || 'Delivering better outcomes through innovative and Technology driven logistics solutions'}</h4>
-          {statistics && statistics.length > 0 && (
-            <div className="row" style={{ marginTop: '30px', display: 'flex', justifyContent: 'center', flexWrap: 'wrap' }}>
-              {statistics.filter(s => s.status === 'active').sort((a, b) => a.sort_order - b.sort_order).map((stat) => (
-                <div key={stat.id} className="col-md-3 col-sm-6" style={{ textAlign: 'center', padding: '20px' }}>
-                  <span className="fh-icon" style={{ fontSize: '40px', color: '#d64238' }}><i className={stat.icon}></i></span>
-                  <h2 style={{ color: 'white', fontSize: '36px', fontWeight: '700', margin: '10px 0 5px' }}>{stat.value}</h2>
-                  <p style={{ color: '#ccc', fontSize: '14px', margin: 0 }}>{stat.label}</p>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       </section>
 

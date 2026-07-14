@@ -6,12 +6,30 @@ import { readDb, writeDb } from '@/lib/db';
  * Returns only the aboutUs section of the CMS data.
  * This endpoint is independent of the footer/contact CMS section.
  */
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const db = await readDb();
-    return NextResponse.json({ success: true, aboutUs: db.cms?.aboutUs || {} });
+    return new NextResponse(JSON.stringify({ success: true, aboutUs: db.cms?.aboutUs || {} }), {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      },
+    });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return new NextResponse(JSON.stringify({ success: false, error: error.message }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      },
+    });
   }
 }
 
