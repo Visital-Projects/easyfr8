@@ -1,7 +1,8 @@
 node_modules
 .next
-.env
-.env.production
-.env.local
+out
+build
+.git
 .gitignore
-README.md
+*.log
+*.tsbuildinfo

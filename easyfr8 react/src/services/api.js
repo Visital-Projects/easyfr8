@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-// Fallback to localhost:3002 if VITE_API_URL is not set
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3002/api';
+// Fallback to localhost:3001 if VITE_API_URL is not set
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
 const api = axios.create({
   baseURL: API_URL,

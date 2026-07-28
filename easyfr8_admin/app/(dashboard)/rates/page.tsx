@@ -1,6 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useData } from '@/context/DataContext';
+import ImportRatesModal from '@/components/ImportRatesModal';
+import { exportToCSV, exportToExcel } from '@/lib/csvUtils';
 
 interface FreightMode {
   id: string;
@@ -49,6 +52,8 @@ interface FreightRate {
 }
 
 export default function RatesPage() {
+  const { showToast } = useData();
+
   const [rates, setRates] = useState<FreightRate[]>([]);
   const [modes, setModes] = useState<FreightMode[]>([]);
   const [shipmentTypes, setShipmentTypes] = useState<ShipmentType[]>([]);
@@ -61,6 +66,11 @@ export default function RatesPage() {
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create');
   const [editingRateId, setEditingRateId] = useState<string | null>(null);
   const [rateHistory, setRateHistory] = useState<any[]>([]);
+
+  // Import / Export states & dropdown controls
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [importDropdownOpen, setImportDropdownOpen] = useState(false);
+  const [exportDropdownOpen, setExportDropdownOpen] = useState(false);
 
   // Form fields
   const [formModeId, setFormModeId] = useState('');
@@ -154,7 +164,11 @@ export default function RatesPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formModeId || !formShipmentTypeId || !formOriginId || !formDestinationId || !formCarrier) return;
+    const isAirMode = formModeId === 'mode-air' || formModeId === 'air-freight' || modes.find(m => m.id === formModeId)?.name?.toLowerCase().includes('air');
+    if (!formModeId || !formShipmentTypeId || !formOriginId || !formDestinationId || (!isAirMode && !formContainerId) || !formCarrier) {
+      showToast('Please fill in all required fields.', 'danger');
+      return;
+    }
 
     try {
       const payload = {
@@ -180,6 +194,7 @@ export default function RatesPage() {
         if (res.ok) {
           fetchData();
           setModalOpen(false);
+          showToast('New freight rate route added successfully.', 'success');
         }
       } else {
         const res = await fetch(`/api/freight-rates/${editingRateId}`, {
@@ -190,10 +205,12 @@ export default function RatesPage() {
         if (res.ok) {
           fetchData();
           setModalOpen(false);
+          showToast('Freight rate route updated successfully.', 'success');
         }
       }
     } catch (err) {
       console.error(err);
+      showToast('Failed to save freight rate.', 'danger');
     }
   };
 
@@ -205,17 +222,29 @@ export default function RatesPage() {
         });
         if (res.ok) {
           fetchData();
+          showToast('Freight rate route deleted.', 'success');
         }
       } catch (err) {
         console.error(err);
+        showToast('Failed to delete freight rate.', 'danger');
       }
     }
   };
 
+  useEffect(() => {
+    if (modalOpen || importModalOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [modalOpen, importModalOpen]);
+
   // Filter shipment types based on selected mode
   const filteredShipmentTypes = shipmentTypes.filter(s => s.freight_type_id === formModeId);
 
-  // Set default shipment type when mode changes
   useEffect(() => {
     if (filteredShipmentTypes.length > 0 && !formShipmentTypeId) {
       setFormShipmentTypeId(filteredShipmentTypes[0].id);
@@ -225,22 +254,159 @@ export default function RatesPage() {
   const filteredRates = rates.filter((r) =>
     r.carrier.toLowerCase().includes(searchQuery.toLowerCase()) ||
     (r.origin_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (r.destination_name || '').toLowerCase().includes(searchQuery.toLowerCase())
+    (r.origin_code || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (r.destination_name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (r.destination_code || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    r.id.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  // Export column mapping
+  const exportColumns = [
+    { key: 'id' as const, label: 'Rate ID' },
+    { key: 'mode_name' as const, label: 'Mode' },
+    { key: 'shipment_name' as const, label: 'Shipment Type' },
+    { key: 'origin_code' as const, label: 'Origin Code' },
+    { key: 'origin_name' as const, label: 'Origin Name' },
+    { key: 'destination_code' as const, label: 'Destination Code' },
+    { key: 'destination_name' as const, label: 'Destination Name' },
+    { key: 'container_name' as const, label: 'Container' },
+    { key: 'carrier' as const, label: 'Carrier' },
+    { key: 'transit_time' as const, label: 'Transit Days' },
+    { key: 'price' as const, label: 'Price ($)' },
+    { key: 'currency' as const, label: 'Currency' },
+    { key: 'status' as const, label: 'Status' },
+  ];
+
+  const handleExportCSV = (exportAll = false) => {
+    const listToExport = exportAll ? rates : filteredRates;
+    if (listToExport.length === 0) {
+      showToast('No records available to export.', 'warning');
+      return;
+    }
+    exportToCSV(listToExport, `easyfr8_rates_export_${new Date().toISOString().split('T')[0]}.csv`, exportColumns);
+    showToast(`Exported ${listToExport.length} rates to CSV file.`, 'success');
+    setExportDropdownOpen(false);
+  };
+
+  const handleExportExcel = (exportAll = false) => {
+    const listToExport = exportAll ? rates : filteredRates;
+    if (listToExport.length === 0) {
+      showToast('No records available to export.', 'warning');
+      return;
+    }
+    exportToExcel(listToExport, `easyfr8_rates_export_${new Date().toISOString().split('T')[0]}.xls`, exportColumns);
+    showToast(`Exported ${listToExport.length} rates to Excel spreadsheet.`, 'success');
+    setExportDropdownOpen(false);
+  };
 
   return (
     <>
-      <div className="page-header">
+      {/* Page Header Toolbar */}
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 'var(--space-4)' }}>
         <div>
           <h1 className="page-title">Freight Rates</h1>
           <p className="page-subtitle">Configure prices, carrier lines, and transit times for dynamic matching.</p>
         </div>
-        <div>
+
+        <div style={{ display: 'flex', gap: 'var(--space-3)', alignItems: 'center', position: 'relative' }}>
+          
+          {/* Import Dropdown Menu */}
+          <div style={{ position: 'relative' }}>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => { setImportDropdownOpen(!importDropdownOpen); setExportDropdownOpen(false); }}
+            >
+              📥 Import Rates ▼
+            </button>
+            {importDropdownOpen && (
+              <div style={{
+                position: 'absolute',
+                top: '100%',
+                right: 0,
+                marginTop: '4px',
+                width: '200px',
+                backgroundColor: 'var(--surface-card)',
+                border: '1px solid var(--border-color)',
+                borderRadius: 'var(--radius-md)',
+                boxShadow: 'var(--shadow-md)',
+                zIndex: 50,
+                padding: '4px 0'
+              }}>
+                <button
+                  type="button"
+                  style={{ width: '100%', textAlign: 'left', padding: '8px 16px', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.85rem' }}
+                  onClick={() => { setImportModalOpen(true); setImportDropdownOpen(false); }}
+                >
+                  📁 Upload CSV / Excel
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Export Dropdown Menu */}
+          <div style={{ position: 'relative' }}>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => { setExportDropdownOpen(!exportDropdownOpen); setImportDropdownOpen(false); }}
+            >
+              📤 Export Rates ▼
+            </button>
+            {exportDropdownOpen && (
+              <div style={{
+                position: 'absolute',
+                top: '100%',
+                right: 0,
+                marginTop: '4px',
+                width: '220px',
+                backgroundColor: 'var(--surface-card)',
+                border: '1px solid var(--border-color)',
+                borderRadius: 'var(--radius-md)',
+                boxShadow: 'var(--shadow-md)',
+                zIndex: 50,
+                padding: '4px 0'
+              }}>
+                <button
+                  type="button"
+                  style={{ width: '100%', textAlign: 'left', padding: '8px 16px', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.85rem' }}
+                  onClick={() => handleExportCSV(false)}
+                >
+                  📄 Export Filtered to CSV
+                </button>
+                <button
+                  type="button"
+                  style={{ width: '100%', textAlign: 'left', padding: '8px 16px', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.85rem' }}
+                  onClick={() => handleExportExcel(false)}
+                >
+                  📊 Export Filtered to Excel
+                </button>
+                <div style={{ height: '1px', backgroundColor: 'var(--border-color)', margin: '4px 0' }} />
+                <button
+                  type="button"
+                  style={{ width: '100%', textAlign: 'left', padding: '8px 16px', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.85rem' }}
+                  onClick={() => handleExportCSV(true)}
+                >
+                  🌐 Export All Records (CSV)
+                </button>
+                <button
+                  type="button"
+                  style={{ width: '100%', textAlign: 'left', padding: '8px 16px', background: 'none', border: 'none', cursor: 'pointer', fontSize: '0.85rem' }}
+                  onClick={() => handleExportExcel(true)}
+                >
+                  📈 Export All Records (Excel)
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Add Freight Rate Primary Button */}
           <button className="btn btn-primary" onClick={handleOpenAddModal}>+ Add Freight Rate</button>
         </div>
       </div>
 
-      <div className="table-filter-panel" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 'var(--space-4)' }}>
+      {/* Search Filter Panel */}
+      <div className="table-filter-panel" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 'var(--space-4)', marginTop: 'var(--space-4)' }}>
         <div style={{ width: '100%', maxWidth: '320px' }}>
           <input
             type="text"
@@ -253,6 +419,7 @@ export default function RatesPage() {
         </div>
       </div>
 
+      {/* Main Rates Data Table */}
       <div className="chart-card">
         <div className="table-responsive">
           <table className="data-table">
@@ -311,7 +478,7 @@ export default function RatesPage() {
         </div>
       </div>
 
-      {/* Rate History Log Panel */}
+      {/* Rate Activity Logs Section */}
       <div className="chart-card" style={{ marginTop: 'var(--space-6)' }}>
         <div className="chart-card-header" style={{ marginBottom: 'var(--space-4)' }}>
           <h3 className="chart-card-title">Rate Activity Logs</h3>
@@ -350,17 +517,13 @@ export default function RatesPage() {
                   return (
                     <tr key={log.id}>
                       <td>
-                        <span className={`status-pill ${
-                          log.actionType === 'create' ? 'status-info' : log.actionType === 'update' ? 'status-warning' : 'status-inactive'
-                        }`} style={{ textTransform: 'uppercase', fontSize: '0.65rem' }}>
-                          {log.actionType}
+                        <span className={`badge ${log.actionType === 'create' ? 'badge-approved' : log.actionType === 'delete' ? 'badge-rejected' : 'badge-progress'}`}>
+                          {log.actionType.toUpperCase()}
                         </span>
                       </td>
-                      <td style={{ fontSize: '0.85rem' }}>{log.updatedBy}</td>
-                      <td style={{ fontSize: '0.85rem' }}>{details}</td>
-                      <td style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                        {new Date(log.createdAt).toLocaleString('en-IN', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
-                      </td>
+                      <td>{log.operator || 'Admin'}</td>
+                      <td>{details}</td>
+                      <td>{new Date(log.createdAt).toLocaleString()}</td>
                     </tr>
                   );
                 })
@@ -370,130 +533,193 @@ export default function RatesPage() {
         </div>
       </div>
 
+      {/* Import Modal */}
+      <ImportRatesModal
+        isOpen={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        onSuccess={() => { fetchData(); setImportModalOpen(false); }}
+        showToast={showToast}
+      />
+
+      {/* Create / Edit Freight Rate Modal */}
       {modalOpen && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
-          <div style={{ background: 'white', padding: '30px', borderRadius: '8px', width: '100%', maxWidth: '500px', color: '#333', maxHeight: '90vh', overflowY: 'auto' }}>
-            <h3 style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '20px' }}>{modalMode === 'create' ? 'Add Freight Rate' : 'Edit Freight Rate'}</h3>
-            <form onSubmit={handleSave}>
-              <div style={{ marginBottom: '15px' }}>
-                <label style={{ display: 'block', fontWeight: 600, marginBottom: '5px' }}>Freight Mode</label>
-                <select
-                  className="form-control"
-                  value={formModeId}
-                  onChange={(e) => { 
-                    const newModeId = e.target.value; 
-                    setFormModeId(newModeId); 
-                    const modeSts = shipmentTypes.filter(s => s.freight_type_id === newModeId);
-                    setFormShipmentTypeId(modeSts.length > 0 ? modeSts[0].id : '');
-                  }}
-                  style={{ width: '100%', padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px' }}
-                >
-                  {modes.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
-                </select>
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000,
+          padding: '20px'
+        }}>
+          <div style={{
+            backgroundColor: '#fff',
+            borderRadius: '8px',
+            width: '500px',
+            maxWidth: '100%',
+            maxHeight: '90vh',
+            display: 'flex',
+            flexDirection: 'column',
+            boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+            overflow: 'hidden'
+          }}>
+            {/* Modal Header */}
+            <div style={{
+              padding: '20px 20px 15px 20px',
+              borderBottom: '1px solid #eee',
+              flexShrink: 0
+            }}>
+              <h2 style={{ fontSize: '1.25rem', fontWeight: 600, margin: 0 }}>
+                {modalMode === 'create' ? 'Add Freight Rate' : `Edit Freight Rate: ${editingRateId}`}
+              </h2>
+            </div>
+            
+            {/* Modal Body - Scrollable */}
+            <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', overflow: 'hidden', height: '100%' }}>
+              <div style={{
+                padding: '20px',
+                overflowY: 'auto',
+                flexGrow: 1,
+                WebkitOverflowScrolling: 'touch'
+              }}>
+                <div style={{ marginBottom: '15px' }}>
+                  <label style={{ display: 'block', fontWeight: 600, marginBottom: '5px' }}>Freight Mode</label>
+                  <select
+                    className="form-control"
+                    value={formModeId}
+                    onChange={(e) => {
+                      setFormModeId(e.target.value);
+                      setFormShipmentTypeId('');
+                    }}
+                    style={{ width: '100%', padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px' }}
+                    required
+                  >
+                    {modes.map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+                  </select>
+                </div>
+
+                <div style={{ marginBottom: '15px' }}>
+                  <label style={{ display: 'block', fontWeight: 600, marginBottom: '5px' }}>Shipment Type</label>
+                  <select
+                    className="form-control"
+                    value={formShipmentTypeId}
+                    onChange={(e) => setFormShipmentTypeId(e.target.value)}
+                    style={{ width: '100%', padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px' }}
+                    required
+                  >
+                    {filteredShipmentTypes.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                  </select>
+                </div>
+
+                <div style={{ marginBottom: '15px' }}>
+                  <label style={{ display: 'block', fontWeight: 600, marginBottom: '5px' }}>Origin Location</label>
+                  <select
+                    className="form-control"
+                    value={formOriginId}
+                    onChange={(e) => setFormOriginId(e.target.value)}
+                    style={{ width: '100%', padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px' }}
+                    required
+                  >
+                    {locations.map(l => <option key={l.id} value={l.id}>{l.name} ({l.port_code})</option>)}
+                  </select>
+                </div>
+
+                <div style={{ marginBottom: '15px' }}>
+                  <label style={{ display: 'block', fontWeight: 600, marginBottom: '5px' }}>Destination Location</label>
+                  <select
+                    className="form-control"
+                    value={formDestinationId}
+                    onChange={(e) => setFormDestinationId(e.target.value)}
+                    style={{ width: '100%', padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px' }}
+                    required
+                  >
+                    {locations.map(l => <option key={l.id} value={l.id}>{l.name} ({l.port_code})</option>)}
+                  </select>
+                </div>
+
+                <div style={{ marginBottom: '15px' }}>
+                  <label style={{ display: 'block', fontWeight: 600, marginBottom: '5px' }}>
+                    Container {(formModeId === 'mode-air' || formModeId === 'air-freight' || modes.find(m => m.id === formModeId)?.name?.toLowerCase().includes('air')) ? '(Optional for Air Freight)' : '*'}
+                  </label>
+                  <select
+                    className="form-control"
+                    value={formContainerId}
+                    onChange={(e) => setFormContainerId(e.target.value)}
+                    style={{ width: '100%', padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px' }}
+                    required={!(formModeId === 'mode-air' || formModeId === 'air-freight' || modes.find(m => m.id === formModeId)?.name?.toLowerCase().includes('air'))}
+                  >
+                    <option value="">{(formModeId === 'mode-air' || formModeId === 'air-freight' || modes.find(m => m.id === formModeId)?.name?.toLowerCase().includes('air')) ? 'None (N/A for Air Cargo)' : 'Select Container'}</option>
+                    {containers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </div>
+
+                <div style={{ marginBottom: '15px' }}>
+                  <label style={{ display: 'block', fontWeight: 600, marginBottom: '5px' }}>Price (USD)</label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    value={formPrice}
+                    onChange={(e) => setFormPrice(Number(e.target.value))}
+                    required
+                    min="0"
+                    style={{ width: '100%', padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px' }}
+                  />
+                </div>
+
+                <div style={{ marginBottom: '15px' }}>
+                  <label style={{ display: 'block', fontWeight: 600, marginBottom: '5px' }}>Transit Time (Days)</label>
+                  <input
+                    type="number"
+                    className="form-control"
+                    value={formTransitTime}
+                    onChange={(e) => setFormTransitTime(Number(e.target.value))}
+                    required
+                    min="0"
+                    style={{ width: '100%', padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px' }}
+                  />
+                </div>
+
+                <div style={{ marginBottom: '15px' }}>
+                  <label style={{ display: 'block', fontWeight: 600, marginBottom: '5px' }}>Carrier</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={formCarrier}
+                    onChange={(e) => setFormCarrier(e.target.value)}
+                    required
+                    placeholder="e.g. Maersk Line"
+                    style={{ width: '100%', padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px' }}
+                  />
+                </div>
+
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{ display: 'block', fontWeight: 600, marginBottom: '5px' }}>Status</label>
+                  <select
+                    className="form-control"
+                    value={formStatus}
+                    onChange={(e) => setFormStatus(e.target.value as any)}
+                    style={{ width: '100%', padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px' }}
+                  >
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                  </select>
+                </div>
               </div>
 
-              <div style={{ marginBottom: '15px' }}>
-                <label style={{ display: 'block', fontWeight: 600, marginBottom: '5px' }}>Shipment Type</label>
-                <select
-                  className="form-control"
-                  value={formShipmentTypeId}
-                  onChange={(e) => setFormShipmentTypeId(e.target.value)}
-                  style={{ width: '100%', padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px' }}
-                >
-                  {filteredShipmentTypes.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-                </select>
-              </div>
-
-              <div style={{ marginBottom: '15px' }}>
-                <label style={{ display: 'block', fontWeight: 600, marginBottom: '5px' }}>Origin Location</label>
-                <select
-                  className="form-control"
-                  value={formOriginId}
-                  onChange={(e) => setFormOriginId(e.target.value)}
-                  style={{ width: '100%', padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px' }}
-                >
-                  {locations.map(l => <option key={l.id} value={l.id}>{l.name} ({l.port_code})</option>)}
-                </select>
-              </div>
-
-              <div style={{ marginBottom: '15px' }}>
-                <label style={{ display: 'block', fontWeight: 600, marginBottom: '5px' }}>Destination Location</label>
-                <select
-                  className="form-control"
-                  value={formDestinationId}
-                  onChange={(e) => setFormDestinationId(e.target.value)}
-                  style={{ width: '100%', padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px' }}
-                >
-                  {locations.map(l => <option key={l.id} value={l.id}>{l.name} ({l.port_code})</option>)}
-                </select>
-              </div>
-
-              <div style={{ marginBottom: '15px' }}>
-                <label style={{ display: 'block', fontWeight: 600, marginBottom: '5px' }}>Container (Optional)</label>
-                <select
-                  className="form-control"
-                  value={formContainerId}
-                  onChange={(e) => setFormContainerId(e.target.value)}
-                  style={{ width: '100%', padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px' }}
-                >
-                  <option value="">None (LCL / Air)</option>
-                  {containers.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
-              </div>
-
-              <div style={{ marginBottom: '15px' }}>
-                <label style={{ display: 'block', fontWeight: 600, marginBottom: '5px' }}>Price (USD)</label>
-                <input
-                  type="number"
-                  className="form-control"
-                  value={formPrice}
-                  onChange={(e) => setFormPrice(Number(e.target.value))}
-                  required
-                  min="0"
-                  style={{ width: '100%', padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px' }}
-                />
-              </div>
-
-              <div style={{ marginBottom: '15px' }}>
-                <label style={{ display: 'block', fontWeight: 600, marginBottom: '5px' }}>Transit Time (Days)</label>
-                <input
-                  type="number"
-                  className="form-control"
-                  value={formTransitTime}
-                  onChange={(e) => setFormTransitTime(Number(e.target.value))}
-                  required
-                  min="0"
-                  style={{ width: '100%', padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px' }}
-                />
-              </div>
-
-              <div style={{ marginBottom: '15px' }}>
-                <label style={{ display: 'block', fontWeight: 600, marginBottom: '5px' }}>Carrier</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  value={formCarrier}
-                  onChange={(e) => setFormCarrier(e.target.value)}
-                  required
-                  placeholder="e.g. Maersk Line"
-                  style={{ width: '100%', padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px' }}
-                />
-              </div>
-
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontWeight: 600, marginBottom: '5px' }}>Status</label>
-                <select
-                  className="form-control"
-                  value={formStatus}
-                  onChange={(e) => setFormStatus(e.target.value as any)}
-                  style={{ width: '100%', padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px' }}
-                >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
-              </div>
-
-              <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+              {/* Modal Footer - Fixed */}
+              <div style={{
+                padding: '15px 20px',
+                borderTop: '1px solid #eee',
+                display: 'flex',
+                gap: '10px',
+                justifyContent: 'flex-end',
+                flexShrink: 0,
+                backgroundColor: '#fff'
+              }}>
                 <button type="button" className="btn btn-secondary" onClick={() => setModalOpen(false)}>Cancel</button>
                 <button type="submit" className="btn btn-primary">Save</button>
               </div>

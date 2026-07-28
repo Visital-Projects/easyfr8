@@ -46,12 +46,13 @@ export default function Booking() {
     const fetchOptions = async () => {
       try {
         setLoading(true)
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
         const [resFt, resSt, resTerms, resPorts, resCont] = await Promise.all([
-          fetch('/api/freight-types'),
-          fetch('/api/shipment-types'),
-          fetch('/api/terms'),
-          fetch('/api/ports'),
-          fetch('/api/containers')
+          fetch(`${API_URL}/freight-types`),
+          fetch(`${API_URL}/shipment-types`),
+          fetch(`${API_URL}/terms`),
+          fetch(`${API_URL}/ports`),
+          fetch(`${API_URL}/containers`)
         ])
 
         const dataFt = await resFt.json()
@@ -191,7 +192,8 @@ export default function Booking() {
     }
 
     try {
-      const res = await fetch('/api/bookings', {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
+      const res = await fetch(`${API_URL}/bookings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

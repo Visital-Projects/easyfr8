@@ -30,6 +30,11 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
     const { id } = await params;
     const body = await req.json();
     const { freight_mode_id, shipment_type_id, origin_id, destination_id, container_id, price, currency, transit_time, carrier, status } = body;
+    
+    if (!container_id || !container_id.trim()) {
+      return NextResponse.json({ success: false, error: 'Container is required.' }, { status: 400 });
+    }
+
     const pool = getPool();
 
     // Fetch old rate state for diffing/logging
@@ -46,7 +51,7 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
         shipment_type_id,
         origin_id,
         destination_id,
-        container_id || null,
+        container_id,
         price,
         currency || 'USD',
         transit_time,

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { readDb, writeDb } from '@/lib/db';
+import { readDb, writeDb, getPool } from '@/lib/db';
 
 export async function PUT(
   req: Request,
@@ -39,8 +39,15 @@ export async function DELETE(
       return NextResponse.json({ success: false, error: 'Enquiry not found' }, { status: 404 });
     }
     
+    const pool = getPool();
+    const [result]: any = await pool.query('DELETE FROM enquiries WHERE id = ?', [id]);
+    
     await writeDb(db);
-    return NextResponse.json({ success: true, message: 'Enquiry deleted successfully.' });
+    return NextResponse.json({
+      success: true,
+      message: 'Enquiry deleted successfully.',
+      affectedRows: result.affectedRows || 1,
+    });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }

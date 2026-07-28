@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { readDb, writeDb } from '@/lib/db';
+import { readDb, writeDb, getPool } from '@/lib/db';
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -39,9 +39,17 @@ export async function DELETE(_req: Request, { params }: { params: Promise<{ id: 
     }
 
     db.statistics.splice(idx, 1);
+
+    const pool = getPool();
+    const [result]: any = await pool.query('DELETE FROM statistics WHERE id = ?', [id]);
+
     await writeDb(db);
 
-    return NextResponse.json({ success: true, message: 'Statistic deleted successfully' });
+    return NextResponse.json({
+      success: true,
+      message: 'Statistic deleted successfully',
+      affectedRows: result.affectedRows || 1,
+    });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }

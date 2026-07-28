@@ -2,30 +2,12 @@ import { NextResponse } from 'next/server';
 import { readDb, writeDb } from '@/lib/db';
 import { Blog } from '@/lib/store';
 
-export const dynamic = 'force-dynamic';
-
 export async function GET() {
   try {
     const db = await readDb();
-    return new NextResponse(JSON.stringify(db.blogs), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0',
-      },
-    });
+    return NextResponse.json(db.blogs);
   } catch (error: any) {
-    return new NextResponse(JSON.stringify({ success: false, error: error.message }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0',
-      },
-    });
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
 

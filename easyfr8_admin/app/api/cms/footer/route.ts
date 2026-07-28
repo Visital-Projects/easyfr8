@@ -9,8 +9,6 @@ const FOOTER_ABOUT_DEFAULT =
  * Returns footer-specific data: contact info + services list.
  * This is independent of the About Us page CMS section.
  */
-export const dynamic = 'force-dynamic';
-
 export async function GET() {
   try {
     const db = await readDb();
@@ -26,25 +24,9 @@ export async function GET() {
       footerCms.contact.footerAbout = FOOTER_ABOUT_DEFAULT;
     }
 
-    return new NextResponse(JSON.stringify({ success: true, ...footerCms }), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0',
-      },
-    });
+    return NextResponse.json({ success: true, ...footerCms });
   } catch (error: any) {
-    return new NextResponse(JSON.stringify({ success: false, error: error.message }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0',
-      },
-    });
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
 

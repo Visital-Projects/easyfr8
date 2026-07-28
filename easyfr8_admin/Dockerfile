@@ -1,30 +1,34 @@
-FROM node:20-alpine AS builder
+FROM node:20-alpine AS base
+
+# 1. Install dependencies
+FROM base AS deps
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
+
+# 2. Build application
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-# Remove production env files from the image context to prevent Next.js from using them at build time
-RUN rm -f .env.production .env.local
-
-ENV NEXT_PUBLIC_API_BASE_URL=http://localhost:3001/api
-ENV NEXT_PUBLIC_BASE_URL=http://localhost:3001
-ENV NEXT_PUBLIC_SITE_URL=http://localhost:3001
-ENV API_URL=http://localhost:3001
-
-ENV NEXT_TELEMETRY_DISABLED=1
-ENV NODE_ENV=production
+ARG NEXT_PUBLIC_API_BASE_URL
+ENV NEXT_PUBLIC_API_BASE_URL=$NEXT_PUBLIC_API_BASE_URL
+ARG NEXT_PUBLIC_BASE_URL
+ENV NEXT_PUBLIC_BASE_URL=$NEXT_PUBLIC_BASE_URL
+ENV NEXT_TELEMETRY_DISABLED 1
 RUN npm run build
 
-FROM node:20-alpine AS runner
+# 3. Production runner
+FROM base AS runner
 WORKDIR /app
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/.next ./.next
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/lib ./lib
-COPY --from=builder /app/tsconfig.json ./tsconfig.json
+
+ENV NODE_ENV production
+ENV NEXT_TELEMETRY_DISABLED 1
+ENV PORT 3001
+ENV HOSTNAME "0.0.0.0"
+
+COPY --from=builder /app ./
 
 EXPOSE 3001
-CMD ["sh", "-c", "npm run db:init-safe && npm run start"]
+
+CMD ["npm", "run", "start"]

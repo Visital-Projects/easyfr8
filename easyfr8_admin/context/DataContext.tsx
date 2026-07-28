@@ -342,13 +342,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const deleteRate = (id: string) => {
-    const updated = rates.filter((r) => r.id !== id);
-    setRates(updated);
-    RateService.delete(id).catch(e => {
+  const deleteRate = async (id: string) => {
+    try {
+      await RateService.delete(id);
+      const updated = rates.filter((r) => r.id !== id);
+      setRates(updated);
+      showToast('Rate deleted successfully', 'warning');
+    } catch (e: any) {
       console.error(e);
-      showToast('Failed to delete rate', 'danger');
-    });
+      showToast(e.message || 'Failed to delete rate', 'danger');
+    }
   };
 
   const bulkUpdateRates = (newRates: FreightRate[]) => {
@@ -378,13 +381,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const deleteUser = (id: string) => {
-    const updated = users.filter((u) => u.id !== id);
-    setUsers(updated);
-    UserService.delete(id).catch(e => {
+  const deleteUser = async (id: string) => {
+    try {
+      await UserService.delete(id);
+      const updated = users.filter((u) => u.id !== id);
+      setUsers(updated);
+      showToast('User deleted successfully', 'warning');
+    } catch (e: any) {
       console.error(e);
-      showToast('Failed to delete user', 'danger');
-    });
+      showToast(e.message || 'Failed to delete user', 'danger');
+    }
   };
 
 
@@ -408,13 +414,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const deleteBlog = (id: string) => {
-    const updated = blogs.filter((b) => b.id !== id);
-    setBlogs(updated);
-    BlogService.delete(id).catch(e => {
+  const deleteBlog = async (id: string) => {
+    try {
+      await BlogService.delete(id);
+      const updated = blogs.filter((b) => b.id !== id);
+      setBlogs(updated);
+      showToast('Blog post deleted.', 'warning');
+    } catch (e: any) {
       console.error(e);
-      showToast('Failed to delete blog article', 'danger');
-    });
+      showToast(e.message || 'Failed to delete blog article', 'danger');
+    }
   };
 
   // ── Audit Logs ────────────────────────────────────────────────────────────────

@@ -169,6 +169,196 @@ async function main() {
   }
   console.log(`✔ Users migrated: ${users.length} rows`);
 
+  // ── 13. Migrate dynamic freight tables ────────────────────────────────────
+  console.log('Running dynamic freight tables migration...');
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS freight_types (
+      id VARCHAR(64) NOT NULL PRIMARY KEY,
+      name VARCHAR(128) NOT NULL,
+      status ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
+      sort_order INT NOT NULL DEFAULT 0,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS shipment_types (
+      id VARCHAR(64) NOT NULL PRIMARY KEY,
+      freight_type_id VARCHAR(64) NOT NULL,
+      name VARCHAR(128) NOT NULL,
+      description TEXT,
+      status ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS locations (
+      id VARCHAR(64) NOT NULL PRIMARY KEY,
+      port_code VARCHAR(32) NOT NULL UNIQUE,
+      name VARCHAR(255) NOT NULL,
+      country VARCHAR(128) NOT NULL,
+      status ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS ports (
+      id VARCHAR(64) NOT NULL PRIMARY KEY,
+      port_code VARCHAR(32) NOT NULL,
+      port_name VARCHAR(255) NOT NULL,
+      country VARCHAR(128) NOT NULL,
+      locode VARCHAR(32),
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS containers (
+      id VARCHAR(64) NOT NULL PRIMARY KEY,
+      name VARCHAR(128) NOT NULL,
+      description TEXT,
+      status ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS freight_rates (
+      id VARCHAR(64) NOT NULL PRIMARY KEY,
+      freight_mode_id VARCHAR(64) NOT NULL,
+      shipment_type_id VARCHAR(64) NOT NULL,
+      origin_id VARCHAR(64) NOT NULL,
+      destination_id VARCHAR(64) NOT NULL,
+      container_id VARCHAR(64),
+      price DECIMAL(12,2) NOT NULL DEFAULT 0,
+      currency VARCHAR(10) NOT NULL DEFAULT 'USD',
+      transit_time INT NOT NULL DEFAULT 0,
+      carrier VARCHAR(255) NOT NULL,
+      status ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+  `);
+
+  // Seed default dynamic tables
+  const dynamicModes = [
+    { id: 'mode-ocean', name: 'Ocean Freight', status: 'active', sort_order: 1 },
+    { id: 'mode-air', name: 'Air Freight', status: 'active', sort_order: 2 },
+  ];
+  for (const m of dynamicModes) {
+    await pool.query(
+      'INSERT INTO freight_types (id, name, status, sort_order) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE name=VALUES(name), status=VALUES(status), sort_order=VALUES(sort_order)',
+      [m.id, m.name, m.status, m.sort_order]
+    );
+  }
+
+  const dynamicShipmentTypes = [
+    { id: 'shipment-fcl', freight_type_id: 'mode-ocean', name: 'FCL (Full Container Load)', description: 'Full container shipping for large volume cargo.', status: 'active' },
+    { id: 'shipment-lcl', freight_type_id: 'mode-ocean', name: 'LCL (Less than Container Load)', description: 'Shared container space for smaller shipments.', status: 'active' },
+    { id: 'shipment-air-std', freight_type_id: 'mode-air', name: 'Air Freight Standard', description: 'Standard air cargo transport.', status: 'active' },
+  ];
+  for (const st of dynamicShipmentTypes) {
+    await pool.query(
+      'INSERT INTO shipment_types (id, freight_type_id, name, description, status) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE freight_type_id=VALUES(freight_type_id), name=VALUES(name), description=VALUES(description), status=VALUES(status)',
+      [st.id, st.freight_type_id, st.name, st.description, st.status]
+    );
+  }
+
+  const dynamicLocations = [
+    { id: 'loc-sgpin', port_code: 'SGPIN', name: 'Singapore Port', country: 'Singapore', status: 'active' },
+    { id: 'loc-clach', port_code: 'CLACH', name: 'Achao Port', country: 'Chile', status: 'active' },
+    { id: 'loc-innsv', port_code: 'INNSV', name: 'Nhava Sheva', country: 'India', status: 'active' },
+    { id: 'loc-nlrtm', port_code: 'NLRTM', name: 'Rotterdam Port', country: 'Netherlands', status: 'active' },
+    { id: 'loc-cnsha', port_code: 'CNSHA', name: 'Shanghai Port', country: 'China', status: 'active' },
+    { id: 'loc-uslax', port_code: 'USLAX', name: 'Los Angeles Port', country: 'United States', status: 'active' },
+    { id: 'loc-inbom', port_code: 'INBOM', name: 'Mumbai Port', country: 'India', status: 'active' },
+  ];
+  for (const l of dynamicLocations) {
+    await pool.query(
+      'INSERT INTO locations (id, port_code, name, country, status) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE port_code=VALUES(port_code), name=VALUES(name), country=VALUES(country), status=VALUES(status)',
+      [l.id, l.port_code, l.name, l.country, l.status]
+    );
+    await pool.query(
+      'INSERT INTO ports (id, port_code, port_name, country, locode) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE port_code=VALUES(port_code), port_name=VALUES(port_name), country=VALUES(country), locode=VALUES(locode)',
+      [l.id, l.port_code, l.name, l.country, l.port_code]
+    );
+  }
+
+  const dynamicContainers = [
+    { id: 'container-20gp', name: '20ft Standard Dry (20GP)', description: 'Standard 20-foot dry container.', status: 'active' },
+    { id: 'container-40gp', name: '40ft Standard Dry (40GP)', description: 'Standard 40-foot dry container.', status: 'active' },
+    { id: 'container-40hc', name: '40ft High Cube (40HC)', description: 'High cube 40-foot container for voluminous cargo.', status: 'active' },
+    { id: 'container-40oth', name: '40ft Open Top High (40OTH)', description: '40ft open top high container for oversized cargo.', status: 'active' },
+  ];
+  for (const c of dynamicContainers) {
+    await pool.query(
+      'INSERT INTO containers (id, name, description, status) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE name=VALUES(name), description=VALUES(description), status=VALUES(status)',
+      [c.id, c.name, c.description, c.status]
+    );
+  }
+
+  const dynamicRates = [
+    {
+      id: 'frate-sgpin-clach-40oth',
+      freight_mode_id: 'mode-ocean',
+      shipment_type_id: 'shipment-fcl',
+      origin_id: 'loc-sgpin',
+      destination_id: 'loc-clach',
+      container_id: 'container-40oth',
+      price: 3500.00,
+      currency: 'USD',
+      transit_time: 30,
+      carrier: 'Maersk Line',
+      status: 'active'
+    },
+    {
+      id: 'frate-cnsha-uslax-40gp',
+      freight_mode_id: 'mode-ocean',
+      shipment_type_id: 'shipment-fcl',
+      origin_id: 'loc-cnsha',
+      destination_id: 'loc-uslax',
+      container_id: 'container-40gp',
+      price: 3800.00,
+      currency: 'USD',
+      transit_time: 16,
+      carrier: 'MSC',
+      status: 'active'
+    },
+    {
+      id: 'frate-sgpin-inbom-20gp',
+      freight_mode_id: 'mode-ocean',
+      shipment_type_id: 'shipment-fcl',
+      origin_id: 'loc-sgpin',
+      destination_id: 'loc-inbom',
+      container_id: 'container-20gp',
+      price: 1200.00,
+      currency: 'USD',
+      transit_time: 8,
+      carrier: 'CMA CGM',
+      status: 'active'
+    }
+  ];
+  for (const r of dynamicRates) {
+    await pool.query(
+      `INSERT INTO freight_rates (id, freight_mode_id, shipment_type_id, origin_id, destination_id, container_id, price, currency, transit_time, carrier, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE
+         freight_mode_id=VALUES(freight_mode_id), shipment_type_id=VALUES(shipment_type_id),
+         origin_id=VALUES(origin_id), destination_id=VALUES(destination_id),
+         container_id=VALUES(container_id), price=VALUES(price), currency=VALUES(currency),
+         transit_time=VALUES(transit_time), carrier=VALUES(carrier), status=VALUES(status)`,
+      [r.id, r.freight_mode_id, r.shipment_type_id, r.origin_id, r.destination_id, r.container_id, r.price, r.currency, r.transit_time, r.carrier, r.status]
+    );
+  }
+  console.log('✔ Dynamic freight tables and rates migrated successfully.');
+
   // ── Done ──────────────────────────────────────────────────────────────────
   await pool.end();
   console.log('\n✅ Migration complete! All data is now in MySQL.\n');

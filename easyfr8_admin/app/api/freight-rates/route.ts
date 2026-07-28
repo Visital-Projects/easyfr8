@@ -48,11 +48,11 @@ export async function GET(req: Request) {
         loc_d.country AS destination_country,
         c.name AS container_name
       FROM freight_rates fr
-      JOIN freight_types fm ON fr.freight_mode_id = fm.id
-      JOIN shipment_types st ON fr.shipment_type_id = st.id
-      JOIN ports loc_o ON fr.origin_id = loc_o.id
-      JOIN ports loc_d ON fr.destination_id = loc_d.id
-      LEFT JOIN containers c ON fr.container_id = c.id
+      LEFT JOIN freight_types fm ON (fr.freight_mode_id = fm.id OR fr.freight_mode_id = fm.name)
+      LEFT JOIN shipment_types st ON (fr.shipment_type_id = st.id OR fr.shipment_type_id = st.name)
+      LEFT JOIN ports loc_o ON (fr.origin_id = loc_o.id OR fr.origin_id = loc_o.port_code OR fr.origin_id = loc_o.port_name)
+      LEFT JOIN ports loc_d ON (fr.destination_id = loc_d.id OR fr.destination_id = loc_d.port_code OR fr.destination_id = loc_d.port_name)
+      LEFT JOIN containers c ON (fr.container_id = c.id OR fr.container_id = c.name)
       WHERE 1=1
     `;
     const params = [];
@@ -90,6 +90,11 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { id, freight_mode_id, shipment_type_id, origin_id, destination_id, container_id, price, currency, transit_time, carrier, status } = body;
+    
+    if (!container_id || !container_id.trim()) {
+      return NextResponse.json({ success: false, error: 'Container is required.' }, { status: 400 });
+    }
+
     const pool = getPool();
     const rateId = id || `frate-${Math.floor(100 + Math.random() * 900)}`;
     
@@ -102,7 +107,7 @@ export async function POST(req: Request) {
         shipment_type_id,
         origin_id,
         destination_id,
-        container_id || null,
+        container_id,
         price || 0,
         currency || 'USD',
         transit_time || 0,

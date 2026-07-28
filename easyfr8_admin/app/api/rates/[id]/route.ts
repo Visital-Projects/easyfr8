@@ -32,6 +32,9 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await req.json();
+    if (body.container !== undefined && (!body.container || !body.container.trim())) {
+      return NextResponse.json({ success: false, error: 'Container is required.' }, { status: 400 });
+    }
     const db = await readDb();
     
     const idx = db.rates.findIndex(r => r.id === id);

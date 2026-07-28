@@ -39,12 +39,13 @@ export default function Rates() {
     const fetchAllData = async () => {
       try {
         setLoading(true)
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
         const [resRates, resModes, resShipmentTypes, resLocations, resContainers] = await Promise.all([
-          fetch(`/api/freight-rates?mode_id=${mode_id}&shipment_type_id=${shipment_type_id}&origin_id=${origin_id}&destination_id=${destination_id}&container_id=${container_id || ''}`),
-          fetch('/api/freight/modes'),
-          fetch('/api/shipment-types'),
-          fetch('/api/locations'),
-          fetch('/api/containers')
+          fetch(`${API_URL}/freight-rates?mode_id=${mode_id}&shipment_type_id=${shipment_type_id}&origin_id=${origin_id}&destination_id=${destination_id}&container_id=${container_id || ''}`),
+          fetch(`${API_URL}/freight/modes`),
+          fetch(`${API_URL}/shipment-types`),
+          fetch(`${API_URL}/locations`),
+          fetch(`${API_URL}/containers`)
         ])
 
         const [dataRates, dataModes, dataShipmentTypes, dataLocations, dataContainers] = await Promise.all([

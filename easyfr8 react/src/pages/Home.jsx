@@ -51,10 +51,10 @@ export default function Home() {
 
   // Fetch modes and containers list
   // Use VITE_API_URL for absolute URL so production build works correctly
-  const API_BASE = (import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '').replace(/\/api$/, '')
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
 
   useEffect(() => {
-    fetch(`${API_BASE}/api/freight-types`)
+    fetch(`${API_URL}/freight-types`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {
@@ -70,7 +70,7 @@ export default function Home() {
         // API unavailable — keep DEFAULT_MODES already set as initial state
       })
 
-    fetch(`${API_BASE}/api/containers`)
+    fetch(`${API_URL}/containers`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data)) {
@@ -83,7 +83,7 @@ export default function Home() {
   // Fetch shipment types when selected mode changes
   useEffect(() => {
     if (!selectedModeId) return
-    fetch(`${API_BASE}/api/shipment-types?freight_type_id=${selectedModeId}`)
+    fetch(`${API_URL}/shipment-types?freight_type_id=${selectedModeId}`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {
@@ -201,7 +201,7 @@ export default function Home() {
     const modeType = selectedMode?.name.toLowerCase().includes('air') ? 'Air' : 'Ocean'
     
     try {
-      const res = await fetch(`${API_BASE}/api/ports?search=${encodeURIComponent(term)}&freight_type=${modeType}`)
+      const res = await fetch(`${API_URL}/ports?search=${encodeURIComponent(term)}&freight_type=${modeType}`)
       const data = await res.json()
       if (data.success && Array.isArray(data.ports)) {
         setLocationResults(prev => ({ ...prev, [field]: data.ports }))
@@ -468,6 +468,9 @@ export default function Home() {
           align-items: center;
           justify-content: center;
           box-sizing: border-box;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
         .booking-shipment-btn.active {
           background: #fdecea !important;
@@ -667,13 +670,14 @@ export default function Home() {
             <div className="booking-shipment-tabs">
               {(shipmentTypes.length > 0 ? shipmentTypes : DEFAULT_SHIPMENT_TYPES).map(type => {
                 const active = selectedShipmentTypeId === type.id
+                const shortCode = type.code || type.shortName || type.short_name || (type.name ? (type.name.toUpperCase().includes('FCL') ? 'FCL' : type.name.toUpperCase().includes('LCL') ? 'LCL' : type.name.match(/^[A-Za-z0-9]+/)?.[0].toUpperCase()) : '') || type.name
                 return (
                   <button
                     key={type.id}
                     onClick={() => setSelectedShipmentTypeId(type.id)}
                     className={`booking-shipment-btn ${active ? 'active' : 'inactive'}`}
                   >
-                    {type.name}
+                    {shortCode}
                   </button>
                 )
               })}

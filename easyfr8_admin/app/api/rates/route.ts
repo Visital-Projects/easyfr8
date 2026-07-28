@@ -26,36 +26,21 @@ function getOperator(req: Request): string {
   return 'Admin';
 }
 
-export const dynamic = 'force-dynamic';
-
 export async function GET() {
   try {
     const db = await readDb();
-    return new NextResponse(JSON.stringify(db.rates), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0',
-      },
-    });
+    return NextResponse.json(db.rates);
   } catch (error: any) {
-    return new NextResponse(JSON.stringify({ success: false, error: error.message }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
-        'Pragma': 'no-cache',
-        'Expires': '0',
-      },
-    });
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
 
 export async function POST(req: Request) {
   try {
     const rate: FreightRate = await req.json();
+    if (!rate.container || !rate.container.trim()) {
+      return NextResponse.json({ success: false, error: 'Container is required.' }, { status: 400 });
+    }
     const db = await readDb();
     
     // Add default ID if not present
