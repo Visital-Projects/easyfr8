@@ -12,18 +12,50 @@ export default function BlogSingle() {
     window.scrollTo(0, 0);
     
     async function fetchBlog() {
+      if (!slugOrId) {
+        setError('Blog not found');
+        setLoading(false);
+        return;
+      }
+
+      const cleanParam = decodeURIComponent(slugOrId).trim().replace(/\/+$/, '');
+      const lowerParam = cleanParam.toLowerCase();
+
       try {
         setLoading(true);
-        const data = await api.get('/blogs');
-        const found = data.find(b => b.slug === slugOrId || b.id === slugOrId);
+
+        // Strategy 1: Fast direct lookup via single blog API (works for both ID and slug)
+        try {
+          const res = await api.get(`/blogs/${encodeURIComponent(cleanParam)}?t=${Date.now()}`);
+          const resolvedBlog = res?.blog || (res?.id ? res : null);
+          if (resolvedBlog) {
+            setBlog(resolvedBlog);
+            setError(null);
+            setLoading(false);
+            return;
+          }
+        } catch (apiErr) {
+          // If single endpoint threw an error or 404, fall through to Strategy 2
+        }
+
+        // Strategy 2: Fallback to querying all published blogs from database
+        const data = await api.get(`/blogs?t=${Date.now()}`);
+        const list = Array.isArray(data) ? data : (data?.blogs || []);
+        const found = list.find(b => {
+          if (!b) return false;
+          const bId = String(b.id || '').trim().toLowerCase();
+          const bSlug = String(b.slug || '').trim().toLowerCase();
+          return bId === lowerParam || bSlug === lowerParam;
+        });
+
         if (found) {
           setBlog(found);
           setError(null);
         } else {
-          setError('Blog post not found');
+          setError('Blog not found');
         }
       } catch (err) {
-        setError('Failed to fetch blog post: ' + err.message);
+        setError(err.message === 'Blog not found' ? 'Blog not found' : `Failed to fetch blog post: ${err.message}`);
       } finally {
         setLoading(false);
       }
@@ -50,7 +82,7 @@ export default function BlogSingle() {
   if (error || !blog) {
     return (
       <div className="container" style={{ padding: '150px 20px', textAlign: 'center' }}>
-        <h3>{error || 'Blog post not found'}</h3>
+        <h3>{error || 'Blog not found'}</h3>
         <Link to="/" className="fh-btn btn" style={{ marginTop: '20px', display: 'inline-block' }}>Back to Home</Link>
       </div>
     );

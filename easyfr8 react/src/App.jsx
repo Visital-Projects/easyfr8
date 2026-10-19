@@ -1,6 +1,15 @@
 import { useState, useEffect } from 'react'
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { CmsProvider, useCms } from './context/CmsContext'
+import { UserAuthProvider } from './pages/user/UserAuthContext'
+import ProtectedRoute from './pages/user/ProtectedRoute'
+import UserPortalLayout from './pages/user/UserPortalLayout'
+import UserLogin from './pages/user/UserLogin'
+import UserDashboard from './pages/user/UserDashboard'
+import UserBookings from './pages/user/UserBookings'
+import UserDocuments from './pages/user/UserDocuments'
+import UserEnquiries from './pages/user/UserEnquiries'
+import UserProfile from './pages/user/UserProfile'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import Home from './pages/Home'
@@ -8,9 +17,11 @@ import About from './pages/About'
 import Contact from './pages/Contact'
 import Tools from './pages/Tools'
 import ServiceDetail from './pages/services/ServiceDetail'
+import ServiceCategory from './pages/services/ServiceCategory'
 import VolumetricWeightCalculator from './pages/tools/VolumetricWeightCalculator'
 import Incoterms from './pages/tools/Incoterms'
 import BlogSingle from './pages/BlogSingle'
+import Blogs from './pages/Blogs'
 import Booking from './pages/Booking'
 import Rates from './pages/Rates'
 
@@ -61,14 +72,19 @@ function Preloader() {
   )
 }
 
-function AppLayout({ children }) {
+/**
+ * PublicLayout — Shared layout strictly for the public marketing website
+ * Contains the public contact bar, main navbar, and public website footer.
+ */
+function PublicLayout() {
   return (
     <div id="page" className="header-transparent header-sticky">
       <div id="page-top"></div>
-      {/* React-controlled preloader — replaces jQuery window.on('load') */}
       <Preloader />
       <Navbar />
-      <main>{children}</main>
+      <main>
+        <Outlet />
+      </main>
       <Footer />
     </div>
   )
@@ -77,38 +93,73 @@ function AppLayout({ children }) {
 export default function App() {
   return (
     <CmsProvider>
-      <BrowserRouter>
-        <AppLayout>
+      <UserAuthProvider>
+        <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/tools" element={<Tools />} />
-            <Route path="/blog/:slugOrId" element={<BlogSingle />} />
-            <Route path="/booking" element={<Booking />} />
-            <Route path="/rates" element={<Rates />} />
+            {/* ── Standalone User Portal Auth (Zero Public Navbar / Footer) ── */}
+            <Route path="/user/login" element={<UserLogin />} />
+            <Route path="/user/register" element={<UserLogin />} />
+            <Route path="/user/forgot-password" element={<UserLogin />} />
+            <Route path="/user/reset-password" element={<UserLogin />} />
 
-            {/* Dynamic Services Routing */}
-            <Route path="/services/:slug" element={<ServiceDetail />} />
+            {/* ── Dedicated User Portal Workspace (Protected, Portal Layout Only) ── */}
+            <Route
+              path="/user"
+              element={
+                <ProtectedRoute>
+                  <UserPortalLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<Navigate to="/user/dashboard" replace />} />
+              <Route path="dashboard" element={<UserDashboard />} />
+              <Route path="bookings" element={<UserBookings />} />
+              <Route path="documents" element={<UserDocuments />} />
+              <Route path="enquiries" element={<UserEnquiries />} />
+              <Route path="profile" element={<UserProfile />} />
+            </Route>
 
-            {/* Legacy Backward Compatibility Service Routes */}
-            <Route path="/ocean-freight-forwarding" element={<ServiceDetail />} />
-            <Route path="/air-freight-forwarding" element={<ServiceDetail />} />
-            <Route path="/road-freight-forwarding" element={<ServiceDetail />} />
-            <Route path="/warehousing" element={<ServiceDetail />} />
-            <Route path="/door-to-door-delivery" element={<ServiceDetail />} />
-            <Route path="/packaging-storage" element={<ServiceDetail />} />
-            <Route path="/contract-handling" element={<ServiceDetail />} />
-            <Route path="/cargo-insurance" element={<ServiceDetail />} />
-            
-            <Route path="/tools/volumetric-weight-calculator" element={<VolumetricWeightCalculator />} />
-            <Route path="/tools/incoterms" element={<Incoterms />} />
-            {/* Fallback */}
-            <Route path="*" element={<Home />} />
+            {/* ── Public Website Routes (Shared Public Layout with Navbar & Footer) ── */}
+            <Route element={<PublicLayout />}>
+              <Route path="/" element={<Home />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/tools" element={<Tools />} />
+              <Route path="/blogs" element={<Blogs />} />
+              <Route path="/blogs/:slugOrId" element={<BlogSingle />} />
+              <Route path="/blog/:slugOrId" element={<BlogSingle />} />
+              <Route path="/booking" element={<Booking />} />
+              <Route path="/rates" element={<Rates />} />
+
+              {/* Services Page and Category Services Routing */}
+              <Route path="/services" element={<ServiceCategory />} />
+              <Route path="/services/core-services" element={<ServiceCategory category="core" />} />
+              <Route path="/services/core_services" element={<ServiceCategory category="core" />} />
+              <Route path="/services/value-added-services" element={<ServiceCategory category="value-added" />} />
+              <Route path="/services/value_added_services" element={<ServiceCategory category="value-added" />} />
+
+              {/* Dynamic Services Routing */}
+              <Route path="/services/:slug" element={<ServiceDetail />} />
+
+              {/* Legacy Backward Compatibility Service Routes */}
+              <Route path="/ocean-freight-forwarding" element={<ServiceDetail />} />
+              <Route path="/air-freight-forwarding" element={<ServiceDetail />} />
+              <Route path="/road-freight-forwarding" element={<ServiceDetail />} />
+              <Route path="/warehousing" element={<ServiceDetail />} />
+              <Route path="/door-to-door-delivery" element={<ServiceDetail />} />
+              <Route path="/packaging-storage" element={<ServiceDetail />} />
+              <Route path="/contract-handling" element={<ServiceDetail />} />
+              <Route path="/cargo-insurance" element={<ServiceDetail />} />
+              
+              <Route path="/tools/volumetric-weight-calculator" element={<VolumetricWeightCalculator />} />
+              <Route path="/tools/incoterms" element={<Incoterms />} />
+
+              {/* Fallback */}
+              <Route path="*" element={<Home />} />
+            </Route>
           </Routes>
-        </AppLayout>
-      </BrowserRouter>
+        </BrowserRouter>
+      </UserAuthProvider>
     </CmsProvider>
   )
 }
-

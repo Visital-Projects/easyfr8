@@ -35,32 +35,52 @@ export default function Rates() {
   const [submitted, setSubmitted] = useState(false)
   const [submitError, setSubmitError] = useState(null)
 
+  // Prefill contact if user is authenticated
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('easyfr8_user')
+      if (stored) {
+        const u = JSON.parse(stored)
+        if (u.name) setName(u.name)
+        if (u.email) setEmail(u.email)
+        if (u.phone) setPhone(u.phone)
+      }
+    } catch (e) {}
+  }, [])
+
   useEffect(() => {
     const fetchAllData = async () => {
       try {
         setLoading(true)
         const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
-        const [resRates, resModes, resShipmentTypes, resLocations, resContainers] = await Promise.all([
-          fetch(`${API_URL}/freight-rates?mode_id=${mode_id}&shipment_type_id=${shipment_type_id}&origin_id=${origin_id}&destination_id=${destination_id}&container_id=${container_id || ''}`),
-          fetch(`${API_URL}/freight/modes`),
+        const [resRates, resModes, resShipmentTypes, resPorts, resContainers] = await Promise.all([
+          fetch(`${API_URL}/freight-rates?mode_id=${mode_id}&shipment_type_id=${shipment_type_id}&origin_id=${origin_id}&destination_id=${destination_id}&container_id=${container_id || ''}&status=active`),
+          fetch(`${API_URL}/freight-types`),
           fetch(`${API_URL}/shipment-types`),
-          fetch(`${API_URL}/locations`),
-          fetch(`${API_URL}/containers`)
+          fetch(`${API_URL}/ports?search=${encodeURIComponent(origin_id || '')}&limit=20`),
+          fetch(`${API_URL}/containers?status=active`)
         ])
 
-        const [dataRates, dataModes, dataShipmentTypes, dataLocations, dataContainers] = await Promise.all([
+        const [dataRates, dataModes, dataShipmentTypes, dataPorts, dataContainers] = await Promise.all([
           resRates.json(),
           resModes.json(),
           resShipmentTypes.json(),
-          resLocations.json(),
+          resPorts.json(),
           resContainers.json()
         ])
 
         if (Array.isArray(dataRates)) setMatchedRates(dataRates)
         if (Array.isArray(dataModes)) setModes(dataModes)
         if (Array.isArray(dataShipmentTypes)) setShipmentTypes(dataShipmentTypes)
-        if (Array.isArray(dataLocations)) setLocations(dataLocations)
-        if (Array.isArray(dataContainers)) setContainers(dataContainers)
+        if (dataPorts?.success && Array.isArray(dataPorts.ports)) {
+          setLocations(dataPorts.ports.map(p => ({
+            id: p.id,
+            port_code: p.port_code,
+            name: p.port_name,
+            country: p.country
+          })))
+        }
+        if (Array.isArray(dataContainers)) setContainers(dataContainers.filter(c => c.status === 'active'))
       } catch (err) {
         console.error(err)
         setError('Failed to fetch search results from server.')
@@ -78,16 +98,41 @@ export default function Rates() {
   }, [mode_id, shipment_type_id, origin_id, destination_id, container_id])
 
   // Resolve metadata labels
-  const modeName = modes.find(m => m.id === mode_id)?.name || 'Freight Mode'
-  const shipmentName = shipmentTypes.find(t => t.id === shipment_type_id)?.name || 'Shipment'
+  const modeName = modes.find(m => m.id === mode_id)?.name || matchedRates[0]?.mode_name || 'Freight Mode'
+  const shipmentName = shipmentTypes.find(t => t.id === shipment_type_id)?.name || matchedRates[0]?.shipment_name || 'Shipment'
   
-  const originLoc = locations.find(l => l.id === origin_id)
-  const originLabel = originLoc ? `${originLoc.name} (${originLoc.port_code}) - ${originLoc.country}` : 'Origin'
+  const firstRate = matchedRates[0]
+  const originLoc = locations.find(l => l.id === origin_id || l.port_code === origin_id)
+  const originLabel = firstRate?.origin_name 
+    ? `${firstRate.origin_name} (${firstRate.origin_code}) - ${firstRate.origin_country || ''}`
+    : (originLoc ? `${originLoc.name} (${originLoc.port_code}) - ${originLoc.country}` : origin_id)
   
-  const destLoc = locations.find(l => l.id === destination_id)
-  const destLabel = destLoc ? `${destLoc.name} (${destLoc.port_code}) - ${destLoc.country}` : 'Destination'
+  const destLoc = locations.find(l => l.id === destination_id || l.port_code === destination_id)
+  const destLabel = firstRate?.destination_name 
+    ? `${firstRate.destination_name} (${firstRate.destination_code}) - ${firstRate.destination_country || ''}`
+    : (destLoc ? `${destLoc.name} (${destLoc.port_code}) - ${destLoc.country}` : destination_id)
   
-  const containerName = containers.find(c => c.id === container_id)?.name || 'Container'
+  const containerName = containers.find(c => c.id === container_id)?.name || firstRate?.container_name || 'Container'
+
+  const handleBookRate = (rate) => {
+    const fromPortCode = rate.origin_code || originLoc?.port_code || origin_id
+    const toPortCode = rate.destination_code || destLoc?.port_code || destination_id
+    const contName = rate.container_name || containerName
+    const freightType = rate.mode_name || modeName
+    const params = new URLSearchParams({
+      rate_id: rate.id,
+      rateId: rate.id,
+      fromPort: fromPortCode,
+      toPort: toPortCode,
+      containerType: contName,
+      freight_type: freightType
+    })
+    const transVal = rate.transhipment_code || rate.transhipment_name || rate.transhipment_id
+    if (transVal) {
+      params.set('transhipment', transVal)
+    }
+    navigate(`/booking?${params.toString()}`)
+  }
 
   const handleEnquirySubmit = async (e) => {
     e.preventDefault()
@@ -125,6 +170,12 @@ ${notes}
         phone,
         subject,
         notes: messageDetails,
+        origin: originLoc?.name || originLabel,
+        destination: destLoc?.name || destLabel,
+        freight_type: modeName,
+        shipment_type: shipmentName,
+        container_type: container_id ? containerName : undefined,
+        weight: weight ? `${weight} ${weightUnit}` : undefined,
         source: 'Freight Search Form'
       })
       if (success) {
@@ -219,35 +270,101 @@ ${notes}
                 ) : matchedRates.length > 0 ? (
                   matchedRates.map((rate, idx) => (
                     <div key={rate.id || idx} style={{ background: '#fcfcfc', border: '1px solid #e6e6e6', borderRadius: '4px', padding: '20px', marginBottom: '15px', position: 'relative' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '15px' }}>
                         <div>
                           <div style={{ fontSize: '12px', background: '#e8d4d4', color: '#d64238', padding: '3px 8px', borderRadius: '3px', display: 'inline-block', fontWeight: 600, textTransform: 'uppercase', marginBottom: '10px' }}>
                             Carrier: {rate.carrier}
                           </div>
                           <h4 style={{ margin: '0 0 5px 0', fontSize: '16px', fontWeight: 700, color: '#333' }}>
-                            {rate.origin_name} → {rate.destination_name}
+                            {rate.origin_name || rate.origin_code} ({rate.origin_code || origin_id})
+                            {rate.transhipment_code ? (
+                              <span style={{ color: '#d64238' }}> → Via {rate.transhipment_name || rate.transhipment_code} ({rate.transhipment_code}) → </span>
+                            ) : ' → '}
+                            {rate.destination_name || rate.destination_code} ({rate.destination_code || destination_id})
                           </h4>
-                          <div style={{ fontSize: '13px', color: '#666' }}>
-                            {rate.container_name ? `Container: ${rate.container_name} · ` : ''}Transit: {rate.transit_time} Days
+                          <div style={{ fontSize: '13px', color: '#666', display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                            {rate.container_name ? <span>Container: {rate.container_name} ·</span> : null}
+                            <span>Transit: {rate.transit_time} Days ·</span>
+                            <span>
+                              <strong style={{ color: '#333' }}>Transshipment Port:</strong>{' '}
+                              {rate.transhipment_code ? (
+                                <span style={{ color: '#0f172a', fontWeight: 600 }}>
+                                  {rate.transhipment_name || rate.transhipment_code} ({rate.transhipment_code})
+                                </span>
+                              ) : (
+                                <span style={{ color: '#999', fontStyle: 'italic' }}>No transshipment</span>
+                              )}
+                            </span>
                           </div>
                           <div style={{ fontSize: '12px', color: '#999', marginTop: '5px' }}>
                             Rate ID: {rate.id}
                           </div>
                         </div>
-                        <div style={{ textAlign: 'right' }}>
-                          <span style={{ fontSize: '28px', fontWeight: 800, color: '#d64238' }}>
-                            ${rate.price}
-                          </span>
-                          <div style={{ fontSize: '11px', color: '#999' }}>USD Freight Charge</div>
+                        <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+                          <div style={{ marginBottom: '12px' }}>
+                            <span style={{ fontSize: '28px', fontWeight: 800, color: '#d64238' }}>
+                              ${rate.price}
+                            </span>
+                            <div style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', fontWeight: 600 }}>
+                              {rate.currency || 'USD'} Freight Charge
+                            </div>
+                            {(Number(rate.local_thc) > 0 || Number(rate.other_charges) > 0) && (
+                              <div style={{
+                                marginTop: '4px',
+                                paddingTop: '4px',
+                                borderTop: '1px dashed #ddd',
+                                fontSize: '11px',
+                                color: '#666',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '2px',
+                                textAlign: 'right'
+                              }}>
+                                <div>Local THC: <strong style={{ color: '#222' }}>${Number(rate.local_thc || 0).toFixed(2)}</strong></div>
+                                <div>Other Charges: <strong style={{ color: '#222' }}>${Number(rate.other_charges || 0).toFixed(2)}</strong></div>
+                              </div>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleBookRate(rate)}
+                            style={{
+                              background: '#d64238',
+                              color: '#ffffff',
+                              border: 'none',
+                              padding: '8px 20px',
+                              fontWeight: 700,
+                              fontSize: '13px',
+                              borderRadius: '4px',
+                              cursor: 'pointer',
+                              whiteSpace: 'nowrap',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              boxShadow: '0 2px 4px rgba(214, 66, 56, 0.25)',
+                              transition: 'background 0.2s ease'
+                            }}
+                            onMouseOver={e => e.currentTarget.style.background = '#c0352c'}
+                            onMouseOut={e => e.currentTarget.style.background = '#d64238'}
+                          >
+                            <span>Booking</span>
+                            <span>→</span>
+                          </button>
                         </div>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <div style={{ background: '#fdf7f7', borderLeft: '4px solid #d64238', padding: '15px', borderRadius: '0 4px 4px 0', color: '#721c24' }}>
-                    <strong>No direct matching rate found in our database.</strong>
-                    <div style={{ fontSize: '13px', marginTop: '5px' }}>
-                      Don't worry! You can submit a custom quotation request using the form on the right, and our freight operations desk will send you a personalized quote within 2 hours.
+                  <div style={{ background: '#fff8f7', border: '1px solid #fed7d7', borderLeft: '4px solid #d64238', padding: '20px', borderRadius: '4px', color: '#721c24' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '22px', height: '22px', borderRadius: '50%', backgroundColor: '#fee2e2', color: '#d64238', fontWeight: 'bold', fontSize: '12px' }}>!</span>
+                      <strong style={{ fontSize: '16px', color: '#1f2937' }}>No freight rates are currently available for your selected route.</strong>
+                    </div>
+                    <p style={{ fontSize: '13px', margin: '0 0 6px 0', color: '#4b5563', lineHeight: '1.5' }}>
+                      We couldn't find direct contract rates for {originLabel} → {destLabel} in our current database.
+                    </p>
+                    <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                      Submit a custom quotation request using the form on the right, and our freight operations desk will verify carrier schedules and send you a personalized quote.
                     </div>
                   </div>
                 )}

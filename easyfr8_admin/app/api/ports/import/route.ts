@@ -2,9 +2,15 @@ import { NextResponse } from 'next/server';
 import { getPool } from '@/lib/db';
 import ExcelJS from 'exceljs';
 import { Readable } from 'stream';
+import { authenticateRequest } from '@/lib/auth';
 
 export async function POST(req: Request) {
   try {
+    const auth = authenticateRequest(req, ['Administrator', 'Manager']);
+    if (!auth.authenticated) {
+      return NextResponse.json({ success: false, error: auth.error }, { status: auth.status });
+    }
+
     const { searchParams } = new URL(req.url);
     const isErrorReport = searchParams.get('error_report') === 'true';
     const isPreview = searchParams.get('preview') === 'true';

@@ -9,6 +9,47 @@ import { exportToCSV, parseCSV } from '../../../lib/csvUtils';
 
 const ROWS_PER_PAGE = 5;
 
+function compressImageBase64(file: File, maxWidth = 500, maxHeight = 500, quality = 0.85): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = (event) => {
+      const img = new Image();
+      img.src = event.target?.result as string;
+      img.onload = () => {
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = Math.round((width * maxHeight) / height);
+            height = maxHeight;
+          }
+        }
+
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(event.target?.result as string);
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        resolve(dataUrl);
+      };
+      img.onerror = () => resolve(event.target?.result as string);
+    };
+    reader.onerror = (error) => reject(error);
+  });
+}
+
 export default function UsersPage() {
   const { users, addUser, updateUser, deleteUser, showToast } = useData();
 
@@ -81,16 +122,22 @@ export default function UsersPage() {
     setModalOpen(true);
   };
 
-  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (evt) => {
-        if (evt.target?.result) {
-          setFormAvatar(evt.target.result as string);
-        }
-      };
-      reader.readAsDataURL(file);
+      try {
+        const compressed = await compressImageBase64(file, 400, 400, 0.85);
+        setFormAvatar(compressed);
+      } catch (err) {
+        console.error('Failed to compress avatar:', err);
+        const reader = new FileReader();
+        reader.onload = (evt) => {
+          if (evt.target?.result) {
+            setFormAvatar(evt.target.result as string);
+          }
+        };
+        reader.readAsDataURL(file);
+      }
     }
   };
 
@@ -148,11 +195,9 @@ export default function UsersPage() {
   const handleDeleteUser = async (id: string) => {
     if (confirm(`Are you sure you want to permanently delete User Account ${id}?`)) {
       try {
-        await UserService.delete(id);
-        deleteUser(id);
-        showToast('User account record cleared.', 'success');
+        await deleteUser(id);
       } catch {
-        showToast('Failed to delete user account.', 'danger');
+        // Error toast is handled inside deleteUser
       }
     }
   };
@@ -403,16 +448,58 @@ export default function UsersPage() {
                   </select>
                 </div>
                 <div className="form-group">
-                  <label className="form-label">Avatar Profile Image</label>
-                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    <div style={{ position: 'relative', border: '1px dashed var(--border-color)', padding: '12px', textAlign: 'center', cursor: 'pointer', borderRadius: '6px', flex: 1 }}>
-                      <span style={{ fontSize: '0.8rem' }}>Click to Upload File</span>
-                      <input type="file" accept="image/*" onChange={handleAvatarUpload} style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }} />
-                    </div>
+                  <label className="form-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span>Avatar Profile Image</span>
                     {formAvatar && (
-                      <img src={formAvatar} alt="" style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--border-color)' }} />
+                      <button
+                        type="button"
+                        onClick={() => setFormAvatar('')}
+                        style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '0.78rem', cursor: 'pointer', fontWeight: 600 }}
+                      >
+                        ✕ Remove Avatar
+                      </button>
+                    )}
+                  </label>
+                  <div style={{ display: 'flex', gap: '14px', alignItems: 'center', marginBottom: '8px' }}>
+                    <label style={{
+                      position: 'relative',
+                      border: '1px dashed var(--border-color)',
+                      padding: '12px 16px',
+                      textAlign: 'center',
+                      cursor: 'pointer',
+                      borderRadius: '6px',
+                      flex: 1,
+                      backgroundColor: 'rgba(255,255,255,0.02)',
+                      display: 'block'
+                    }}>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 500 }}>
+                        {formAvatar ? '🔄 Replace Avatar from Computer' : '📁 Upload Avatar from Computer'}
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleAvatarUpload}
+                        style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer', width: '100%', height: '100%' }}
+                      />
+                    </label>
+                    {formAvatar && (
+                      <div style={{ position: 'relative' }}>
+                        <img
+                          src={formAvatar}
+                          alt="Avatar preview"
+                          style={{ width: '48px', height: '48px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #3b82f6', display: 'block' }}
+                        />
+                      </div>
                     )}
                   </div>
+                  <input
+                    type="text"
+                    className="form-control"
+                    placeholder="Or enter image URL / media path..."
+                    value={formAvatar.startsWith('data:') ? '(Image file uploaded)' : formAvatar}
+                    onChange={(e) => setFormAvatar(e.target.value)}
+                    style={{ fontSize: '0.8rem', color: formAvatar.startsWith('data:') ? 'var(--text-muted)' : 'inherit' }}
+                  />
                 </div>
               </div>
               <div className="modal-footer">

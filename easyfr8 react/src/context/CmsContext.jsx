@@ -147,7 +147,7 @@ export function CmsProvider({ children }) {
           api.get(`/industries?t=${Date.now()}`),
         ]);
         
-        if (cmsData && typeof cmsData === 'object' && cmsData.contact) {
+        if (cmsData && typeof cmsData === 'object' && (cmsData.contact || cmsData.services)) {
           setCms(cmsData);
         }
         if (Array.isArray(blogsData)) {

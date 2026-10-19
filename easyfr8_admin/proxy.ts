@@ -9,6 +9,15 @@ const ALLOWED_ORIGINS = [
 ];
 
 export function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+  if (
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/assets') ||
+    pathname === '/favicon.ico'
+  ) {
+    return NextResponse.next();
+  }
+
   const origin = request.headers.get('origin') || '';
   
   // Validate if origin is in the allowed list

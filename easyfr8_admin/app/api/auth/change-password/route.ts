@@ -1,53 +1,49 @@
 import { NextResponse } from 'next/server';
-import { readDb, execute, query, logAuditEvent } from '@/lib/db';
-
-function verifyToken(token: string): any | null {
-  try {
-    const parts = token.split('.');
-    if (parts.length !== 3) return null;
-    const payload = JSON.parse(atob(parts[1]));
-    if (payload.exp < Date.now()) return null; // Expired
-    return payload;
-  } catch {
-    return null;
-  }
-}
+import { execute, query, logAuditEvent } from '@/lib/db';
+import { authenticateRequest, verifyPassword, hashPassword } from '@/lib/auth';
 
 export async function POST(req: Request) {
   try {
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    const auth = authenticateRequest(req);
+    if (!auth.authenticated || !auth.user) {
+      return NextResponse.json({ success: false, error: auth.error || 'Unauthorized' }, { status: auth.status || 401 });
     }
     
-    const token = authHeader.split(' ')[1];
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return NextResponse.json({ success: false, error: 'Session expired or invalid.' }, { status: 401 });
-    }
+    const decoded = auth.user;
     
-    const { currentPassword, newPassword } = await req.json();
+    const { currentPassword, newPassword, confirmPassword } = await req.json();
     if (!currentPassword || !newPassword) {
       return NextResponse.json({ success: false, error: 'Current password and new password are required.' }, { status: 400 });
     }
+
+    if (confirmPassword !== undefined && newPassword !== confirmPassword) {
+      return NextResponse.json({ success: false, error: 'New password and confirmation do not match.' }, { status: 400 });
+    }
+
+    if (newPassword.length < 6) {
+      return NextResponse.json({ success: false, error: 'Password must be at least 6 characters.' }, { status: 400 });
+    }
     
     // Check credentials inside database
-    const rows = await query('SELECT password, email, name FROM users WHERE id = ?', [decoded.id]);
+    const rows = await query('SELECT id, password, email, name FROM users WHERE id = ?', [decoded.id]);
     if (rows.length === 0) {
       return NextResponse.json({ success: false, error: 'User not found.' }, { status: 404 });
     }
     
-    const dbPassword = rows[0].password;
-    if (currentPassword !== dbPassword) {
+    const user = rows[0];
+    if (!verifyPassword(currentPassword, user.password)) {
       return NextResponse.json({ success: false, error: 'Invalid current password.' }, { status: 401 });
     }
     
-    // Save new password
-    await execute('UPDATE users SET password = ? WHERE id = ?', [newPassword, decoded.id]);
+    // Hash new password using bcrypt
+    const hashedPassword = hashPassword(newPassword);
+    
+    // Save new hashed password into MySQL
+    await execute('UPDATE users SET password = ?, updated_at = NOW() WHERE id = ?', [hashedPassword, user.id]);
     
     await logAuditEvent(
-      rows[0].email,
-      rows[0].name,
+      user.email,
+      user.name,
       'Changed user password'
     );
     
@@ -56,3 +52,4 @@ export async function POST(req: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
+

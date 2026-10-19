@@ -1,33 +1,17 @@
 import { NextResponse } from 'next/server';
-import { readDb, updateById, logAuditEvent } from '@/lib/db';
-
-function verifyToken(token: string): any | null {
-  try {
-    const parts = token.split('.');
-    if (parts.length !== 3) return null;
-    const payload = JSON.parse(atob(parts[1]));
-    if (payload.exp < Date.now()) return null; // Expired
-    return payload;
-  } catch {
-    return null;
-  }
-}
+import { getUsers, updateById, logAuditEvent, execute } from '@/lib/db';
+import { authenticateRequest, generateToken } from '@/lib/auth';
 
 export async function GET(req: Request) {
   try {
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    const auth = authenticateRequest(req);
+    if (!auth.authenticated || !auth.user) {
+      return NextResponse.json({ success: false, error: auth.error || 'Unauthorized' }, { status: auth.status || 401 });
     }
     
-    const token = authHeader.split(' ')[1];
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return NextResponse.json({ success: false, error: 'Session expired or invalid.' }, { status: 401 });
-    }
-    
-    const db = await readDb();
-    const user = db.users.find(u => u.id === decoded.id);
+    const decoded = auth.user;
+    const users = await getUsers();
+    const user = users.find(u => u.id === decoded.id || (decoded.email && u.email?.toLowerCase() === decoded.email?.toLowerCase()));
     if (!user) {
       return NextResponse.json({ success: false, error: 'User not found.' }, { status: 404 });
     }
@@ -46,49 +30,79 @@ export async function GET(req: Request) {
 
 export async function PUT(req: Request) {
   try {
-    const authHeader = req.headers.get('Authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    const auth = authenticateRequest(req);
+    if (!auth.authenticated || !auth.user) {
+      return NextResponse.json({ success: false, error: auth.error || 'Unauthorized' }, { status: auth.status || 401 });
     }
     
-    const token = authHeader.split(' ')[1];
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return NextResponse.json({ success: false, error: 'Session expired or invalid.' }, { status: 401 });
-    }
+    const decoded = auth.user;
     
     const { name, email, avatar, phone } = await req.json();
     if (!name || !email) {
       return NextResponse.json({ success: false, error: 'Name and email are required.' }, { status: 400 });
     }
+
+    const trimmedEmail = String(email).trim();
+    const trimmedName = String(name).trim();
     
-    const db = await readDb();
-    const user = db.users.find(u => u.id === decoded.id);
+    const users = await getUsers();
+    const user = users.find(u => u.id === decoded.id || (decoded.email && u.email?.toLowerCase() === decoded.email?.toLowerCase()));
     if (!user) {
       return NextResponse.json({ success: false, error: 'User not found.' }, { status: 404 });
     }
+
+    // Check for duplicate email across other accounts
+    const emailConflict = users.find(
+      u => u.id !== user.id && u.email?.toLowerCase() === trimmedEmail.toLowerCase()
+    );
+    if (emailConflict) {
+      return NextResponse.json(
+        { success: false, error: 'Email is already in use by another account.' },
+        { status: 409 }
+      );
+    }
+
+    let finalAvatar = avatar !== undefined ? avatar : user.avatar;
+    if (finalAvatar && typeof finalAvatar === 'string' && finalAvatar.startsWith('data:')) {
+      const mediaId = `MED-AVATAR-${user.id}-${Date.now()}`;
+      const now = new Date();
+      await execute(
+        'INSERT INTO media (id, file_name, file_url, file_type, file_size) VALUES (?, ?, ?, ?, ?)',
+        [mediaId, `${trimmedName.replace(/\s+/g, '_')}_avatar.png`, finalAvatar, 'image/png', `${Math.round(finalAvatar.length / 1024)} KB`]
+      );
+      finalAvatar = `/api/media/${mediaId}?v=${now.getTime()}`;
+    }
     
-    await updateById('users', decoded.id, {
-      name,
-      email,
-      avatar: avatar ?? user.avatar,
+    // Update user using stable user.id
+    await updateById('users', user.id, {
+      name: trimmedName,
+      email: trimmedEmail,
+      avatar: finalAvatar,
       phone: phone ?? user.phone
     });
     
     await logAuditEvent(
       user.email,
       user.name,
-      `Updated profile information: Name=${name}, Email=${email}`
+      `Updated profile information: Name=${trimmedName}, Email=${trimmedEmail}`
     );
+
+    const refreshedToken = generateToken({
+      id: user.id,
+      name: trimmedName,
+      email: trimmedEmail,
+      role: user.role
+    });
     
     return NextResponse.json({
       success: true,
+      token: refreshedToken,
       user: {
-        id: decoded.id,
-        name,
-        email,
+        id: user.id,
+        name: trimmedName,
+        email: trimmedEmail,
         role: user.role,
-        avatar: avatar ?? user.avatar,
+        avatar: finalAvatar,
         phone: phone ?? user.phone
       }
     });
@@ -96,3 +110,4 @@ export async function PUT(req: Request) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
+

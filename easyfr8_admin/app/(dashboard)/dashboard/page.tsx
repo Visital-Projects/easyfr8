@@ -367,7 +367,7 @@ export default function DashboardPage() {
                     <div>
                       <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 'var(--space-2)' }}>Last Rate Modification</div>
                       {rateHistory && rateHistory.length > 0 ? (
-                        <div style={{ fontSize: '0.85rem', padding: 'var(--space-3)', backgroundColor: 'var(--surface-ground)', borderRadius: 'var(--radius-md)', borderLeft: '3px solid var(--color-primary)', border: '1px solid var(--border-color)', borderLeftWidth: '3px' }}>
+                        <div key="rate-history-card" style={{ fontSize: '0.85rem', padding: 'var(--space-3)', backgroundColor: 'var(--surface-ground)', borderRadius: 'var(--radius-md)', borderTop: '1px solid var(--border-color)', borderRight: '1px solid var(--border-color)', borderBottom: '1px solid var(--border-color)', borderLeft: '3px solid var(--color-primary)' }}>
                           <div style={{ fontWeight: 600, color: 'var(--text-primary)', textTransform: 'capitalize' }}>
                             {rateHistory[0].actionType === 'create' ? 'Rate Added' : rateHistory[0].actionType === 'update' ? 'Rate Updated' : 'Rate Deleted'}
                           </div>
@@ -380,7 +380,7 @@ export default function DashboardPage() {
                           </div>
                         </div>
                       ) : (
-                        <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontStyle: 'italic', padding: 'var(--space-3)', backgroundColor: 'var(--surface-ground)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)', textAlign: 'center' }}>
+                        <div key="rate-history-empty" style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontStyle: 'italic', padding: 'var(--space-3)', backgroundColor: 'var(--surface-ground)', borderRadius: 'var(--radius-md)', borderTop: '1px solid var(--border-color)', borderRight: '1px solid var(--border-color)', borderBottom: '1px solid var(--border-color)', borderLeft: '1px solid var(--border-color)', textAlign: 'center' }}>
                           No rate changes logged yet.
                         </div>
                       )}

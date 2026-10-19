@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { readDb } from '@/lib/db';
+import { getIndustries } from '@/lib/db';
 
 export async function GET() {
   try {
-    const db = await readDb();
-    const active = (db.industries || [])
+    const allIndustries = await getIndustries();
+    const active = allIndustries
       .filter((i) => i.status === 'active')
       .sort((a, b) => a.sort_order - b.sort_order);
     return NextResponse.json(active);

@@ -79,7 +79,8 @@ export default function BlogsPage() {
   const [blogStatus, setBlogStatus] = useState<'Published' | 'Draft'>('Published');
   const [blogImage, setBlogImage] = useState('https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=400&h=250');
   const [blogTags, setBlogTags] = useState('');
-  const [blogAuthor, setBlogAuthor] = useState('Biswajit Shaw');
+  const [blogAuthor, setBlogAuthor] = useState(users[0]?.name || 'easyfr8');
+  const [isCustomAuthor, setIsCustomAuthor] = useState(false);
   const [seoTitle, setSeoTitle] = useState('');
   const [seoDesc, setSeoDesc] = useState('');
   const [metaKeywords, setMetaKeywords] = useState('');
@@ -121,9 +122,10 @@ export default function BlogsPage() {
     setBlogBody('');
     setBlogCategory('Industry Updates');
     setBlogStatus('Published');
-    setBlogImage('https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=400&h=250');
+    setBlogImage('');
     setBlogTags('');
-    setBlogAuthor(users[0]?.name || 'Biswajit Shaw');
+    setBlogAuthor(users[0]?.name || 'easyfr8');
+    setIsCustomAuthor(false);
     setSeoTitle('');
     setSeoDesc('');
     setMetaKeywords('');
@@ -131,7 +133,7 @@ export default function BlogsPage() {
     setDrawerOpen(true);
   };
 
-  const handleOpenEditBlog = (blog: Blog) => {
+  const handleOpenEditBlog = async (blog: Blog) => {
     setEditingBlog(blog);
     setBlogTitle(blog.title);
     setBlogSlug(blog.slug || '');
@@ -140,12 +142,31 @@ export default function BlogsPage() {
     setBlogStatus(blog.status);
     setBlogImage(blog.image);
     setBlogTags(blog.tags || '');
-    setBlogAuthor(blog.author || 'Biswajit Shaw');
+    const currentAuthor = blog.author || users[0]?.name || 'easyfr8';
+    setBlogAuthor(currentAuthor);
+    setIsCustomAuthor(false);
     setSeoTitle(blog.seoTitle || '');
     setSeoDesc(blog.seoDesc || '');
     setMetaKeywords(blog.metaKeywords || '');
-    setScheduledDate(blog.publishedAt || '');
+    setScheduledDate(blog.publishedAt ? blog.publishedAt.slice(0, 10) : '');
     setDrawerOpen(true);
+
+    try {
+      const res = await fetch(`/api/blogs/${encodeURIComponent(blog.id)}`);
+      const data = await res.json();
+      if (data.success && data.blog) {
+        if (data.blog.body !== undefined) {
+          setBlogBody(data.blog.body);
+        }
+        if (data.blog.publishedAt) {
+          setScheduledDate(data.blog.publishedAt.slice(0, 10));
+        } else if (data.blog.publishedAt === '') {
+          setScheduledDate('');
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load fresh blog details:', e);
+    }
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -165,6 +186,7 @@ export default function BlogsPage() {
 
     const calculatedTime = estimateReadingTime(blogBody);
     const dateStr = new Date().toISOString().split('T')[0];
+    const finalPublishedAt = scheduledDate ? scheduledDate.slice(0, 10) : (blogStatus === 'Published' ? dateStr : '');
 
     const blogData: Partial<Blog> = {
       title: blogTitle,
@@ -178,7 +200,8 @@ export default function BlogsPage() {
       seoTitle: seoTitle || blogTitle,
       seoDesc: seoDesc || blogTitle,
       metaKeywords,
-      publishedAt: scheduledDate || dateStr,
+      publishedAt: finalPublishedAt,
+      date: finalPublishedAt || dateStr,
       readingTime: calculatedTime,
     };
 
@@ -195,12 +218,12 @@ export default function BlogsPage() {
         tags: blogTags,
         status: blogStatus,
         image: blogImage,
-        date: dateStr,
+        date: finalPublishedAt || dateStr,
         author: blogAuthor,
         seoTitle: seoTitle || blogTitle,
         seoDesc: seoDesc || blogTitle,
         metaKeywords: metaKeywords,
-        publishedAt: scheduledDate || dateStr,
+        publishedAt: finalPublishedAt,
         readingTime: calculatedTime,
       };
       addBlog(newBlog);
@@ -397,10 +420,39 @@ export default function BlogsPage() {
                   </div>
 
                   <div className="form-group">
-                    <label className="form-label">Author</label>
-                    <select className="form-control" value={blogAuthor} onChange={(e) => setBlogAuthor(e.target.value)}>
-                      {users.map((u) => <option key={u.id} value={u.name}>{u.name} ({u.role})</option>)}
-                    </select>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                      <label className="form-label" style={{ margin: 0 }}>Author</label>
+                      <button
+                        type="button"
+                        onClick={() => setIsCustomAuthor(!isCustomAuthor)}
+                        style={{ background: 'none', border: 'none', color: '#d64238', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline', padding: 0 }}
+                      >
+                        {isCustomAuthor ? 'Select from team' : 'Custom author'}
+                      </button>
+                    </div>
+                    {isCustomAuthor ? (
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={blogAuthor}
+                        onChange={(e) => setBlogAuthor(e.target.value)}
+                        placeholder="Enter author name"
+                        required
+                      />
+                    ) : (
+                      <select
+                        className="form-control"
+                        value={blogAuthor}
+                        onChange={(e) => setBlogAuthor(e.target.value)}
+                      >
+                        {blogAuthor && !users.some((u) => u.name === blogAuthor) && (
+                          <option value={blogAuthor}>{blogAuthor}</option>
+                        )}
+                        {users.map((u) => (
+                          <option key={u.id} value={u.name}>{u.name} ({u.role})</option>
+                        ))}
+                      </select>
+                    )}
                   </div>
 
                   <div className="form-group">
@@ -425,14 +477,52 @@ export default function BlogsPage() {
                   </div>
 
                   <div className="form-group">
-                    <label className="form-label">Featured Image File Upload</label>
-                    <div style={{ position: 'relative', border: '1px dashed var(--border-color)', padding: '12px', borderRadius: '6px', textAlign: 'center', cursor: 'pointer', marginBottom: '8px' }}>
-                      <span style={{ fontSize: '0.75rem' }}>Select New Banner</span>
+                    <label className="form-label">Featured Article Banner</label>
+                    <div style={{ position: 'relative', border: '1px dashed var(--border-color)', padding: '10px', borderRadius: '6px', textAlign: 'center', cursor: 'pointer', marginBottom: '8px' }}>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>{blogImage ? 'Replace Image (Upload New)' : 'Upload Image from Computer'}</span>
                       <input type="file" accept="image/*" onChange={handleImageUpload} style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }} />
                     </div>
-                    {blogImage && (
-                      <img src={blogImage} alt="Featured" style={{ width: '100%', height: '80px', objectFit: 'cover', borderRadius: '4px', border: '1px solid var(--border-color)' }} />
+
+                    {blogImage ? (
+                      <div style={{ position: 'relative', borderRadius: '4px', overflow: 'hidden', border: '1px solid var(--border-color)', marginBottom: '8px' }}>
+                        <img src={blogImage} alt="Featured Preview" style={{ width: '100%', height: '110px', objectFit: 'cover', display: 'block' }} />
+                        <button
+                          type="button"
+                          onClick={() => setBlogImage('')}
+                          style={{
+                            position: 'absolute',
+                            top: '6px',
+                            right: '6px',
+                            background: 'rgba(239, 68, 68, 0.9)',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '4px',
+                            padding: '3px 8px',
+                            fontSize: '0.7rem',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          ✕ Remove Image
+                        </button>
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginBottom: '8px' }}>
+                        No banner uploaded yet.
+                      </div>
                     )}
+
+                    <div style={{ marginTop: '4px' }}>
+                      <label style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Or External Image URL / Media Path:</label>
+                      <input
+                        type="text"
+                        className="form-control"
+                        value={blogImage}
+                        onChange={(e) => setBlogImage(e.target.value)}
+                        placeholder="https://... or /api/media/..."
+                        style={{ height: '30px', fontSize: '0.75rem', marginTop: '2px' }}
+                      />
+                    </div>
                   </div>
 
                   {/* SEO collapse panel */}

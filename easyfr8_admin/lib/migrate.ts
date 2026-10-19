@@ -45,6 +45,22 @@ async function main() {
   await pool.query(`USE \`${dbName}\``);
   console.log(`✔ Using database: ${dbName}`);
 
+  // ── Helper to resolve actual port ID by stable port_code ──────────────────
+  async function getPortIdByCode(portCode: string): Promise<string> {
+    const [rows] = await pool.query(
+      'SELECT id FROM ports WHERE port_code = ? LIMIT 1',
+      [portCode]
+    );
+
+    const ports = rows as Array<{ id: string }>;
+
+    if (ports.length === 0) {
+      throw new Error(`Port not found for port_code: ${portCode}`);
+    }
+
+    return ports[0].id;
+  }
+
   // ── 3. Run schema ──────────────────────────────────────────────────────────
   const schemaPath = path.join(process.cwd(), 'lib', 'schema.sql');
   if (fs.existsSync(schemaPath)) {
@@ -272,22 +288,18 @@ async function main() {
   }
 
   const dynamicLocations = [
-    { id: 'loc-sgpin', port_code: 'SGPIN', name: 'Singapore Port', country: 'Singapore', status: 'active' },
-    { id: 'loc-clach', port_code: 'CLACH', name: 'Achao Port', country: 'Chile', status: 'active' },
-    { id: 'loc-innsv', port_code: 'INNSV', name: 'Nhava Sheva', country: 'India', status: 'active' },
-    { id: 'loc-nlrtm', port_code: 'NLRTM', name: 'Rotterdam Port', country: 'Netherlands', status: 'active' },
-    { id: 'loc-cnsha', port_code: 'CNSHA', name: 'Shanghai Port', country: 'China', status: 'active' },
-    { id: 'loc-uslax', port_code: 'USLAX', name: 'Los Angeles Port', country: 'United States', status: 'active' },
-    { id: 'loc-inbom', port_code: 'INBOM', name: 'Mumbai Port', country: 'India', status: 'active' },
+    { id: 'loc-sgpin', port_code: 'SGPIN', name: 'Singapore Port', country: 'Singapore', type: 'Ocean' },
+    { id: 'loc-clach', port_code: 'CLACH', name: 'Achao Port', country: 'Chile', type: 'Ocean' },
+    { id: 'loc-innsv', port_code: 'INNSV', name: 'Nhava Sheva', country: 'India', type: 'Ocean' },
+    { id: 'loc-nlrtm', port_code: 'NLRTM', name: 'Rotterdam Port', country: 'Netherlands', type: 'Ocean' },
+    { id: 'loc-cnsha', port_code: 'CNSHA', name: 'Shanghai Port', country: 'China', type: 'Ocean' },
+    { id: 'loc-uslax', port_code: 'USLAX', name: 'Los Angeles Port', country: 'United States', type: 'Ocean' },
+    { id: 'loc-inbom', port_code: 'INBOM', name: 'Mumbai Port', country: 'India', type: 'Ocean' },
   ];
   for (const l of dynamicLocations) {
     await pool.query(
-      'INSERT INTO locations (id, port_code, name, country, status) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE port_code=VALUES(port_code), name=VALUES(name), country=VALUES(country), status=VALUES(status)',
-      [l.id, l.port_code, l.name, l.country, l.status]
-    );
-    await pool.query(
-      'INSERT INTO ports (id, port_code, port_name, country, locode) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE port_code=VALUES(port_code), port_name=VALUES(port_name), country=VALUES(country), locode=VALUES(locode)',
-      [l.id, l.port_code, l.name, l.country, l.port_code]
+      'INSERT INTO locations (id, port_code, name, country, type) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE port_code=VALUES(port_code), name=VALUES(name), country=VALUES(country), type=VALUES(type)',
+      [l.id, l.port_code, l.name, l.country, l.type]
     );
   }
 
@@ -309,8 +321,8 @@ async function main() {
       id: 'frate-sgpin-clach-40oth',
       freight_mode_id: 'mode-ocean',
       shipment_type_id: 'shipment-fcl',
-      origin_id: 'loc-sgpin',
-      destination_id: 'loc-clach',
+      origin_code: 'SGPIN',
+      destination_code: 'CLACH',
       container_id: 'container-40oth',
       price: 3500.00,
       currency: 'USD',
@@ -322,8 +334,8 @@ async function main() {
       id: 'frate-cnsha-uslax-40gp',
       freight_mode_id: 'mode-ocean',
       shipment_type_id: 'shipment-fcl',
-      origin_id: 'loc-cnsha',
-      destination_id: 'loc-uslax',
+      origin_code: 'CNSHA',
+      destination_code: 'USLAX',
       container_id: 'container-40gp',
       price: 3800.00,
       currency: 'USD',
@@ -335,8 +347,8 @@ async function main() {
       id: 'frate-sgpin-inbom-20gp',
       freight_mode_id: 'mode-ocean',
       shipment_type_id: 'shipment-fcl',
-      origin_id: 'loc-sgpin',
-      destination_id: 'loc-inbom',
+      origin_code: 'SGPIN',
+      destination_code: 'INBOM',
       container_id: 'container-20gp',
       price: 1200.00,
       currency: 'USD',
@@ -346,6 +358,9 @@ async function main() {
     }
   ];
   for (const r of dynamicRates) {
+    const originId = await getPortIdByCode(r.origin_code);
+    const destinationId = await getPortIdByCode(r.destination_code);
+
     await pool.query(
       `INSERT INTO freight_rates (id, freight_mode_id, shipment_type_id, origin_id, destination_id, container_id, price, currency, transit_time, carrier, status)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -354,7 +369,7 @@ async function main() {
          origin_id=VALUES(origin_id), destination_id=VALUES(destination_id),
          container_id=VALUES(container_id), price=VALUES(price), currency=VALUES(currency),
          transit_time=VALUES(transit_time), carrier=VALUES(carrier), status=VALUES(status)`,
-      [r.id, r.freight_mode_id, r.shipment_type_id, r.origin_id, r.destination_id, r.container_id, r.price, r.currency, r.transit_time, r.carrier, r.status]
+      [r.id, r.freight_mode_id, r.shipment_type_id, originId, destinationId, r.container_id, r.price, r.currency, r.transit_time, r.carrier, r.status]
     );
   }
   console.log('✔ Dynamic freight tables and rates migrated successfully.');

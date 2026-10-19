@@ -353,7 +353,9 @@ export default function EnquiriesPage() {
                   <td style={{ fontWeight: 600, fontSize: '0.8rem' }}>{item.id}</td>
                   <td>
                     <div style={{ fontWeight: 600, fontSize: '0.85rem' }}>{item.name}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{item.email}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                      {item.email}{item.phone ? ` · ${item.phone}` : ''}
+                    </div>
                   </td>
                   <td style={{ maxWidth: '220px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '0.85rem' }}>{item.subject}</td>
                   <td style={{ fontSize: '0.8rem' }}>{item.date}</td>
@@ -378,7 +380,9 @@ export default function EnquiriesPage() {
             <div className="drawer-header">
               <div>
                 <h3>Enquiry Detail — {selectedEnq.id}</h3>
-                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: 2 }}>{selectedEnq.name} · {selectedEnq.email}</p>
+                <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginTop: 2 }}>
+                  {selectedEnq.name} · {selectedEnq.email}{selectedEnq.phone ? ` · ${selectedEnq.phone}` : ''}
+                </p>
               </div>
               <button className="drawer-close" onClick={() => setDrawerOpen(false)}>
                 <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" style={{ width: '20px', height: '20px' }}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>

@@ -3,6 +3,7 @@ import axios from 'axios';
 import { API_ENDPOINTS } from './endpoints';
 import {
   CMSData,
+  Service,
   Enquiry,
   FreightRate,
   UserAccount,
@@ -14,6 +15,9 @@ import {
   defaultCMSData,
   defaultAppSettings,
   HeroSlide,
+  Partner,
+  Statistic,
+  Industry,
 } from '../lib/store';
 
 // All frontend operations run in mock mode — the store acts as the source of truth.
@@ -75,14 +79,14 @@ export const AuthService = {
 
   changePassword: async (data: { oldPassword: string; newPassword: string; confirmPassword?: string }): Promise<{ success: boolean; message: string }> => {
     if (isMockMode()) return { success: true, message: 'Password updated successfully' };
-    // Backend expects 'currentPassword' instead of 'oldPassword'
     return api.post(API_ENDPOINTS.AUTH.CHANGE_PASSWORD, {
       currentPassword: data.oldPassword,
       newPassword: data.newPassword,
+      confirmPassword: data.confirmPassword,
     });
   },
 
-  updateProfile: async (data: { name: string; email: string; avatar?: string; phone?: string }): Promise<{ success: boolean; user: CurrentUser }> => {
+  updateProfile: async (data: { name: string; email: string; avatar?: string; phone?: string }): Promise<{ success: boolean; user: CurrentUser; token?: string }> => {
     if (isMockMode()) {
       return {
         success: true,
@@ -94,7 +98,11 @@ export const AuthService = {
         }
       };
     }
-    return api.put(API_ENDPOINTS.AUTH.PROFILE, data);
+    const res: any = await api.put(API_ENDPOINTS.AUTH.PROFILE, data);
+    if (res?.token && typeof window !== 'undefined') {
+      localStorage.setItem('easyfr8_token', res.token);
+    }
+    return res;
   },
 };
 
@@ -113,7 +121,35 @@ export const CMSService = {
       localStorage.setItem('easyfr8_cms', JSON.stringify(data));
       return data;
     }
-    return api.post(API_ENDPOINTS.CMS.HOMEPAGE, data);
+    // Exclude heavy services collection from general CMS update (services has its own dedicated CRUD API)
+    const { services, ...payload } = data;
+    const res: any = await api.post(API_ENDPOINTS.CMS.HOMEPAGE, payload);
+    return res?.cms || res;
+  },
+};
+
+// ── Services CRUD ─────────────────────────────────────────────────────────────
+export const ServicesService = {
+  getAll: async (activeOnly = false): Promise<Service[]> => {
+    return api.get(`${API_ENDPOINTS.CMS.SERVICES}${activeOnly ? '?active=true' : ''}`);
+  },
+
+  getById: async (id: string | number): Promise<Service> => {
+    return api.get(API_ENDPOINTS.CMS.SERVICE_ID(id));
+  },
+
+  create: async (data: Partial<Service>): Promise<Service> => {
+    const res: any = await api.post(API_ENDPOINTS.CMS.SERVICES, data);
+    return res?.data || res;
+  },
+
+  update: async (id: string | number, data: Partial<Service>): Promise<Service> => {
+    const res: any = await api.put(API_ENDPOINTS.CMS.SERVICE_ID(id), data);
+    return res?.data || res;
+  },
+
+  delete: async (id: string | number): Promise<{ success: boolean; message: string }> => {
+    return api.delete(API_ENDPOINTS.CMS.SERVICE_ID(id));
   },
 };
 
@@ -315,33 +351,19 @@ export const UserService = {
 // ── Documents ─────────────────────────────────────────────────────────────────
 export const DocumentService = {
   getList: async (): Promise<KYCDocument[]> => {
-    if (isMockMode()) {
-      const stored = localStorage.getItem('easyfr8_documents');
-      return stored ? JSON.parse(stored) : [];
-    }
     return api.get(API_ENDPOINTS.DOCUMENTS.LIST);
   },
 
   update: async (id: string, data: Partial<KYCDocument>): Promise<KYCDocument> => {
-    if (isMockMode()) {
-      const stored = localStorage.getItem('easyfr8_documents');
-      if (stored) {
-        const docs = JSON.parse(stored) as KYCDocument[];
-        const idx = docs.findIndex((d) => d.id === id);
-        if (idx !== -1) {
-          docs[idx] = { ...docs[idx], ...data };
-          localStorage.setItem('easyfr8_documents', JSON.stringify(docs));
-          return docs[idx];
-        }
-      }
-      throw new Error('Document not found');
-    }
     return api.put(API_ENDPOINTS.DOCUMENTS.UPDATE(id), data);
   },
 
   create: async (doc: KYCDocument): Promise<KYCDocument> => {
-    if (isMockMode()) return doc;
-    return api.post(API_ENDPOINTS.DOCUMENTS.LIST, doc);
+    return api.post(API_ENDPOINTS.DOCUMENTS.CREATE, doc);
+  },
+
+  delete: async (id: string): Promise<{ success: boolean }> => {
+    return api.delete(API_ENDPOINTS.DOCUMENTS.DELETE(id));
   },
 };
 
@@ -422,7 +444,7 @@ export const SettingsService = {
       const stored = localStorage.getItem('easyfr8_appSettings');
       return stored ? JSON.parse(stored) : defaultAppSettings;
     }
-    return api.get('/settings');
+    return api.get(API_ENDPOINTS.SETTINGS.GET);
   },
 
   update: async (section: keyof AppSettings, data: Partial<AppSettings[keyof AppSettings]>): Promise<AppSettings> => {
@@ -433,7 +455,7 @@ export const SettingsService = {
       localStorage.setItem('easyfr8_appSettings', JSON.stringify(updated));
       return updated;
     }
-    return api.put(`/settings/${section}`, data);
+    return api.put(API_ENDPOINTS.SETTINGS.UPDATE(section), data);
   },
 
   testEmail: async (email: string): Promise<{ success: boolean; message: string }> => {
@@ -447,11 +469,21 @@ export const SettingsService = {
   },
 };
 
-// ── Hero Slides ──────────────────────────────────────────────────────────────
-// Uses a local axios instance pointing to this Next.js app's own API routes
-// (not the external production API, which doesn't have these admin endpoints)
+// ── Admin CMS Services ───────────────────────────────────────────────────────
+// Uses a local axios instance pointing to this Next.js app's own API routes.
+// In the browser, uses relative paths ('') so requests stay on the same origin.
+// In SSR environments, falls back to the configured internal API_URL or NEXT_PUBLIC_BASE_URL.
+const getLocalApiBaseUrl = () => {
+  if (typeof window !== 'undefined') {
+    return '/api'; // Relative API base in browser: /api + /admin/cms/... -> /api/admin/cms/...
+  }
+  const base = process.env.API_URL || process.env.NEXT_PUBLIC_BASE_URL || `http://localhost:${process.env.PORT || 3001}`;
+  return `${base.replace(/\/+$/, '')}/api`;
+};
+
 const localApi = axios.create({
-  baseURL: typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3000',
+  baseURL: getLocalApiBaseUrl(),
+  withCredentials: true,
   headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
   timeout: 60000,
 });
@@ -468,32 +500,116 @@ localApi.interceptors.response.use(
   (response) => response.data,
   (error) => {
     const errorData = error.response?.data;
-    const message = errorData?.error || errorData?.message || error.message || 'Hero Slides API error.';
+    const status = error.response?.status;
+    let message = 'API request failed';
+    if (typeof errorData === 'object' && errorData !== null) {
+      message = errorData.error || errorData.message || message;
+    } else if (typeof errorData === 'string' && errorData.length > 0 && !errorData.trim().startsWith('<')) {
+      message = errorData;
+    } else if (status) {
+      message = `Request failed with status ${status}`;
+    } else if (error.message) {
+      message = error.message;
+    }
     const customError = new Error(message);
-    (customError as any).status = error.response?.status;
+    (customError as any).status = status;
+    (customError as any).data = errorData;
     return Promise.reject(customError);
   }
 );
 
+const normalizeHeroSlide = (slide: HeroSlide): HeroSlide => {
+  if (!slide) return slide;
+  let img = slide.image || '';
+  if (typeof img === 'string') {
+    if (img.includes('/api/admin/cms/hero-slides/')) {
+      img = img.replace('/api/admin/cms/hero-slides/', '/api/cms/hero-slides/');
+    } else if (img.includes('/admin/cms/hero-slides/')) {
+      img = img.replace('/admin/cms/hero-slides/', '/cms/hero-slides/');
+    } else if (!img && slide.id) {
+      img = `/api/cms/hero-slides/${slide.id}/image`;
+    }
+  }
+  return { ...slide, image: img };
+};
+
 export const HeroSlidesService = {
   getPublicList: async (): Promise<HeroSlide[]> => {
-    return localApi.get('/api/cms/hero-slides');
+    const list: HeroSlide[] = await localApi.get(API_ENDPOINTS.CMS.HERO_SLIDES);
+    return Array.isArray(list) ? list.map(normalizeHeroSlide) : [];
   },
 
   getAdminList: async (): Promise<HeroSlide[]> => {
-    return localApi.get('/api/admin/cms/hero-slides');
+    const list: HeroSlide[] = await localApi.get(API_ENDPOINTS.CMS.ADMIN_HERO_SLIDES);
+    return Array.isArray(list) ? list.map(normalizeHeroSlide) : [];
   },
 
   create: async (data: Omit<HeroSlide, 'id' | 'created_at' | 'updated_at'>): Promise<HeroSlide> => {
-    return localApi.post('/api/admin/cms/hero-slides', data);
+    const slide: HeroSlide = await localApi.post(API_ENDPOINTS.CMS.ADMIN_HERO_SLIDES, data);
+    return normalizeHeroSlide(slide);
   },
 
   update: async (id: string, data: Partial<HeroSlide>): Promise<HeroSlide> => {
-    return localApi.put(`/api/admin/cms/hero-slides/${id}`, data);
+    const slide: HeroSlide = await localApi.put(API_ENDPOINTS.CMS.ADMIN_HERO_SLIDES_ID(id), data);
+    return normalizeHeroSlide(slide);
   },
 
   delete: async (id: string): Promise<{ success: boolean; message: string }> => {
-    return localApi.delete(`/api/admin/cms/hero-slides/${id}`);
+    return localApi.delete(API_ENDPOINTS.CMS.ADMIN_HERO_SLIDES_ID(id));
+  },
+};
+
+export const PartnersService = {
+  getAdminList: async (): Promise<Partner[]> => {
+    return localApi.get(API_ENDPOINTS.CMS.ADMIN_PARTNERS);
+  },
+
+  create: async (data: Omit<Partner, 'id' | 'created_at' | 'updated_at'>): Promise<Partner> => {
+    return localApi.post(API_ENDPOINTS.CMS.ADMIN_PARTNERS, data);
+  },
+
+  update: async (id: string, data: Partial<Partner>): Promise<Partner> => {
+    return localApi.put(API_ENDPOINTS.CMS.ADMIN_PARTNERS_ID(id), data);
+  },
+
+  delete: async (id: string): Promise<{ success: boolean; message: string }> => {
+    return localApi.delete(API_ENDPOINTS.CMS.ADMIN_PARTNERS_ID(id));
+  },
+};
+
+export const StatisticsService = {
+  getAdminList: async (): Promise<Statistic[]> => {
+    return localApi.get(API_ENDPOINTS.CMS.ADMIN_STATISTICS);
+  },
+
+  create: async (data: Omit<Statistic, 'id' | 'created_at' | 'updated_at'>): Promise<Statistic> => {
+    return localApi.post(API_ENDPOINTS.CMS.ADMIN_STATISTICS, data);
+  },
+
+  update: async (id: string, data: Partial<Statistic>): Promise<Statistic> => {
+    return localApi.put(API_ENDPOINTS.CMS.ADMIN_STATISTICS_ID(id), data);
+  },
+
+  delete: async (id: string): Promise<{ success: boolean; message: string }> => {
+    return localApi.delete(API_ENDPOINTS.CMS.ADMIN_STATISTICS_ID(id));
+  },
+};
+
+export const IndustriesService = {
+  getAdminList: async (): Promise<Industry[]> => {
+    return localApi.get(API_ENDPOINTS.CMS.ADMIN_INDUSTRIES);
+  },
+
+  create: async (data: Omit<Industry, 'id' | 'created_at' | 'updated_at'>): Promise<Industry> => {
+    return localApi.post(API_ENDPOINTS.CMS.ADMIN_INDUSTRIES, data);
+  },
+
+  update: async (id: string, data: Partial<Industry>): Promise<Industry> => {
+    return localApi.put(API_ENDPOINTS.CMS.ADMIN_INDUSTRIES_ID(id), data);
+  },
+
+  delete: async (id: string): Promise<{ success: boolean; message: string }> => {
+    return localApi.delete(API_ENDPOINTS.CMS.ADMIN_INDUSTRIES_ID(id));
   },
 };
 

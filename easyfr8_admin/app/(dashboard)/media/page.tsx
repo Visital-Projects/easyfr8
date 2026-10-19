@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useData } from '../../../context/DataContext';
 
 function compressImageBase64(file: File, maxWidth = 1200, maxHeight = 900, quality = 0.8): Promise<string> {
@@ -59,11 +59,15 @@ function formatBytes(bytes: number, decimals = 2) {
 }
 
 export default function MediaLibraryPage() {
-  const { media, addMedia, deleteMedia, replaceMedia, showToast } = useData();
+  const { media, loadMedia, addMedia, deleteMedia, replaceMedia, showToast } = useData();
   const [searchQuery, setSearchQuery] = useState('');
   const [previewItem, setPreviewItem] = useState<any | null>(null);
   const [replacingId, setReplacingId] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+
+  useEffect(() => {
+    loadMedia();
+  }, []);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const replaceInputRef = useRef<HTMLInputElement>(null);

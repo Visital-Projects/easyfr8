@@ -32,8 +32,8 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response.data,
   (error) => {
-    if (error.response?.status === 401 || error.response?.status === 403) {
-      // Clear session on authentication failure
+    if (error.response?.status === 401) {
+      // Clear session strictly on unauthenticated / expired session (401)
       if (typeof window !== 'undefined') {
         localStorage.removeItem('easyfr8_token');
         localStorage.removeItem('easyfr8_user');
@@ -77,6 +77,64 @@ export function getImageUrl(path) {
   }
   
   return targetPath;
+}
+
+/**
+ * Normalizes service category string into either 'core' or 'value-added'.
+ */
+export function normalizeCategory(category) {
+  if (!category) return 'core';
+  const norm = String(category).toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+  if (norm.includes('value') || norm.includes('added')) {
+    return 'value-added';
+  }
+  return 'core';
+}
+
+/**
+ * Resolve CMS icon keywords or classes into valid flaticon/font classes.
+ * Supports canonical names: anchor, plane, truck, package, shield, box, briefcase, umbrella
+ */
+export function getServiceIconClass(icon) {
+  if (!icon) return 'flaticon-transport-4';
+  const clean = String(icon).toLowerCase().trim();
+
+  // If already a CSS class
+  if (clean.startsWith('flaticon-') || clean.startsWith('fa-') || clean.startsWith('fa ')) {
+    return clean;
+  }
+
+  const iconMap = {
+    anchor: 'flaticon-transport-4',
+    ocean: 'flaticon-transport-4',
+    sea: 'flaticon-transport-4',
+    ship: 'flaticon-transport-4',
+    plane: 'flaticon-transport-3',
+    air: 'flaticon-transport-3',
+    flight: 'flaticon-transport-3',
+    airplane: 'flaticon-transport-3',
+    truck: 'flaticon-transport-5',
+    road: 'flaticon-transport-5',
+    transport: 'flaticon-transport-5',
+    delivery: 'flaticon-delivery-truck',
+    package: 'flaticon-transport-7',
+    warehousing: 'flaticon-transport-7',
+    warehouse: 'flaticon-transport-7',
+    storage: 'flaticon-transport-7',
+    shield: 'flaticon-transport-1',
+    customs: 'flaticon-transport-1',
+    compliance: 'flaticon-shield',
+    security: 'flaticon-shield',
+    box: 'flaticon-transport-10',
+    cfs: 'flaticon-transport-10',
+    briefcase: 'flaticon-business',
+    business: 'flaticon-business',
+    contract: 'flaticon-business',
+    umbrella: 'flaticon-interface-1',
+    insurance: 'flaticon-interface-1',
+  };
+
+  return iconMap[clean] || `flaticon-${clean}`;
 }
 
 export default api;

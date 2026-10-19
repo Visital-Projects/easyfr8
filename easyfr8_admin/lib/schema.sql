@@ -14,6 +14,14 @@ CREATE TABLE IF NOT EXISTS cms_data (
   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- ─── APP SETTINGS (single row JSON store for SMTP, SMS, payment, site config) ─
+CREATE TABLE IF NOT EXISTS app_settings (
+  id          INT          NOT NULL DEFAULT 1,
+  data        LONGTEXT     NOT NULL COMMENT 'Full AppSettings JSON',
+  updated_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- ─── HERO SLIDES ──────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS hero_slides (
   id          VARCHAR(64)  NOT NULL,
@@ -205,11 +213,16 @@ CREATE TABLE IF NOT EXISTS freight_rates (
   shipment_type_id VARCHAR(64) NOT NULL,
   origin_id VARCHAR(64) NOT NULL,
   destination_id VARCHAR(64) NOT NULL,
+  transhipment_id VARCHAR(64) DEFAULT NULL,
   container_id VARCHAR(64),
   price DECIMAL(12,2) NOT NULL DEFAULT 0,
+  local_thc DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  documentation_fee DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  customs_clearance DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+  other_charges DECIMAL(12,2) NOT NULL DEFAULT 0.00,
   currency VARCHAR(10) NOT NULL DEFAULT 'USD',
   transit_time INT NOT NULL DEFAULT 0,
-  carrier VARCHAR(255) NOT NULL,
+  carrier VARCHAR(255) DEFAULT NULL,
   status ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -225,54 +238,59 @@ CREATE TABLE IF NOT EXISTS rate_activity_logs (
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- Seed default dynamic tables
-INSERT INTO freight_types (id, name, status, sort_order) VALUES 
-('mode-ocean', 'Ocean Freight', 'active', 1), 
-('mode-air', 'Air Freight', 'active', 2) 
-ON DUPLICATE KEY UPDATE name=VALUES(name);
+-- ─── KYC DOCUMENTS ────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS kyc_documents (
+  id         VARCHAR(64)  NOT NULL,
+  `user`     VARCHAR(255) NOT NULL DEFAULT '',
+  name       VARCHAR(512) NOT NULL DEFAULT '',
+  type       VARCHAR(128) NOT NULL DEFAULT '',
+  date       DATE         NOT NULL,
+  status     ENUM('Pending Review','Approved','Rejected') NOT NULL DEFAULT 'Pending Review',
+  remarks    TEXT,
+  file_url   TEXT         NOT NULL DEFAULT '#',
+  file_type  VARCHAR(64)  NOT NULL DEFAULT 'pdf',
+  created_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  INDEX idx_kyc_user   (`user`(191)),
+  INDEX idx_kyc_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT INTO shipment_types (id, freight_type_id, name, description, status) VALUES 
-('shipment-fcl', 'mode-ocean', 'FCL (Full Container Load)', 'Full container shipping for large volume cargo.', 'active'), 
-('shipment-lcl', 'mode-ocean', 'LCL (Less than Container Load)', 'Shared container space for smaller shipments.', 'active'), 
-('shipment-air-std', 'mode-air', 'Air Freight Standard', 'Standard air cargo transport.', 'active') 
-ON DUPLICATE KEY UPDATE name=VALUES(name);
+-- ─── SERVICES ─────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS services (
+  id               VARCHAR(64)  NOT NULL,
+  title            VARCHAR(255) NOT NULL,
+  slug             VARCHAR(255) NOT NULL UNIQUE,
+  category         VARCHAR(64)  NOT NULL DEFAULT 'core',
+  icon             VARCHAR(128) NOT NULL DEFAULT 'anchor',
+  description      TEXT,
+  long_description LONGTEXT,
+  details          LONGTEXT,
+  image            LONGTEXT,
+  banner_image     LONGTEXT,
+  sort_order       INT          NOT NULL DEFAULT 0,
+  show_on_homepage TINYINT(1)   NOT NULL DEFAULT 1,
+  active           TINYINT(1)   NOT NULL DEFAULT 1,
+  created_at       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at       DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  INDEX idx_services_sort (sort_order),
+  INDEX idx_services_category (category),
+  INDEX idx_services_active (active),
+  INDEX idx_services_homepage (show_on_homepage)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
-INSERT INTO locations (id, port_code, name, country, status) VALUES 
-('loc-sgpin', 'SGPIN', 'Singapore Port', 'Singapore', 'active'), 
-('loc-clach', 'CLACH', 'Achao Port', 'Chile', 'active'), 
-('loc-innsv', 'INNSV', 'Nhava Sheva', 'India', 'active'), 
-('loc-nlrtm', 'NLRTM', 'Rotterdam Port', 'Netherlands', 'active'), 
-('loc-cnsha', 'CNSHA', 'Shanghai Port', 'China', 'active'), 
-('loc-uslax', 'USLAX', 'Los Angeles Port', 'United States', 'active'), 
-('loc-inbom', 'INBOM', 'Mumbai Port', 'India', 'active') 
-ON DUPLICATE KEY UPDATE name=VALUES(name);
-
-INSERT INTO ports (id, port_code, port_name, country, locode) VALUES 
-('loc-sgpin', 'SGPIN', 'Singapore Port', 'Singapore', 'SGPIN'), 
-('loc-clach', 'CLACH', 'Achao Port', 'Chile', 'CLACH'), 
-('loc-innsv', 'INNSV', 'Nhava Sheva', 'India', 'INNSV'), 
-('loc-nlrtm', 'NLRTM', 'Rotterdam Port', 'Netherlands', 'NLRTM'), 
-('loc-cnsha', 'CNSHA', 'Shanghai Port', 'China', 'CNSHA'), 
-('loc-uslax', 'USLAX', 'Los Angeles Port', 'United States', 'USLAX'), 
-('loc-inbom', 'INBOM', 'Mumbai Port', 'India', 'INBOM') 
-ON DUPLICATE KEY UPDATE port_name=VALUES(port_name);
-
-INSERT INTO containers (id, name, description, status) VALUES 
-('container-20gp', '20ft Standard Dry (20GP)', 'Standard 20-foot dry container.', 'active'), 
-('container-40gp', '40ft Standard Dry (40GP)', 'Standard 40-foot dry container.', 'active'), 
-('container-40hc', '40ft High Cube (40HC)', 'High cube 40-foot container for voluminous cargo.', 'active'), 
-('container-40oth', '40ft Open Top High (40OTH)', '40ft open top high container for oversized cargo.', 'active') 
-ON DUPLICATE KEY UPDATE name=VALUES(name);
-
-INSERT INTO freight_rates (id, freight_mode_id, shipment_type_id, origin_id, destination_id, container_id, price, currency, transit_time, carrier, status) VALUES 
-('frate-sgpin-clach-40oth', 'mode-ocean', 'shipment-fcl', 'loc-sgpin', 'loc-clach', 'container-40oth', 3500.00, 'USD', 30, 'Maersk Line', 'active'), 
-('frate-cnsha-uslax-40gp', 'mode-ocean', 'shipment-fcl', 'loc-cnsha', 'loc-uslax', 'container-40gp', 3800.00, 'USD', 16, 'MSC', 'active'), 
-('frate-sgpin-inbom-20gp', 'mode-ocean', 'shipment-fcl', 'loc-sgpin', 'loc-inbom', 'container-20gp', 1200.00, 'USD', 8, 'CMA CGM', 'active') 
-ON DUPLICATE KEY UPDATE price=VALUES(price);
-
--- ─── DEFAULT ADMIN USER ───────────────────────────────────────────────────────
-INSERT INTO users (id, name, email, phone, password, role, status)
-VALUES ('user-admin-001', 'Biswa Admin', 'biswa@easyfr8.com', '+91-9999999999', 'admin123', 'Administrator', 'Active')
-ON DUPLICATE KEY UPDATE status='Active';
-
-
+-- ─── FAQS ─────────────────────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS faqs (
+  id          VARCHAR(64)  NOT NULL,
+  category    VARCHAR(128) NOT NULL DEFAULT 'General',
+  question    VARCHAR(512) NOT NULL,
+  answer      TEXT         NOT NULL,
+  sort_order  INT          NOT NULL DEFAULT 0,
+  is_active   TINYINT(1)   NOT NULL DEFAULT 1,
+  created_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at  DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  INDEX idx_faqs_sort (sort_order),
+  INDEX idx_faqs_active (is_active)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

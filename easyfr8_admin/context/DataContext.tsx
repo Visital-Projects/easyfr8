@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
 import {
   CMSData,
   Enquiry,
@@ -23,6 +23,7 @@ import {
   defaultPartners,
   defaultStatistics,
   defaultIndustries,
+  Service,
   HeroSlide,
   Partner,
   Statistic,
@@ -39,7 +40,11 @@ import {
   AuditLogService,
   SettingsService,
   HeroSlidesService,
+  PartnersService,
+  StatisticsService,
+  IndustriesService,
   MediaService,
+  ServicesService,
 } from '../services/api';
 
 export type ToastType = 'success' | 'danger' | 'warning' | 'info';
@@ -53,7 +58,11 @@ export interface ToastMessage {
 interface DataContextType {
   // CMS
   cms: CMSData;
-  updateCMS: (updated: CMSData) => void;
+  updateCMS: (updated: CMSData) => Promise<void>;
+  updateCMSStateOnly: (updated: CMSData) => void;
+  addService: (service: Partial<Service>) => Promise<Service>;
+  updateService: (id: string | number, updated: Partial<Service>) => Promise<Service>;
+  deleteService: (id: string | number) => Promise<void>;
 
   // Enquiries
   enquiries: Enquiry[];
@@ -138,6 +147,7 @@ interface DataContextType {
 
   // Media Library
   media: any[];
+  loadMedia: () => Promise<void>;
   addMedia: (fileName: string, fileUrl: string, fileType: string, fileSize: string) => Promise<any>;
   deleteMedia: (id: string) => Promise<void>;
   replaceMedia: (id: string, fileName: string, fileUrl: string, fileType: string, fileSize: string) => Promise<any>;
@@ -145,6 +155,9 @@ interface DataContextType {
   // Rate History
   rateHistory: any[];
   loadRateHistory: () => Promise<void>;
+
+  // Data Refresh
+  refreshData: () => Promise<void>;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -187,91 +200,191 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
   const [media, setMedia] = useState<any[]>([]);
   const [rateHistory, setRateHistory] = useState<any[]>([]);
+  const loadDataPromiseRef = useRef<Promise<void> | null>(null);
 
-  // Hydrate from API on mount
-  useEffect(() => {
-    async function loadData() {
+  const loadData = useCallback(() => {
+    if (loadDataPromiseRef.current) {
+      return loadDataPromiseRef.current;
+    }
+
+    loadDataPromiseRef.current = (async () => {
       try {
-        const [cmsData, enqs, rts, usrs, blgs, logs, settings, mediaList, historyList] = await Promise.all([
-          CMSService.getHomepage(),
-          EnquiryService.getList(),
-          RateService.getList(),
-          UserService.getList(),
-          BlogService.getList(),
-          AuditLogService.getList(),
-          SettingsService.get(),
-          MediaService.getList().catch(() => []),
+        const [
+          cmsData,
+          enqs,
+          rts,
+          usrs,
+          blgs,
+          logs,
+          settings,
+          historyList,
+          slides,
+          partnersData,
+          statisticsData,
+          industriesData,
+        ] = await Promise.all([
+          CMSService.getHomepage().catch(err => {
+            console.error('Failed to load CMS homepage:', err);
+            return defaultCMSData;
+          }),
+          EnquiryService.getList().catch(err => {
+            console.error('Failed to load enquiries:', err);
+            return defaultEnquiries;
+          }),
+          RateService.getList().catch(err => {
+            console.error('Failed to load rates:', err);
+            return defaultRates;
+          }),
+          UserService.getList().catch(err => {
+            console.error('Failed to load users:', err);
+            return defaultUsers;
+          }),
+          BlogService.getList().catch(err => {
+            console.error('Failed to load blogs:', err);
+            return defaultBlogs;
+          }),
+          AuditLogService.getList().catch(err => {
+            console.error('Failed to load audit logs:', err);
+            return defaultAuditLogs;
+          }),
+          SettingsService.get().catch(err => {
+            console.error('Failed to load settings:', err);
+            return defaultAppSettings;
+          }),
           RateService.getHistory().catch(() => []),
+          HeroSlidesService.getAdminList().catch(err => {
+            console.warn('Hero slides not loaded from local API, using defaults:', err);
+            return defaultHeroSlides;
+          }),
+          PartnersService.getAdminList().catch(err => {
+            console.warn('Partners not loaded from local API, using defaults:', err);
+            return defaultPartners;
+          }),
+          StatisticsService.getAdminList().catch(err => {
+            console.warn('Statistics not loaded from local API, using defaults:', err);
+            return defaultStatistics;
+          }),
+          IndustriesService.getAdminList().catch(err => {
+            console.warn('Industries not loaded from local API, using defaults:', err);
+            return defaultIndustries;
+          }),
         ]);
 
-        setCms(cmsData);
-        setEnquiries(enqs);
-        setRates(rts);
-        setUsers(usrs);
-        setBlogs(blgs);
-        setAuditLogs(logs);
-        setAppSettings(settings);
-        setMedia(mediaList);
-        setRateHistory(historyList);
-      } catch (err) {
-        console.error('Failed to load data from API:', err);
-      }
-
-      // Hero slides are fetched separately from the local Next.js API
-      // so a failure here never blocks the rest of the admin panel from loading
-      try {
-        const slides = await HeroSlidesService.getAdminList();
+        if (cmsData) setCms(cmsData);
+        if (enqs) setEnquiries(enqs);
+        if (rts) setRates(rts);
+        if (usrs) setUsers(usrs);
+        if (blgs) setBlogs(blgs);
+        if (logs) setAuditLogs(logs);
+        if (settings) setAppSettings(settings);
+        if (historyList) setRateHistory(historyList);
         if (Array.isArray(slides)) setHeroSlides(slides);
-      } catch (err) {
-        console.warn('Hero slides not loaded from local API, using defaults:', err);
-        // defaultHeroSlides is already set as initial state — no action needed
-      }
-
-      // Partners and Statistics are also fetched from local API
-      try {
-        const [partnersData, statisticsData, industriesData] = await Promise.all([
-          fetch('/api/admin/cms/partners').then(r => r.json()),
-          fetch('/api/admin/cms/statistics').then(r => r.json()),
-          fetch('/api/admin/cms/industries').then(r => r.json()),
-        ]);
         if (Array.isArray(partnersData)) setPartners(partnersData);
         if (Array.isArray(statisticsData)) setStatistics(statisticsData);
         if (Array.isArray(industriesData)) setIndustries(industriesData);
-      } catch (err) {
-        console.warn('Partners/Statistics/Industries not loaded from local API, using defaults:', err);
+      } finally {
+        setIsLoading(false);
+        loadDataPromiseRef.current = null;
       }
+    })();
 
-      setIsLoading(false);
-    }
+    return loadDataPromiseRef.current;
+  }, []);
 
+  // Hydrate from API on mount
+  useEffect(() => {
     const storedTheme = loadFromStorage<'light' | 'dark'>('easyfr8_theme', 'light');
     setTheme(storedTheme);
     document.documentElement.setAttribute('data-theme', storedTheme);
 
     const token = typeof window !== 'undefined' ? localStorage.getItem('easyfr8_token') : null;
+    const storedUser = loadFromStorage<CurrentUser | null>('easyfr8_currentUser', null);
+
     if (token) {
+      if (storedUser) {
+        setCurrentUser(storedUser);
+      }
       AuthService.getProfile()
-        .then(profile => {
+        .then((profile) => {
           setCurrentUser(profile);
           setSessionActive(true);
+          saveToStorage('easyfr8_currentUser', profile);
           loadData();
         })
-        .catch(() => {
+        .catch((err) => {
+          console.warn('Session verification failed, resetting auth state:', err?.message || err);
           logout();
           setIsLoading(false);
         });
     } else {
-      loadData();
+      // Unauthenticated visitor: do not fetch protected admin routes
+      setIsLoading(false);
+      CMSService.getHomepage()
+        .then((cmsData) => {
+          if (cmsData) setCms(cmsData);
+        })
+        .catch(() => {});
     }
-  }, []);
+  }, [loadData]);
 
   // ── CMS ──────────────────────────────────────────────────────────────────────
-  const updateCMS = (updated: CMSData) => {
+  const updateCMS = async (updated: CMSData): Promise<void> => {
     setCms(updated);
-    CMSService.updateCMSData(updated).catch(e => {
-      console.error(e);
-      showToast('Failed to save CMS changes to server', 'danger');
-    });
+    try {
+      const fresh = await CMSService.updateCMSData(updated);
+      if (fresh) {
+        setCms(fresh);
+      }
+    } catch (e: any) {
+      console.error('[DataContext updateCMS error]', e);
+      showToast(e.message || 'Failed to save CMS changes to server', 'danger');
+      throw e;
+    }
+  };
+
+  const updateCMSStateOnly = (updated: CMSData) => {
+    setCms(updated);
+  };
+
+  // ── Services Mutations ──────────────────────────────────────────────────────
+  const addService = async (service: Partial<Service>): Promise<Service> => {
+    try {
+      const newService = await ServicesService.create(service);
+      setCms((prev) => {
+        const list = [...(prev.services || []), newService];
+        list.sort((a, b) => (Number(a.sortOrder) || 0) - (Number(b.sortOrder) || 0));
+        return { ...prev, services: list };
+      });
+      return newService;
+    } catch (e: any) {
+      throw e;
+    }
+  };
+
+  const updateService = async (id: string | number, updated: Partial<Service>): Promise<Service> => {
+    try {
+      const updatedService = await ServicesService.update(id, updated);
+      setCms((prev) => {
+        const list = (prev.services || []).map((s) => (String(s.id) === String(id) ? updatedService : s));
+        list.sort((a, b) => (Number(a.sortOrder) || 0) - (Number(b.sortOrder) || 0));
+        return { ...prev, services: list };
+      });
+      return updatedService;
+    } catch (e: any) {
+      throw e;
+    }
+  };
+
+  const deleteService = async (id: string | number): Promise<void> => {
+    try {
+      await ServicesService.delete(id);
+      setCms((prev) => ({
+        ...prev,
+        services: (prev.services || []).filter((s) => String(s.id) !== String(id)),
+      }));
+    } catch (e: any) {
+      throw e;
+    }
   };
 
   // ── Enquiries ─────────────────────────────────────────────────────────────────
@@ -386,10 +499,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
       await UserService.delete(id);
       const updated = users.filter((u) => u.id !== id);
       setUsers(updated);
-      showToast('User deleted successfully', 'warning');
+      showToast('User account record cleared.', 'success');
     } catch (e: any) {
       console.error(e);
-      showToast(e.message || 'Failed to delete user', 'danger');
+      showToast(e.message || 'Failed to delete user account.', 'danger');
+      throw e;
     }
   };
 
@@ -456,9 +570,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
     saveToStorage('easyfr8_currentUser', user);
     saveToStorage('easyfr8_sessionEmail', email);
+    // Immediately load all protected data using the new credentials
+    loadData();
   };
 
   const logout = () => {
+    // Notify server to clear HTTP-only easyfr8_token cookie
+    AuthService.logout().catch(() => {});
     setCurrentUser(null);
     setSessionActive(false);
     if (typeof window !== 'undefined') {
@@ -466,6 +584,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
       localStorage.removeItem('easyfr8_currentUser');
       localStorage.removeItem('easyfr8_sessionEmail');
     }
+    // Cleanly reset protected datasets to default states
+    setUsers(defaultUsers);
+    setAuditLogs(defaultAuditLogs);
+    setEnquiries(defaultEnquiries);
+    setRates(defaultRates);
   };
 
   // ── Hero Slides Mutations ──────────────────────────────────────────────────
@@ -510,12 +633,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   // ── Partners Mutations ────────────────────────────────────────────────────
   const addPartner = async (partner: Omit<Partner, 'id' | 'created_at' | 'updated_at'>) => {
     try {
-      const res = await fetch('/api/admin/cms/partners', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(partner),
-      });
-      const newPartner: Partner = await res.json();
+      const newPartner = await PartnersService.create(partner);
       setPartners((prev) => [...prev, newPartner]);
       showToast('Partner added successfully', 'success');
     } catch (e: any) {
@@ -526,12 +644,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const updatePartner = async (id: string, updated: Partial<Partner>) => {
     try {
-      const res = await fetch(`/api/admin/cms/partners/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updated),
-      });
-      const updatedPartner: Partner = await res.json();
+      const updatedPartner = await PartnersService.update(id, updated);
       setPartners((prev) => prev.map((p) => (p.id === id ? updatedPartner : p)));
       showToast('Partner updated successfully', 'success');
     } catch (e: any) {
@@ -542,7 +655,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const deletePartner = async (id: string) => {
     try {
-      await fetch(`/api/admin/cms/partners/${id}`, { method: 'DELETE' });
+      await PartnersService.delete(id);
       setPartners((prev) => prev.filter((p) => p.id !== id));
       showToast('Partner deleted successfully', 'success');
     } catch (e: any) {
@@ -554,12 +667,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   // ── Statistics Mutations ──────────────────────────────────────────────────
   const addStatistic = async (stat: Omit<Statistic, 'id' | 'created_at' | 'updated_at'>) => {
     try {
-      const res = await fetch('/api/admin/cms/statistics', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(stat),
-      });
-      const newStat: Statistic = await res.json();
+      const newStat = await StatisticsService.create(stat);
       setStatistics((prev) => [...prev, newStat]);
       showToast('Statistic added successfully', 'success');
     } catch (e: any) {
@@ -570,12 +678,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const updateStatistic = async (id: string, updated: Partial<Statistic>) => {
     try {
-      const res = await fetch(`/api/admin/cms/statistics/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updated),
-      });
-      const updatedStat: Statistic = await res.json();
+      const updatedStat = await StatisticsService.update(id, updated);
       setStatistics((prev) => prev.map((s) => (s.id === id ? updatedStat : s)));
       showToast('Statistic updated successfully', 'success');
     } catch (e: any) {
@@ -586,7 +689,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const deleteStatistic = async (id: string) => {
     try {
-      await fetch(`/api/admin/cms/statistics/${id}`, { method: 'DELETE' });
+      await StatisticsService.delete(id);
       setStatistics((prev) => prev.filter((s) => s.id !== id));
       showToast('Statistic deleted successfully', 'success');
     } catch (e: any) {
@@ -598,12 +701,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
   // ── Industries ────────────────────────────────────────────────────────────────
   const addIndustry = async (ind: Omit<Industry, 'id' | 'created_at' | 'updated_at'>) => {
     try {
-      const res = await fetch('/api/admin/cms/industries', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(ind),
-      });
-      const newInd: Industry = await res.json();
+      const newInd = await IndustriesService.create(ind);
       setIndustries((prev) => [...prev, newInd]);
       showToast('Industry added successfully', 'success');
     } catch (e: any) {
@@ -614,12 +712,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const updateIndustry = async (id: string, updated: Partial<Industry>) => {
     try {
-      const res = await fetch(`/api/admin/cms/industries/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updated),
-      });
-      const updatedInd: Industry = await res.json();
+      const updatedInd = await IndustriesService.update(id, updated);
       setIndustries((prev) => prev.map((i) => (i.id === id ? updatedInd : i)));
       showToast('Industry updated successfully', 'success');
     } catch (e: any) {
@@ -630,7 +723,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
   const deleteIndustry = async (id: string) => {
     try {
-      await fetch(`/api/admin/cms/industries/${id}`, { method: 'DELETE' });
+      await IndustriesService.delete(id);
       setIndustries((prev) => prev.filter((i) => i.id !== id));
       showToast('Industry deleted successfully', 'success');
     } catch (e: any) {
@@ -736,6 +829,15 @@ export function DataProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const loadMedia = async () => {
+    try {
+      const list = await MediaService.getList();
+      if (Array.isArray(list)) setMedia(list);
+    } catch (e) {
+      console.error('Failed to load media list:', e);
+    }
+  };
+
   const loadRateHistory = async () => {
     try {
       const list = await RateService.getHistory();
@@ -748,7 +850,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
   return (
     <DataContext.Provider
       value={{
-        cms, updateCMS,
+        cms, updateCMS, updateCMSStateOnly,
+        addService, updateService, deleteService,
         enquiries, addEnquiry, updateEnquiry, deleteEnquiry, bulkDeleteEnquiries, bulkUpdateEnquiryStatus,
         rates, addRate, updateRate, deleteRate, bulkUpdateRates,
         users, addUser, updateUser, deleteUser,
@@ -763,8 +866,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
         partners, addPartner, updatePartner, deletePartner,
         statistics, addStatistic, updateStatistic, deleteStatistic,
         industries, addIndustry, updateIndustry, deleteIndustry,
-        media, addMedia, deleteMedia, replaceMedia,
+        media, loadMedia, addMedia, deleteMedia, replaceMedia,
         rateHistory, loadRateHistory,
+        refreshData: loadData,
       }}
     >
       {children}

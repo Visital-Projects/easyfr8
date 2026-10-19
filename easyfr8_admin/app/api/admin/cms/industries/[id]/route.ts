@@ -1,27 +1,42 @@
 import { NextResponse } from 'next/server';
-import { readDb, writeDb, getPool } from '@/lib/db';
+import { execute, query } from '@/lib/db';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
     const body = await req.json();
-    const db = await readDb();
 
-    if (!db.industries) db.industries = [];
-    const idx = db.industries.findIndex((i) => i.id === id);
-    if (idx === -1) {
+    const existing: any = await query('SELECT * FROM industries WHERE id = ?', [id]);
+    if (!existing || existing.length === 0) {
       return NextResponse.json({ success: false, error: 'Industry not found' }, { status: 404 });
     }
 
-    db.industries[idx] = {
-      ...db.industries[idx],
-      ...body,
-      id: id,
-      updated_at: new Date().toISOString(),
-    };
+    const current = existing[0];
+    const title = body.title !== undefined ? body.title : current.title;
+    const slug = body.slug !== undefined ? body.slug : (current.slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''));
+    const desc = body.desc !== undefined ? body.desc : (body.description !== undefined ? body.description : current.description);
+    const icon = body.icon !== undefined ? body.icon : current.icon;
+    const status = body.status !== undefined ? body.status : current.status;
+    const sortOrder = body.sort_order !== undefined ? body.sort_order : current.sort_order;
 
-    await writeDb(db);
-    return NextResponse.json(db.industries[idx]);
+    await execute(`
+      UPDATE industries
+      SET title = ?, slug = ?, description = ?, icon = ?, status = ?, sort_order = ?, updated_at = NOW()
+      WHERE id = ?
+    `, [title, slug, desc, icon, status, sortOrder, id]);
+
+    return NextResponse.json({
+      id,
+      title,
+      desc,
+      icon,
+      status,
+      sort_order: sortOrder,
+      updated_at: new Date().toISOString(),
+    });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
@@ -30,25 +45,10 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   try {
-    const db = await readDb();
-
-    if (!db.industries) db.industries = [];
-    const idx = db.industries.findIndex((i) => i.id === id);
-    if (idx === -1) {
-      return NextResponse.json({ success: false, error: 'Industry not found' }, { status: 404 });
-    }
-
-    db.industries.splice(idx, 1);
-
-    const pool = getPool();
-    const [result]: any = await pool.query('DELETE FROM industries WHERE id = ?', [id]);
-
-    await writeDb(db);
-
+    await execute('DELETE FROM industries WHERE id = ?', [id]);
     return NextResponse.json({
       success: true,
       message: 'Industry deleted successfully',
-      affectedRows: result.affectedRows || 1,
     });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });

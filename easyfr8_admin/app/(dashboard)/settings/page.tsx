@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useData } from '../../../context/DataContext';
-import { AppSettings, UserAccount } from '../../../lib/store';
+import { AppSettings, UserAccount, RolesSettings } from '../../../lib/store';
 import { SettingsService, AuthService } from '../../../services/api';
 import Pagination from '../../../components/Pagination';
 
@@ -33,12 +33,17 @@ export default function SettingsPage() {
     { id: 3, ip: '192.168.1.102', device: 'Chrome / Windows 11', time: '2026-07-02 09:30:15', location: 'Dhanbad, India', status: 'Success' },
   ]);
 
-  // Roles Matrix Form States (dynamic role mapping in state)
-  const [rolesList, setRolesList] = useState<string[]>(['Manager', 'Content Moderator']);
-  const [permissionsMatrix, setPermissionsMatrix] = useState<Record<string, Record<string, boolean>>>({
-    'Manager': { edit_cms: true, manage_rates: true, manage_enquiries: true, manage_blogs: true, view_audit_logs: false, manage_users: false },
-    'Content Moderator': { edit_cms: true, manage_rates: false, manage_enquiries: false, manage_blogs: true, view_audit_logs: false, manage_users: false }
-  });
+  // Roles Matrix Form States (hydrated from persisted appSettings)
+  const [rolesList, setRolesList] = useState<string[]>(
+    appSettings.roles?.rolesList || ['Manager', 'Content Moderator']
+  );
+  const [permissionsMatrix, setPermissionsMatrix] = useState<Record<string, Record<string, boolean>>>(
+    appSettings.roles?.permissionsMatrix || {
+      'Manager': { edit_cms: true, manage_rates: true, manage_enquiries: true, manage_blogs: true, view_audit_logs: false, manage_users: false },
+      'Content Moderator': { edit_cms: true, manage_rates: false, manage_enquiries: false, manage_blogs: true, view_audit_logs: false, manage_users: false }
+    }
+  );
+  const [isSavingMatrix, setIsSavingMatrix] = useState(false);
 
   // General Settings States
   const [siteName, setSiteName] = useState(appSettings.site.siteName);
@@ -147,7 +152,24 @@ export default function SettingsPage() {
     setSmtpPassword(appSettings.smtp.password);
     setSmtpSenderEmail(appSettings.smtp.senderEmail);
     setSmsApiKey(appSettings.sms.apiKey);
+    if (appSettings.roles) {
+      if (appSettings.roles.rolesList && Array.isArray(appSettings.roles.rolesList)) {
+        setRolesList(appSettings.roles.rolesList);
+      }
+      if (appSettings.roles.permissionsMatrix && typeof appSettings.roles.permissionsMatrix === 'object') {
+        setPermissionsMatrix(appSettings.roles.permissionsMatrix);
+      }
+    }
   }, [appSettings]);
+
+  // Sync profile form states when currentUser hydrates or updates
+  useEffect(() => {
+    if (currentUser) {
+      if (currentUser.name) setProfileName(currentUser.name);
+      if (currentUser.email) setProfileEmail(currentUser.email);
+      if (currentUser.avatar) setProfileAvatar(currentUser.avatar);
+    }
+  }, [currentUser]);
 
   // Handle Profile Photo Upload (Base64 conversion)
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -217,31 +239,61 @@ export default function SettingsPage() {
     }));
   };
 
-  const handleSaveMatrix = (e: React.FormEvent) => {
+  const handleSaveMatrix = async (e: React.FormEvent) => {
     e.preventDefault();
-    addAuditLog('Updated security access role matrices');
-    showToast('Access permissions matrix saved!', 'success');
+    try {
+      setIsSavingMatrix(true);
+      const updatedRoles: RolesSettings = {
+        rolesList,
+        permissionsMatrix,
+      };
+      await SettingsService.update('roles', updatedRoles);
+      updateAppSettings({ roles: updatedRoles });
+      addAuditLog('Updated security access role matrices');
+      showToast('Access permissions matrix saved!', 'success');
+    } catch (err: any) {
+      showToast(err.message || 'Failed to save access permissions configuration.', 'danger');
+    } finally {
+      setIsSavingMatrix(false);
+    }
   };
 
-  const handleAddRole = () => {
+  const handleAddRole = async () => {
     const name = prompt('Enter name of the new access role:');
     if (!name) return;
     if (rolesList.includes(name)) { showToast('Role already exists.', 'warning'); return; }
-    setRolesList((prev) => [...prev, name]);
-    setPermissionsMatrix((prev) => ({
-      ...prev,
+    const newRolesList = [...rolesList, name];
+    const newMatrix = {
+      ...permissionsMatrix,
       [name]: { edit_cms: false, manage_rates: false, manage_enquiries: false, manage_blogs: false, view_audit_logs: false, manage_users: false }
-    }));
+    };
+    setRolesList(newRolesList);
+    setPermissionsMatrix(newMatrix);
+    const updatedRoles: RolesSettings = { rolesList: newRolesList, permissionsMatrix: newMatrix };
+    try {
+      await SettingsService.update('roles', updatedRoles);
+      updateAppSettings({ roles: updatedRoles });
+    } catch (err: any) {
+      console.error('Failed to persist new role', err);
+    }
     addAuditLog(`Registered new access role: ${name}`);
     showToast(`Role ${name} added to control matrix.`, 'success');
   };
 
-  const handleDeleteRole = (name: string) => {
+  const handleDeleteRole = async (name: string) => {
     if (!confirm(`Are you sure you want to delete the role "${name}" and all its permissions?`)) return;
-    setRolesList((prev) => prev.filter((r) => r !== name));
+    const newRolesList = rolesList.filter((r) => r !== name);
     const nextMatrix = { ...permissionsMatrix };
     delete nextMatrix[name];
+    setRolesList(newRolesList);
     setPermissionsMatrix(nextMatrix);
+    const updatedRoles: RolesSettings = { rolesList: newRolesList, permissionsMatrix: nextMatrix };
+    try {
+      await SettingsService.update('roles', updatedRoles);
+      updateAppSettings({ roles: updatedRoles });
+    } catch (err: any) {
+      console.error('Failed to persist deleted role', err);
+    }
     addAuditLog(`Removed access role: ${name}`);
     showToast(`Role ${name} removed from configuration.`, 'success');
   };
@@ -553,7 +605,9 @@ export default function SettingsPage() {
                   </tbody>
                 </table>
               </div>
-              <button type="submit" className="btn btn-primary" style={{ marginTop: '20px' }}>Save Access Permission Configuration</button>
+              <button type="submit" className="btn btn-primary" style={{ marginTop: '20px' }} disabled={isSavingMatrix}>
+                {isSavingMatrix ? 'Saving Configuration...' : 'Save Access Permission Configuration'}
+              </button>
             </form>
           </div>
         </div>

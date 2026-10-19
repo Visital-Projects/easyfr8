@@ -42,3 +42,12 @@ uploads/*
 
 # Testing coverage
 coverage/
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Local database dumps and backups
+*.sql
+!easyfr8_admin/lib/schema.sql
+easyfr8_admin/scripts/backups/
+scripts/backups/

@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
-import { readDb, writeDb } from '@/lib/db';
+import { getCmsData, execute } from '@/lib/db';
+import { authenticateRequest } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 /**
  * GET /api/cms/about
@@ -8,8 +12,8 @@ import { readDb, writeDb } from '@/lib/db';
  */
 export async function GET() {
   try {
-    const db = await readDb();
-    return NextResponse.json({ success: true, aboutUs: db.cms?.aboutUs || {} });
+    const cms = await getCmsData();
+    return NextResponse.json({ success: true, aboutUs: cms?.aboutUs || {} });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
@@ -22,20 +26,31 @@ export async function GET() {
  */
 export async function POST(req: Request) {
   try {
+    const auth = authenticateRequest(req, ['Administrator', 'Manager']);
+    if (!auth.authenticated) {
+      return NextResponse.json({ success: false, error: auth.error }, { status: auth.status });
+    }
+
     const body = await req.json();
-    const db = await readDb();
+    const cms = await getCmsData();
 
     // Merge only into aboutUs — contact/footer data is untouched
-    db.cms = {
-      ...db.cms,
+    const updatedCms = {
+      ...cms,
       aboutUs: {
-        ...db.cms.aboutUs,
+        ...cms.aboutUs,
         ...(body.aboutUs ?? body), // accept either { aboutUs: {...} } or flat fields
       },
     };
 
-    await writeDb(db);
-    return NextResponse.json({ success: true, aboutUs: db.cms.aboutUs });
+    const { services: _s, faqs: _f, ...cmsDataToStore } = updatedCms;
+
+    await execute(
+      'INSERT INTO cms_data (id, data) VALUES (1, ?) ON DUPLICATE KEY UPDATE data = VALUES(data)',
+      [JSON.stringify(cmsDataToStore)]
+    );
+
+    return NextResponse.json({ success: true, aboutUs: updatedCms.aboutUs });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }

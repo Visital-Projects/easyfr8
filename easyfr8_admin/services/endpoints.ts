@@ -13,6 +13,7 @@ export const API_ENDPOINTS = {
     HOMEPAGE: '/cms',
     ABOUT_US: '/cms/about-us',
     SERVICES: '/cms/services',
+    SERVICE_ID: (id: string | number) => `/cms/services/${id}`,
     FAQS: '/cms/faqs',
     CONTACT: '/cms/contact',
     STATIC_PAGES: '/cms/static-pages',
@@ -20,6 +21,12 @@ export const API_ENDPOINTS = {
     HERO_SLIDES: '/cms/hero-slides',
     ADMIN_HERO_SLIDES: '/admin/cms/hero-slides',
     ADMIN_HERO_SLIDES_ID: (id: string) => `/admin/cms/hero-slides/${id}`,
+    ADMIN_PARTNERS: '/admin/cms/partners',
+    ADMIN_PARTNERS_ID: (id: string) => `/admin/cms/partners/${id}`,
+    ADMIN_STATISTICS: '/admin/cms/statistics',
+    ADMIN_STATISTICS_ID: (id: string) => `/admin/cms/statistics/${id}`,
+    ADMIN_INDUSTRIES: '/admin/cms/industries',
+    ADMIN_INDUSTRIES_ID: (id: string) => `/admin/cms/industries/${id}`,
   },
   MEDIA: {
     LIST: '/media',
@@ -48,7 +55,9 @@ export const API_ENDPOINTS = {
   },
   DOCUMENTS: {
     LIST: '/documents',
+    CREATE: '/documents',
     UPDATE: (id: string) => `/documents/${id}`,
+    DELETE: (id: string) => `/documents/${id}`,
   },
   BLOGS: {
     LIST: '/blogs',
@@ -59,5 +68,9 @@ export const API_ENDPOINTS = {
   AUDIT_LOGS: {
     LIST: '/audit-logs',
     CLEAR: '/audit-logs/clear',
+  },
+  SETTINGS: {
+    GET: '/settings',
+    UPDATE: (section: string) => `/settings/${section}`,
   },
 };

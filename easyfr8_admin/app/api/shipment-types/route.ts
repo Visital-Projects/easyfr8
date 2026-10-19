@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getPool } from '@/lib/db';
+import { authenticateRequest } from '@/lib/auth';
 
 export async function GET(req: Request) {
   try {
@@ -22,8 +23,17 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const auth = authenticateRequest(req, ['Administrator', 'Manager']);
+    if (!auth.authenticated) {
+      return NextResponse.json({ success: false, error: auth.error }, { status: auth.status });
+    }
+
     const body = await req.json();
     const { id, freight_type_id, name, description, status } = body;
+    if (!name || !freight_type_id) {
+      return NextResponse.json({ success: false, error: 'Name and freight mode are required.' }, { status: 400 });
+    }
+
     const pool = getPool();
     await pool.query(
       'INSERT INTO shipment_types (id, freight_type_id, name, description, status) VALUES (?, ?, ?, ?, ?)',

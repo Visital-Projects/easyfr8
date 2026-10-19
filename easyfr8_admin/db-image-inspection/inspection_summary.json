@@ -1,0 +1,3881 @@
+{
+  "overview": {
+    "totalTables": 26,
+    "tables": [
+      {
+        "TABLE_NAME": "app_settings",
+        "TABLE_TYPE": "BASE TABLE",
+        "ENGINE": "InnoDB",
+        "TABLE_ROWS": 0,
+        "CREATE_TIME": "2026-09-11T06:00:24.000Z",
+        "UPDATE_TIME": "2026-10-02T19:39:00.000Z"
+      },
+      {
+        "TABLE_NAME": "audit_logs",
+        "TABLE_TYPE": "BASE TABLE",
+        "ENGINE": "InnoDB",
+        "TABLE_ROWS": 33,
+        "CREATE_TIME": "2026-09-10T12:15:45.000Z",
+        "UPDATE_TIME": "2026-10-02T19:20:16.000Z"
+      },
+      {
+        "TABLE_NAME": "blogs",
+        "TABLE_TYPE": "BASE TABLE",
+        "ENGINE": "InnoDB",
+        "TABLE_ROWS": 3,
+        "CREATE_TIME": "2026-09-10T12:15:44.000Z",
+        "UPDATE_TIME": "2026-10-02T18:18:37.000Z"
+      },
+      {
+        "TABLE_NAME": "bookings",
+        "TABLE_TYPE": "BASE TABLE",
+        "ENGINE": "InnoDB",
+        "TABLE_ROWS": 2,
+        "CREATE_TIME": "2026-09-10T12:15:45.000Z",
+        "UPDATE_TIME": "2026-10-02T18:14:29.000Z"
+      },
+      {
+        "TABLE_NAME": "cms_data",
+        "TABLE_TYPE": "BASE TABLE",
+        "ENGINE": "InnoDB",
+        "TABLE_ROWS": 1,
+        "CREATE_TIME": "2026-09-10T12:15:44.000Z",
+        "UPDATE_TIME": "2026-10-02T20:42:29.000Z"
+      },
+      {
+        "TABLE_NAME": "containers",
+        "TABLE_TYPE": "BASE TABLE",
+        "ENGINE": "InnoDB",
+        "TABLE_ROWS": 7,
+        "CREATE_TIME": "2026-09-10T12:15:44.000Z",
+        "UPDATE_TIME": null
+      },
+      {
+        "TABLE_NAME": "enquiries",
+        "TABLE_TYPE": "BASE TABLE",
+        "ENGINE": "InnoDB",
+        "TABLE_ROWS": 14,
+        "CREATE_TIME": "2026-09-10T12:15:44.000Z",
+        "UPDATE_TIME": null
+      },
+      {
+        "TABLE_NAME": "faqs",
+        "TABLE_TYPE": "BASE TABLE",
+        "ENGINE": "InnoDB",
+        "TABLE_ROWS": 3,
+        "CREATE_TIME": "2026-10-03T06:18:23.000Z",
+        "UPDATE_TIME": "2026-10-03T06:34:48.000Z"
+      },
+      {
+        "TABLE_NAME": "freight_modes",
+        "TABLE_TYPE": "BASE TABLE",
+        "ENGINE": "InnoDB",
+        "TABLE_ROWS": 2,
+        "CREATE_TIME": "2026-09-10T12:15:44.000Z",
+        "UPDATE_TIME": null
+      },
+      {
+        "TABLE_NAME": "freight_rates",
+        "TABLE_TYPE": "BASE TABLE",
+        "ENGINE": "InnoDB",
+        "TABLE_ROWS": 5,
+        "CREATE_TIME": "2026-09-10T12:33:57.000Z",
+        "UPDATE_TIME": null
+      },
+      {
+        "TABLE_NAME": "freight_types",
+        "TABLE_TYPE": "BASE TABLE",
+        "ENGINE": "InnoDB",
+        "TABLE_ROWS": 3,
+        "CREATE_TIME": "2026-09-10T12:15:44.000Z",
+        "UPDATE_TIME": "2026-10-02T18:29:34.000Z"
+      },
+      {
+        "TABLE_NAME": "hero_slides",
+        "TABLE_TYPE": "BASE TABLE",
+        "ENGINE": "InnoDB",
+        "TABLE_ROWS": 3,
+        "CREATE_TIME": "2026-09-10T12:15:44.000Z",
+        "UPDATE_TIME": "2026-10-03T06:55:16.000Z"
+      },
+      {
+        "TABLE_NAME": "iata_codes",
+        "TABLE_TYPE": "BASE TABLE",
+        "ENGINE": "InnoDB",
+        "TABLE_ROWS": 20,
+        "CREATE_TIME": "2026-09-29T16:52:48.000Z",
+        "UPDATE_TIME": null
+      },
+      {
+        "TABLE_NAME": "industries",
+        "TABLE_TYPE": "BASE TABLE",
+        "ENGINE": "InnoDB",
+        "TABLE_ROWS": 9,
+        "CREATE_TIME": "2026-10-03T06:18:23.000Z",
+        "UPDATE_TIME": "2026-10-03T06:18:23.000Z"
+      },
+      {
+        "TABLE_NAME": "kyc_documents",
+        "TABLE_TYPE": "BASE TABLE",
+        "ENGINE": "InnoDB",
+        "TABLE_ROWS": 0,
+        "CREATE_TIME": "2026-09-30T19:14:18.000Z",
+        "UPDATE_TIME": null
+      },
+      {
+        "TABLE_NAME": "locations",
+        "TABLE_TYPE": "BASE TABLE",
+        "ENGINE": "InnoDB",
+        "TABLE_ROWS": 7,
+        "CREATE_TIME": "2026-09-10T12:15:44.000Z",
+        "UPDATE_TIME": null
+      },
+      {
+        "TABLE_NAME": "media",
+        "TABLE_TYPE": "BASE TABLE",
+        "ENGINE": "InnoDB",
+        "TABLE_ROWS": 5,
+        "CREATE_TIME": "2026-09-10T12:15:44.000Z",
+        "UPDATE_TIME": "2026-10-03T06:31:40.000Z"
+      },
+      {
+        "TABLE_NAME": "partners",
+        "TABLE_TYPE": "BASE TABLE",
+        "ENGINE": "InnoDB",
+        "TABLE_ROWS": 6,
+        "CREATE_TIME": "2026-09-10T12:15:44.000Z",
+        "UPDATE_TIME": null
+      },
+      {
+        "TABLE_NAME": "ports",
+        "TABLE_TYPE": "BASE TABLE",
+        "ENGINE": "InnoDB",
+        "TABLE_ROWS": 6024,
+        "CREATE_TIME": "2026-09-29T16:53:12.000Z",
+        "UPDATE_TIME": "2026-10-02T18:29:36.000Z"
+      },
+      {
+        "TABLE_NAME": "rates",
+        "TABLE_TYPE": "BASE TABLE",
+        "ENGINE": "InnoDB",
+        "TABLE_ROWS": 6,
+        "CREATE_TIME": "2026-09-10T12:15:45.000Z",
+        "UPDATE_TIME": null
+      },
+      {
+        "TABLE_NAME": "rate_activity_logs",
+        "TABLE_TYPE": "BASE TABLE",
+        "ENGINE": "InnoDB",
+        "TABLE_ROWS": 23,
+        "CREATE_TIME": "2026-09-10T12:15:45.000Z",
+        "UPDATE_TIME": null
+      },
+      {
+        "TABLE_NAME": "services",
+        "TABLE_TYPE": "BASE TABLE",
+        "ENGINE": "InnoDB",
+        "TABLE_ROWS": 11,
+        "CREATE_TIME": "2026-10-03T06:18:23.000Z",
+        "UPDATE_TIME": "2026-10-03T06:34:47.000Z"
+      },
+      {
+        "TABLE_NAME": "shipment_types",
+        "TABLE_TYPE": "BASE TABLE",
+        "ENGINE": "InnoDB",
+        "TABLE_ROWS": 4,
+        "CREATE_TIME": "2026-09-10T12:15:45.000Z",
+        "UPDATE_TIME": "2026-10-02T18:15:20.000Z"
+      },
+      {
+        "TABLE_NAME": "statistics",
+        "TABLE_TYPE": "BASE TABLE",
+        "ENGINE": "InnoDB",
+        "TABLE_ROWS": 4,
+        "CREATE_TIME": "2026-09-10T12:15:45.000Z",
+        "UPDATE_TIME": null
+      },
+      {
+        "TABLE_NAME": "terms",
+        "TABLE_TYPE": "BASE TABLE",
+        "ENGINE": "InnoDB",
+        "TABLE_ROWS": 4,
+        "CREATE_TIME": "2026-09-10T12:15:45.000Z",
+        "UPDATE_TIME": "2026-10-02T18:15:45.000Z"
+      },
+      {
+        "TABLE_NAME": "users",
+        "TABLE_TYPE": "BASE TABLE",
+        "ENGINE": "InnoDB",
+        "TABLE_ROWS": 3,
+        "CREATE_TIME": "2026-09-10T12:15:45.000Z",
+        "UPDATE_TIME": "2026-10-02T19:20:16.000Z"
+      }
+    ]
+  },
+  "tables": {
+    "app_settings": {
+      "columns": [
+        {
+          "Field": "id",
+          "Type": "int(11)",
+          "Null": "NO",
+          "Key": "PRI",
+          "Default": "1",
+          "Extra": ""
+        },
+        {
+          "Field": "data",
+          "Type": "longtext",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "updated_at",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": "on update current_timestamp()"
+        }
+      ],
+      "createTable": "CREATE TABLE `app_settings` (\n  `id` int(11) NOT NULL DEFAULT 1,\n  `data` longtext NOT NULL,\n  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),\n  PRIMARY KEY (`id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+      "indexes": [
+        {
+          "keyName": "PRIMARY",
+          "columnName": "id",
+          "nonUnique": 0,
+          "seq": 1
+        }
+      ],
+      "rowCount": 0
+    },
+    "audit_logs": {
+      "columns": [
+        {
+          "Field": "id",
+          "Type": "int(11)",
+          "Null": "NO",
+          "Key": "PRI",
+          "Default": null,
+          "Extra": "auto_increment"
+        },
+        {
+          "Field": "user_id",
+          "Type": "varchar(64)",
+          "Null": "YES",
+          "Key": "MUL",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "user_name",
+          "Type": "varchar(255)",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "action",
+          "Type": "text",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "ip_address",
+          "Type": "varchar(64)",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "created_at",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "MUL",
+          "Default": "current_timestamp()",
+          "Extra": ""
+        }
+      ],
+      "createTable": "CREATE TABLE `audit_logs` (\n  `id` int(11) NOT NULL AUTO_INCREMENT,\n  `user_id` varchar(64) DEFAULT NULL,\n  `user_name` varchar(255) DEFAULT NULL,\n  `action` text NOT NULL,\n  `ip_address` varchar(64) DEFAULT NULL,\n  `created_at` datetime NOT NULL DEFAULT current_timestamp(),\n  PRIMARY KEY (`id`),\n  KEY `idx_user_id` (`user_id`),\n  KEY `idx_created_at` (`created_at`)\n) ENGINE=InnoDB AUTO_INCREMENT=41 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+      "indexes": [
+        {
+          "keyName": "PRIMARY",
+          "columnName": "id",
+          "nonUnique": 0,
+          "seq": 1
+        },
+        {
+          "keyName": "idx_user_id",
+          "columnName": "user_id",
+          "nonUnique": 1,
+          "seq": 1
+        },
+        {
+          "keyName": "idx_created_at",
+          "columnName": "created_at",
+          "nonUnique": 1,
+          "seq": 1
+        }
+      ],
+      "rowCount": 33
+    },
+    "blogs": {
+      "columns": [
+        {
+          "Field": "id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "PRI",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "title",
+          "Type": "varchar(512)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "",
+          "Extra": ""
+        },
+        {
+          "Field": "slug",
+          "Type": "varchar(512)",
+          "Null": "YES",
+          "Key": "MUL",
+          "Default": "",
+          "Extra": ""
+        },
+        {
+          "Field": "content",
+          "Type": "longtext",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "excerpt",
+          "Type": "text",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "image",
+          "Type": "longtext",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "category",
+          "Type": "varchar(128)",
+          "Null": "YES",
+          "Key": "",
+          "Default": "",
+          "Extra": ""
+        },
+        {
+          "Field": "author",
+          "Type": "varchar(128)",
+          "Null": "YES",
+          "Key": "",
+          "Default": "easyfr8",
+          "Extra": ""
+        },
+        {
+          "Field": "status",
+          "Type": "enum('Published','Draft','Archived')",
+          "Null": "NO",
+          "Key": "MUL",
+          "Default": "Draft",
+          "Extra": ""
+        },
+        {
+          "Field": "published_at",
+          "Type": "datetime",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "created_at",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": ""
+        },
+        {
+          "Field": "updated_at",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": "on update current_timestamp()"
+        }
+      ],
+      "createTable": "CREATE TABLE `blogs` (\n  `id` varchar(64) NOT NULL,\n  `title` varchar(512) NOT NULL DEFAULT '',\n  `slug` varchar(512) DEFAULT '',\n  `content` longtext DEFAULT NULL,\n  `excerpt` text DEFAULT NULL,\n  `image` longtext DEFAULT NULL COMMENT 'URL or base64',\n  `category` varchar(128) DEFAULT '',\n  `author` varchar(128) DEFAULT 'easyfr8',\n  `status` enum('Published','Draft','Archived') NOT NULL DEFAULT 'Draft',\n  `published_at` datetime DEFAULT NULL,\n  `created_at` datetime NOT NULL DEFAULT current_timestamp(),\n  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),\n  PRIMARY KEY (`id`),\n  KEY `idx_slug` (`slug`(191)),\n  KEY `idx_status` (`status`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+      "indexes": [
+        {
+          "keyName": "PRIMARY",
+          "columnName": "id",
+          "nonUnique": 0,
+          "seq": 1
+        },
+        {
+          "keyName": "idx_slug",
+          "columnName": "slug",
+          "nonUnique": 1,
+          "seq": 1
+        },
+        {
+          "keyName": "idx_status",
+          "columnName": "status",
+          "nonUnique": 1,
+          "seq": 1
+        }
+      ],
+      "rowCount": 3
+    },
+    "bookings": {
+      "columns": [
+        {
+          "Field": "id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "PRI",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "booking_no",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "UNI",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "user_name",
+          "Type": "varchar(255)",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "email",
+          "Type": "varchar(255)",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "phone",
+          "Type": "varchar(100)",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "freight_type_id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "MUL",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "shipment_type_id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "MUL",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "term_id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "MUL",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "loading_port_id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "MUL",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "discharge_port_id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "MUL",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "container_id",
+          "Type": "varchar(64)",
+          "Null": "YES",
+          "Key": "MUL",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "cargo_details",
+          "Type": "text",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "status",
+          "Type": "enum('Pending','Confirmed','Completed')",
+          "Null": "NO",
+          "Key": "",
+          "Default": "Pending",
+          "Extra": ""
+        },
+        {
+          "Field": "created_at",
+          "Type": "datetime",
+          "Null": "YES",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": ""
+        },
+        {
+          "Field": "updated_at",
+          "Type": "datetime",
+          "Null": "YES",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": "on update current_timestamp()"
+        }
+      ],
+      "createTable": "CREATE TABLE `bookings` (\n  `id` varchar(64) NOT NULL,\n  `booking_no` varchar(64) NOT NULL,\n  `user_name` varchar(255) NOT NULL,\n  `email` varchar(255) NOT NULL,\n  `phone` varchar(100) DEFAULT NULL,\n  `freight_type_id` varchar(64) NOT NULL,\n  `shipment_type_id` varchar(64) NOT NULL,\n  `term_id` varchar(64) NOT NULL,\n  `loading_port_id` varchar(64) NOT NULL,\n  `discharge_port_id` varchar(64) NOT NULL,\n  `container_id` varchar(64) DEFAULT NULL,\n  `cargo_details` text DEFAULT NULL,\n  `status` enum('Pending','Confirmed','Completed') NOT NULL DEFAULT 'Pending',\n  `created_at` datetime DEFAULT current_timestamp(),\n  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),\n  PRIMARY KEY (`id`),\n  UNIQUE KEY `booking_no` (`booking_no`),\n  KEY `freight_type_id` (`freight_type_id`),\n  KEY `shipment_type_id` (`shipment_type_id`),\n  KEY `term_id` (`term_id`),\n  KEY `loading_port_id` (`loading_port_id`),\n  KEY `discharge_port_id` (`discharge_port_id`),\n  KEY `container_id` (`container_id`),\n  CONSTRAINT `bookings_ibfk_1` FOREIGN KEY (`freight_type_id`) REFERENCES `freight_types` (`id`),\n  CONSTRAINT `bookings_ibfk_2` FOREIGN KEY (`shipment_type_id`) REFERENCES `shipment_types` (`id`),\n  CONSTRAINT `bookings_ibfk_3` FOREIGN KEY (`term_id`) REFERENCES `terms` (`id`),\n  CONSTRAINT `bookings_ibfk_4` FOREIGN KEY (`loading_port_id`) REFERENCES `ports` (`id`),\n  CONSTRAINT `bookings_ibfk_5` FOREIGN KEY (`discharge_port_id`) REFERENCES `ports` (`id`),\n  CONSTRAINT `bookings_ibfk_6` FOREIGN KEY (`container_id`) REFERENCES `containers` (`id`) ON DELETE SET NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+      "indexes": [
+        {
+          "keyName": "PRIMARY",
+          "columnName": "id",
+          "nonUnique": 0,
+          "seq": 1
+        },
+        {
+          "keyName": "booking_no",
+          "columnName": "booking_no",
+          "nonUnique": 0,
+          "seq": 1
+        },
+        {
+          "keyName": "freight_type_id",
+          "columnName": "freight_type_id",
+          "nonUnique": 1,
+          "seq": 1
+        },
+        {
+          "keyName": "shipment_type_id",
+          "columnName": "shipment_type_id",
+          "nonUnique": 1,
+          "seq": 1
+        },
+        {
+          "keyName": "term_id",
+          "columnName": "term_id",
+          "nonUnique": 1,
+          "seq": 1
+        },
+        {
+          "keyName": "loading_port_id",
+          "columnName": "loading_port_id",
+          "nonUnique": 1,
+          "seq": 1
+        },
+        {
+          "keyName": "discharge_port_id",
+          "columnName": "discharge_port_id",
+          "nonUnique": 1,
+          "seq": 1
+        },
+        {
+          "keyName": "container_id",
+          "columnName": "container_id",
+          "nonUnique": 1,
+          "seq": 1
+        }
+      ],
+      "rowCount": 2
+    },
+    "cms_data": {
+      "columns": [
+        {
+          "Field": "id",
+          "Type": "int(11)",
+          "Null": "NO",
+          "Key": "PRI",
+          "Default": "1",
+          "Extra": ""
+        },
+        {
+          "Field": "data",
+          "Type": "longtext",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "updated_at",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": "on update current_timestamp()"
+        }
+      ],
+      "createTable": "CREATE TABLE `cms_data` (\n  `id` int(11) NOT NULL DEFAULT 1,\n  `data` longtext NOT NULL COMMENT 'Full CMSData JSON',\n  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),\n  PRIMARY KEY (`id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+      "indexes": [
+        {
+          "keyName": "PRIMARY",
+          "columnName": "id",
+          "nonUnique": 0,
+          "seq": 1
+        }
+      ],
+      "rowCount": 1
+    },
+    "containers": {
+      "columns": [
+        {
+          "Field": "id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "PRI",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "name",
+          "Type": "varchar(128)",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "description",
+          "Type": "text",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "size",
+          "Type": "varchar(50)",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "status",
+          "Type": "enum('active','inactive')",
+          "Null": "NO",
+          "Key": "",
+          "Default": "active",
+          "Extra": ""
+        },
+        {
+          "Field": "created_at",
+          "Type": "datetime",
+          "Null": "YES",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": ""
+        },
+        {
+          "Field": "updated_at",
+          "Type": "datetime",
+          "Null": "YES",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": "on update current_timestamp()"
+        }
+      ],
+      "createTable": "CREATE TABLE `containers` (\n  `id` varchar(64) NOT NULL,\n  `name` varchar(128) NOT NULL,\n  `description` text DEFAULT NULL,\n  `size` varchar(50) DEFAULT NULL,\n  `status` enum('active','inactive') NOT NULL DEFAULT 'active',\n  `created_at` datetime DEFAULT current_timestamp(),\n  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),\n  PRIMARY KEY (`id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+      "indexes": [
+        {
+          "keyName": "PRIMARY",
+          "columnName": "id",
+          "nonUnique": 0,
+          "seq": 1
+        }
+      ],
+      "rowCount": 7
+    },
+    "enquiries": {
+      "columns": [
+        {
+          "Field": "id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "PRI",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "name",
+          "Type": "varchar(255)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "",
+          "Extra": ""
+        },
+        {
+          "Field": "email",
+          "Type": "varchar(255)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "",
+          "Extra": ""
+        },
+        {
+          "Field": "phone",
+          "Type": "varchar(64)",
+          "Null": "YES",
+          "Key": "",
+          "Default": "",
+          "Extra": ""
+        },
+        {
+          "Field": "subject",
+          "Type": "varchar(512)",
+          "Null": "YES",
+          "Key": "",
+          "Default": "",
+          "Extra": ""
+        },
+        {
+          "Field": "notes",
+          "Type": "text",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "assigned_to",
+          "Type": "varchar(255)",
+          "Null": "YES",
+          "Key": "",
+          "Default": "",
+          "Extra": ""
+        },
+        {
+          "Field": "source",
+          "Type": "varchar(128)",
+          "Null": "YES",
+          "Key": "",
+          "Default": "Web Form",
+          "Extra": ""
+        },
+        {
+          "Field": "status",
+          "Type": "enum('New','In Progress','Responded','Closed')",
+          "Null": "NO",
+          "Key": "MUL",
+          "Default": "New",
+          "Extra": ""
+        },
+        {
+          "Field": "created_at",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": ""
+        },
+        {
+          "Field": "updated_at",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": "on update current_timestamp()"
+        }
+      ],
+      "createTable": "CREATE TABLE `enquiries` (\n  `id` varchar(64) NOT NULL,\n  `name` varchar(255) NOT NULL DEFAULT '',\n  `email` varchar(255) NOT NULL DEFAULT '',\n  `phone` varchar(64) DEFAULT '',\n  `subject` varchar(512) DEFAULT '',\n  `notes` text DEFAULT NULL,\n  `assigned_to` varchar(255) DEFAULT '',\n  `source` varchar(128) DEFAULT 'Web Form',\n  `status` enum('New','In Progress','Responded','Closed') NOT NULL DEFAULT 'New',\n  `created_at` datetime NOT NULL DEFAULT current_timestamp(),\n  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),\n  PRIMARY KEY (`id`),\n  KEY `idx_status` (`status`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+      "indexes": [
+        {
+          "keyName": "PRIMARY",
+          "columnName": "id",
+          "nonUnique": 0,
+          "seq": 1
+        },
+        {
+          "keyName": "idx_status",
+          "columnName": "status",
+          "nonUnique": 1,
+          "seq": 1
+        }
+      ],
+      "rowCount": 14
+    },
+    "faqs": {
+      "columns": [
+        {
+          "Field": "id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "PRI",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "category",
+          "Type": "varchar(128)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "General",
+          "Extra": ""
+        },
+        {
+          "Field": "question",
+          "Type": "varchar(512)",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "answer",
+          "Type": "text",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "sort_order",
+          "Type": "int(11)",
+          "Null": "NO",
+          "Key": "MUL",
+          "Default": "0",
+          "Extra": ""
+        },
+        {
+          "Field": "is_active",
+          "Type": "tinyint(1)",
+          "Null": "NO",
+          "Key": "MUL",
+          "Default": "1",
+          "Extra": ""
+        },
+        {
+          "Field": "created_at",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": ""
+        },
+        {
+          "Field": "updated_at",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": "on update current_timestamp()"
+        }
+      ],
+      "createTable": "CREATE TABLE `faqs` (\n  `id` varchar(64) NOT NULL,\n  `category` varchar(128) NOT NULL DEFAULT 'General',\n  `question` varchar(512) NOT NULL,\n  `answer` text NOT NULL,\n  `sort_order` int(11) NOT NULL DEFAULT 0,\n  `is_active` tinyint(1) NOT NULL DEFAULT 1,\n  `created_at` datetime NOT NULL DEFAULT current_timestamp(),\n  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),\n  PRIMARY KEY (`id`),\n  KEY `idx_faqs_sort` (`sort_order`),\n  KEY `idx_faqs_active` (`is_active`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+      "indexes": [
+        {
+          "keyName": "PRIMARY",
+          "columnName": "id",
+          "nonUnique": 0,
+          "seq": 1
+        },
+        {
+          "keyName": "idx_faqs_sort",
+          "columnName": "sort_order",
+          "nonUnique": 1,
+          "seq": 1
+        },
+        {
+          "keyName": "idx_faqs_active",
+          "columnName": "is_active",
+          "nonUnique": 1,
+          "seq": 1
+        }
+      ],
+      "rowCount": 3
+    },
+    "freight_modes": {
+      "columns": [
+        {
+          "Field": "id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "PRI",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "name",
+          "Type": "varchar(100)",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "status",
+          "Type": "enum('active','inactive')",
+          "Null": "NO",
+          "Key": "",
+          "Default": "active",
+          "Extra": ""
+        },
+        {
+          "Field": "created_at",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": ""
+        },
+        {
+          "Field": "updated_at",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": "on update current_timestamp()"
+        }
+      ],
+      "createTable": "CREATE TABLE `freight_modes` (\n  `id` varchar(64) NOT NULL,\n  `name` varchar(100) NOT NULL,\n  `status` enum('active','inactive') NOT NULL DEFAULT 'active',\n  `created_at` datetime NOT NULL DEFAULT current_timestamp(),\n  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),\n  PRIMARY KEY (`id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+      "indexes": [
+        {
+          "keyName": "PRIMARY",
+          "columnName": "id",
+          "nonUnique": 0,
+          "seq": 1
+        }
+      ],
+      "rowCount": 2
+    },
+    "freight_rates": {
+      "columns": [
+        {
+          "Field": "id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "PRI",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "freight_mode_id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "MUL",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "shipment_type_id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "MUL",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "origin_id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "MUL",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "destination_id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "MUL",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "container_id",
+          "Type": "varchar(64)",
+          "Null": "YES",
+          "Key": "MUL",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "price",
+          "Type": "decimal(12,2)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "0.00",
+          "Extra": ""
+        },
+        {
+          "Field": "currency",
+          "Type": "varchar(10)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "USD",
+          "Extra": ""
+        },
+        {
+          "Field": "transit_time",
+          "Type": "int(11)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "0",
+          "Extra": ""
+        },
+        {
+          "Field": "carrier",
+          "Type": "varchar(255)",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "status",
+          "Type": "enum('active','inactive')",
+          "Null": "NO",
+          "Key": "",
+          "Default": "active",
+          "Extra": ""
+        },
+        {
+          "Field": "created_at",
+          "Type": "datetime",
+          "Null": "YES",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": ""
+        },
+        {
+          "Field": "updated_at",
+          "Type": "datetime",
+          "Null": "YES",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": "on update current_timestamp()"
+        }
+      ],
+      "createTable": "CREATE TABLE `freight_rates` (\n  `id` varchar(64) NOT NULL,\n  `freight_mode_id` varchar(64) NOT NULL,\n  `shipment_type_id` varchar(64) NOT NULL,\n  `origin_id` varchar(64) NOT NULL,\n  `destination_id` varchar(64) NOT NULL,\n  `container_id` varchar(64) DEFAULT NULL,\n  `price` decimal(12,2) NOT NULL DEFAULT 0.00,\n  `currency` varchar(10) NOT NULL DEFAULT 'USD',\n  `transit_time` int(11) NOT NULL DEFAULT 0,\n  `carrier` varchar(255) DEFAULT NULL,\n  `status` enum('active','inactive') NOT NULL DEFAULT 'active',\n  `created_at` datetime DEFAULT current_timestamp(),\n  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),\n  PRIMARY KEY (`id`),\n  KEY `freight_mode_id` (`freight_mode_id`),\n  KEY `shipment_type_id` (`shipment_type_id`),\n  KEY `origin_id` (`origin_id`),\n  KEY `destination_id` (`destination_id`),\n  KEY `container_id` (`container_id`),\n  CONSTRAINT `freight_rates_ibfk_1` FOREIGN KEY (`freight_mode_id`) REFERENCES `freight_types` (`id`) ON DELETE CASCADE,\n  CONSTRAINT `freight_rates_ibfk_2` FOREIGN KEY (`shipment_type_id`) REFERENCES `shipment_types` (`id`) ON DELETE CASCADE,\n  CONSTRAINT `freight_rates_ibfk_3` FOREIGN KEY (`origin_id`) REFERENCES `ports` (`id`) ON DELETE CASCADE,\n  CONSTRAINT `freight_rates_ibfk_4` FOREIGN KEY (`destination_id`) REFERENCES `ports` (`id`) ON DELETE CASCADE,\n  CONSTRAINT `freight_rates_ibfk_5` FOREIGN KEY (`container_id`) REFERENCES `containers` (`id`) ON DELETE SET NULL\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+      "indexes": [
+        {
+          "keyName": "PRIMARY",
+          "columnName": "id",
+          "nonUnique": 0,
+          "seq": 1
+        },
+        {
+          "keyName": "freight_mode_id",
+          "columnName": "freight_mode_id",
+          "nonUnique": 1,
+          "seq": 1
+        },
+        {
+          "keyName": "shipment_type_id",
+          "columnName": "shipment_type_id",
+          "nonUnique": 1,
+          "seq": 1
+        },
+        {
+          "keyName": "origin_id",
+          "columnName": "origin_id",
+          "nonUnique": 1,
+          "seq": 1
+        },
+        {
+          "keyName": "destination_id",
+          "columnName": "destination_id",
+          "nonUnique": 1,
+          "seq": 1
+        },
+        {
+          "keyName": "container_id",
+          "columnName": "container_id",
+          "nonUnique": 1,
+          "seq": 1
+        }
+      ],
+      "rowCount": 5
+    },
+    "freight_types": {
+      "columns": [
+        {
+          "Field": "id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "PRI",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "name",
+          "Type": "varchar(100)",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "status",
+          "Type": "enum('active','inactive')",
+          "Null": "NO",
+          "Key": "",
+          "Default": "active",
+          "Extra": ""
+        },
+        {
+          "Field": "sort_order",
+          "Type": "int(11)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "0",
+          "Extra": ""
+        },
+        {
+          "Field": "created_at",
+          "Type": "datetime",
+          "Null": "YES",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": ""
+        },
+        {
+          "Field": "updated_at",
+          "Type": "datetime",
+          "Null": "YES",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": "on update current_timestamp()"
+        }
+      ],
+      "createTable": "CREATE TABLE `freight_types` (\n  `id` varchar(64) NOT NULL,\n  `name` varchar(100) NOT NULL,\n  `status` enum('active','inactive') NOT NULL DEFAULT 'active',\n  `sort_order` int(11) NOT NULL DEFAULT 0,\n  `created_at` datetime DEFAULT current_timestamp(),\n  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),\n  PRIMARY KEY (`id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+      "indexes": [
+        {
+          "keyName": "PRIMARY",
+          "columnName": "id",
+          "nonUnique": 0,
+          "seq": 1
+        }
+      ],
+      "rowCount": 3
+    },
+    "hero_slides": {
+      "columns": [
+        {
+          "Field": "id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "PRI",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "title",
+          "Type": "varchar(255)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "",
+          "Extra": ""
+        },
+        {
+          "Field": "subtitle",
+          "Type": "varchar(255)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "",
+          "Extra": ""
+        },
+        {
+          "Field": "description",
+          "Type": "text",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "button_text",
+          "Type": "varchar(128)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "",
+          "Extra": ""
+        },
+        {
+          "Field": "button_url",
+          "Type": "varchar(512)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "",
+          "Extra": ""
+        },
+        {
+          "Field": "image",
+          "Type": "longtext",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "status",
+          "Type": "enum('active','inactive')",
+          "Null": "NO",
+          "Key": "",
+          "Default": "active",
+          "Extra": ""
+        },
+        {
+          "Field": "sort_order",
+          "Type": "int(11)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "1",
+          "Extra": ""
+        },
+        {
+          "Field": "created_at",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": ""
+        },
+        {
+          "Field": "updated_at",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": "on update current_timestamp()"
+        }
+      ],
+      "createTable": "CREATE TABLE `hero_slides` (\n  `id` varchar(64) NOT NULL,\n  `title` varchar(255) NOT NULL DEFAULT '',\n  `subtitle` varchar(255) NOT NULL DEFAULT '',\n  `description` text DEFAULT NULL,\n  `button_text` varchar(128) NOT NULL DEFAULT '',\n  `button_url` varchar(512) NOT NULL DEFAULT '',\n  `image` longtext DEFAULT NULL COMMENT 'URL or base64',\n  `status` enum('active','inactive') NOT NULL DEFAULT 'active',\n  `sort_order` int(11) NOT NULL DEFAULT 1,\n  `created_at` datetime NOT NULL DEFAULT current_timestamp(),\n  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),\n  PRIMARY KEY (`id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+      "indexes": [
+        {
+          "keyName": "PRIMARY",
+          "columnName": "id",
+          "nonUnique": 0,
+          "seq": 1
+        }
+      ],
+      "rowCount": 3
+    },
+    "iata_codes": {
+      "columns": [
+        {
+          "Field": "id",
+          "Type": "int(11)",
+          "Null": "NO",
+          "Key": "PRI",
+          "Default": null,
+          "Extra": "auto_increment"
+        },
+        {
+          "Field": "city_airport",
+          "Type": "varchar(255)",
+          "Null": "NO",
+          "Key": "MUL",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "country",
+          "Type": "varchar(100)",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "iata_code",
+          "Type": "varchar(10)",
+          "Null": "NO",
+          "Key": "MUL",
+          "Default": null,
+          "Extra": ""
+        }
+      ],
+      "createTable": "CREATE TABLE `iata_codes` (\n  `id` int(11) NOT NULL AUTO_INCREMENT,\n  `city_airport` varchar(255) NOT NULL,\n  `country` varchar(100) NOT NULL,\n  `iata_code` varchar(10) NOT NULL,\n  PRIMARY KEY (`id`),\n  KEY `idx_iata` (`iata_code`),\n  KEY `idx_city` (`city_airport`)\n) ENGINE=InnoDB AUTO_INCREMENT=21 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+      "indexes": [
+        {
+          "keyName": "PRIMARY",
+          "columnName": "id",
+          "nonUnique": 0,
+          "seq": 1
+        },
+        {
+          "keyName": "idx_iata",
+          "columnName": "iata_code",
+          "nonUnique": 1,
+          "seq": 1
+        },
+        {
+          "keyName": "idx_city",
+          "columnName": "city_airport",
+          "nonUnique": 1,
+          "seq": 1
+        }
+      ],
+      "rowCount": 20
+    },
+    "industries": {
+      "columns": [
+        {
+          "Field": "id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "PRI",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "title",
+          "Type": "varchar(255)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "",
+          "Extra": ""
+        },
+        {
+          "Field": "slug",
+          "Type": "varchar(255)",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "description",
+          "Type": "text",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "icon",
+          "Type": "varchar(128)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "flaticon-transport-1",
+          "Extra": ""
+        },
+        {
+          "Field": "status",
+          "Type": "enum('active','inactive')",
+          "Null": "NO",
+          "Key": "",
+          "Default": "active",
+          "Extra": ""
+        },
+        {
+          "Field": "sort_order",
+          "Type": "int(11)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "1",
+          "Extra": ""
+        },
+        {
+          "Field": "created_at",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": ""
+        },
+        {
+          "Field": "updated_at",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": "on update current_timestamp()"
+        }
+      ],
+      "createTable": "CREATE TABLE `industries` (\n  `id` varchar(64) NOT NULL,\n  `title` varchar(255) NOT NULL DEFAULT '',\n  `slug` varchar(255) DEFAULT NULL,\n  `description` text DEFAULT NULL,\n  `icon` varchar(128) NOT NULL DEFAULT 'flaticon-transport-1',\n  `status` enum('active','inactive') NOT NULL DEFAULT 'active',\n  `sort_order` int(11) NOT NULL DEFAULT 1,\n  `created_at` datetime NOT NULL DEFAULT current_timestamp(),\n  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),\n  PRIMARY KEY (`id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+      "indexes": [
+        {
+          "keyName": "PRIMARY",
+          "columnName": "id",
+          "nonUnique": 0,
+          "seq": 1
+        }
+      ],
+      "rowCount": 9
+    },
+    "kyc_documents": {
+      "columns": [
+        {
+          "Field": "id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "PRI",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "user",
+          "Type": "varchar(255)",
+          "Null": "NO",
+          "Key": "MUL",
+          "Default": "",
+          "Extra": ""
+        },
+        {
+          "Field": "name",
+          "Type": "varchar(512)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "",
+          "Extra": ""
+        },
+        {
+          "Field": "type",
+          "Type": "varchar(128)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "",
+          "Extra": ""
+        },
+        {
+          "Field": "date",
+          "Type": "date",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "status",
+          "Type": "enum('Pending Review','Approved','Rejected')",
+          "Null": "NO",
+          "Key": "MUL",
+          "Default": "Pending Review",
+          "Extra": ""
+        },
+        {
+          "Field": "remarks",
+          "Type": "text",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "file_url",
+          "Type": "text",
+          "Null": "NO",
+          "Key": "",
+          "Default": "'#'",
+          "Extra": ""
+        },
+        {
+          "Field": "file_type",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "pdf",
+          "Extra": ""
+        },
+        {
+          "Field": "created_at",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": ""
+        },
+        {
+          "Field": "updated_at",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": "on update current_timestamp()"
+        }
+      ],
+      "createTable": "CREATE TABLE `kyc_documents` (\n  `id` varchar(64) NOT NULL,\n  `user` varchar(255) NOT NULL DEFAULT '',\n  `name` varchar(512) NOT NULL DEFAULT '',\n  `type` varchar(128) NOT NULL DEFAULT '',\n  `date` date NOT NULL,\n  `status` enum('Pending Review','Approved','Rejected') NOT NULL DEFAULT 'Pending Review',\n  `remarks` text DEFAULT NULL,\n  `file_url` text NOT NULL DEFAULT '#',\n  `file_type` varchar(64) NOT NULL DEFAULT 'pdf',\n  `created_at` datetime NOT NULL DEFAULT current_timestamp(),\n  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),\n  PRIMARY KEY (`id`),\n  KEY `idx_kyc_user` (`user`(191)),\n  KEY `idx_kyc_status` (`status`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+      "indexes": [
+        {
+          "keyName": "PRIMARY",
+          "columnName": "id",
+          "nonUnique": 0,
+          "seq": 1
+        },
+        {
+          "keyName": "idx_kyc_user",
+          "columnName": "user",
+          "nonUnique": 1,
+          "seq": 1
+        },
+        {
+          "keyName": "idx_kyc_status",
+          "columnName": "status",
+          "nonUnique": 1,
+          "seq": 1
+        }
+      ],
+      "rowCount": 0
+    },
+    "locations": {
+      "columns": [
+        {
+          "Field": "id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "PRI",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "port_code",
+          "Type": "varchar(10)",
+          "Null": "NO",
+          "Key": "UNI",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "name",
+          "Type": "varchar(255)",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "country",
+          "Type": "varchar(100)",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "type",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "Ocean",
+          "Extra": ""
+        },
+        {
+          "Field": "created_at",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": ""
+        },
+        {
+          "Field": "updated_at",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": "on update current_timestamp()"
+        }
+      ],
+      "createTable": "CREATE TABLE `locations` (\n  `id` varchar(64) NOT NULL,\n  `port_code` varchar(10) NOT NULL,\n  `name` varchar(255) NOT NULL,\n  `country` varchar(100) NOT NULL,\n  `type` varchar(64) NOT NULL DEFAULT 'Ocean',\n  `created_at` datetime NOT NULL DEFAULT current_timestamp(),\n  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),\n  PRIMARY KEY (`id`),\n  UNIQUE KEY `port_code` (`port_code`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+      "indexes": [
+        {
+          "keyName": "PRIMARY",
+          "columnName": "id",
+          "nonUnique": 0,
+          "seq": 1
+        },
+        {
+          "keyName": "port_code",
+          "columnName": "port_code",
+          "nonUnique": 0,
+          "seq": 1
+        }
+      ],
+      "rowCount": 7
+    },
+    "media": {
+      "columns": [
+        {
+          "Field": "id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "PRI",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "file_name",
+          "Type": "varchar(255)",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "file_url",
+          "Type": "longtext",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "file_type",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "file_size",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "uploaded_at",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": ""
+        },
+        {
+          "Field": "updated_at",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": "on update current_timestamp()"
+        }
+      ],
+      "createTable": "CREATE TABLE `media` (\n  `id` varchar(64) NOT NULL,\n  `file_name` varchar(255) NOT NULL,\n  `file_url` longtext NOT NULL,\n  `file_type` varchar(64) NOT NULL,\n  `file_size` varchar(64) NOT NULL,\n  `uploaded_at` datetime NOT NULL DEFAULT current_timestamp(),\n  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),\n  PRIMARY KEY (`id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+      "indexes": [
+        {
+          "keyName": "PRIMARY",
+          "columnName": "id",
+          "nonUnique": 0,
+          "seq": 1
+        }
+      ],
+      "rowCount": 5
+    },
+    "partners": {
+      "columns": [
+        {
+          "Field": "id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "PRI",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "name",
+          "Type": "varchar(255)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "",
+          "Extra": ""
+        },
+        {
+          "Field": "logo",
+          "Type": "longtext",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "website_url",
+          "Type": "varchar(512)",
+          "Null": "YES",
+          "Key": "",
+          "Default": "",
+          "Extra": ""
+        },
+        {
+          "Field": "status",
+          "Type": "enum('active','inactive')",
+          "Null": "NO",
+          "Key": "",
+          "Default": "active",
+          "Extra": ""
+        },
+        {
+          "Field": "sort_order",
+          "Type": "int(11)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "1",
+          "Extra": ""
+        },
+        {
+          "Field": "created_at",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": ""
+        },
+        {
+          "Field": "updated_at",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": "on update current_timestamp()"
+        }
+      ],
+      "createTable": "CREATE TABLE `partners` (\n  `id` varchar(64) NOT NULL,\n  `name` varchar(255) NOT NULL DEFAULT '',\n  `logo` longtext DEFAULT NULL COMMENT 'URL or base64',\n  `website_url` varchar(512) DEFAULT '',\n  `status` enum('active','inactive') NOT NULL DEFAULT 'active',\n  `sort_order` int(11) NOT NULL DEFAULT 1,\n  `created_at` datetime NOT NULL DEFAULT current_timestamp(),\n  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),\n  PRIMARY KEY (`id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+      "indexes": [
+        {
+          "keyName": "PRIMARY",
+          "columnName": "id",
+          "nonUnique": 0,
+          "seq": 1
+        }
+      ],
+      "rowCount": 6
+    },
+    "ports": {
+      "columns": [
+        {
+          "Field": "id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "PRI",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "port_code",
+          "Type": "varchar(10)",
+          "Null": "NO",
+          "Key": "UNI",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "port_name",
+          "Type": "varchar(255)",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "country",
+          "Type": "varchar(100)",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "locode",
+          "Type": "varchar(20)",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "freight_type",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "Ocean",
+          "Extra": ""
+        },
+        {
+          "Field": "status",
+          "Type": "enum('active','inactive')",
+          "Null": "NO",
+          "Key": "",
+          "Default": "active",
+          "Extra": ""
+        },
+        {
+          "Field": "created_at",
+          "Type": "datetime",
+          "Null": "YES",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": ""
+        },
+        {
+          "Field": "updated_at",
+          "Type": "datetime",
+          "Null": "YES",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": "on update current_timestamp()"
+        },
+        {
+          "Field": "portname",
+          "Type": "varchar(255)",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": "VIRTUAL GENERATED"
+        }
+      ],
+      "createTable": "CREATE TABLE `ports` (\n  `id` varchar(64) NOT NULL,\n  `port_code` varchar(10) NOT NULL,\n  `port_name` varchar(255) NOT NULL,\n  `country` varchar(100) NOT NULL,\n  `locode` varchar(20) DEFAULT NULL,\n  `freight_type` varchar(64) NOT NULL DEFAULT 'Ocean',\n  `status` enum('active','inactive') NOT NULL DEFAULT 'active',\n  `created_at` datetime DEFAULT current_timestamp(),\n  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),\n  `portname` varchar(255) GENERATED ALWAYS AS (`port_name`) VIRTUAL,\n  PRIMARY KEY (`id`),\n  UNIQUE KEY `port_code` (`port_code`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+      "indexes": [
+        {
+          "keyName": "PRIMARY",
+          "columnName": "id",
+          "nonUnique": 0,
+          "seq": 1
+        },
+        {
+          "keyName": "port_code",
+          "columnName": "port_code",
+          "nonUnique": 0,
+          "seq": 1
+        }
+      ],
+      "rowCount": 6024
+    },
+    "rates": {
+      "columns": [
+        {
+          "Field": "id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "PRI",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "origin",
+          "Type": "varchar(255)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "",
+          "Extra": ""
+        },
+        {
+          "Field": "destination",
+          "Type": "varchar(255)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "",
+          "Extra": ""
+        },
+        {
+          "Field": "container",
+          "Type": "varchar(128)",
+          "Null": "YES",
+          "Key": "",
+          "Default": "",
+          "Extra": ""
+        },
+        {
+          "Field": "cost",
+          "Type": "decimal(12,2)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "0.00",
+          "Extra": ""
+        },
+        {
+          "Field": "transit",
+          "Type": "int(11)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "0",
+          "Extra": ""
+        },
+        {
+          "Field": "validity",
+          "Type": "varchar(64)",
+          "Null": "YES",
+          "Key": "",
+          "Default": "",
+          "Extra": ""
+        },
+        {
+          "Field": "created_at",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": ""
+        },
+        {
+          "Field": "updated_at",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": "on update current_timestamp()"
+        }
+      ],
+      "createTable": "CREATE TABLE `rates` (\n  `id` varchar(64) NOT NULL,\n  `origin` varchar(255) NOT NULL DEFAULT '',\n  `destination` varchar(255) NOT NULL DEFAULT '',\n  `container` varchar(128) DEFAULT '',\n  `cost` decimal(12,2) NOT NULL DEFAULT 0.00,\n  `transit` int(11) NOT NULL DEFAULT 0 COMMENT 'transit days',\n  `validity` varchar(64) DEFAULT '',\n  `created_at` datetime NOT NULL DEFAULT current_timestamp(),\n  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),\n  PRIMARY KEY (`id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+      "indexes": [
+        {
+          "keyName": "PRIMARY",
+          "columnName": "id",
+          "nonUnique": 0,
+          "seq": 1
+        }
+      ],
+      "rowCount": 6
+    },
+    "rate_activity_logs": {
+      "columns": [
+        {
+          "Field": "id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "PRI",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "rate_id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "action_type",
+          "Type": "enum('create','update','delete')",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "old_value",
+          "Type": "text",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "new_value",
+          "Type": "text",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "updated_by",
+          "Type": "varchar(255)",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "created_at",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": ""
+        }
+      ],
+      "createTable": "CREATE TABLE `rate_activity_logs` (\n  `id` varchar(64) NOT NULL,\n  `rate_id` varchar(64) NOT NULL,\n  `action_type` enum('create','update','delete') NOT NULL,\n  `old_value` text DEFAULT NULL,\n  `new_value` text DEFAULT NULL,\n  `updated_by` varchar(255) NOT NULL,\n  `created_at` datetime NOT NULL DEFAULT current_timestamp(),\n  PRIMARY KEY (`id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+      "indexes": [
+        {
+          "keyName": "PRIMARY",
+          "columnName": "id",
+          "nonUnique": 0,
+          "seq": 1
+        }
+      ],
+      "rowCount": 23
+    },
+    "services": {
+      "columns": [
+        {
+          "Field": "id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "PRI",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "title",
+          "Type": "varchar(255)",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "slug",
+          "Type": "varchar(255)",
+          "Null": "NO",
+          "Key": "UNI",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "category",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "MUL",
+          "Default": "core",
+          "Extra": ""
+        },
+        {
+          "Field": "icon",
+          "Type": "varchar(128)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "anchor",
+          "Extra": ""
+        },
+        {
+          "Field": "description",
+          "Type": "text",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "long_description",
+          "Type": "longtext",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "details",
+          "Type": "longtext",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "image",
+          "Type": "longtext",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "banner_image",
+          "Type": "longtext",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "sort_order",
+          "Type": "int(11)",
+          "Null": "NO",
+          "Key": "MUL",
+          "Default": "0",
+          "Extra": ""
+        },
+        {
+          "Field": "show_on_homepage",
+          "Type": "tinyint(1)",
+          "Null": "NO",
+          "Key": "MUL",
+          "Default": "1",
+          "Extra": ""
+        },
+        {
+          "Field": "active",
+          "Type": "tinyint(1)",
+          "Null": "NO",
+          "Key": "MUL",
+          "Default": "1",
+          "Extra": ""
+        },
+        {
+          "Field": "created_at",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": ""
+        },
+        {
+          "Field": "updated_at",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": "on update current_timestamp()"
+        }
+      ],
+      "createTable": "CREATE TABLE `services` (\n  `id` varchar(64) NOT NULL,\n  `title` varchar(255) NOT NULL,\n  `slug` varchar(255) NOT NULL,\n  `category` varchar(64) NOT NULL DEFAULT 'core',\n  `icon` varchar(128) NOT NULL DEFAULT 'anchor',\n  `description` text DEFAULT NULL,\n  `long_description` longtext DEFAULT NULL,\n  `details` longtext DEFAULT NULL,\n  `image` longtext DEFAULT NULL,\n  `banner_image` longtext DEFAULT NULL,\n  `sort_order` int(11) NOT NULL DEFAULT 0,\n  `show_on_homepage` tinyint(1) NOT NULL DEFAULT 1,\n  `active` tinyint(1) NOT NULL DEFAULT 1,\n  `created_at` datetime NOT NULL DEFAULT current_timestamp(),\n  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),\n  PRIMARY KEY (`id`),\n  UNIQUE KEY `slug` (`slug`),\n  KEY `idx_services_sort` (`sort_order`),\n  KEY `idx_services_category` (`category`),\n  KEY `idx_services_active` (`active`),\n  KEY `idx_services_homepage` (`show_on_homepage`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+      "indexes": [
+        {
+          "keyName": "PRIMARY",
+          "columnName": "id",
+          "nonUnique": 0,
+          "seq": 1
+        },
+        {
+          "keyName": "slug",
+          "columnName": "slug",
+          "nonUnique": 0,
+          "seq": 1
+        },
+        {
+          "keyName": "idx_services_sort",
+          "columnName": "sort_order",
+          "nonUnique": 1,
+          "seq": 1
+        },
+        {
+          "keyName": "idx_services_category",
+          "columnName": "category",
+          "nonUnique": 1,
+          "seq": 1
+        },
+        {
+          "keyName": "idx_services_active",
+          "columnName": "active",
+          "nonUnique": 1,
+          "seq": 1
+        },
+        {
+          "keyName": "idx_services_homepage",
+          "columnName": "show_on_homepage",
+          "nonUnique": 1,
+          "seq": 1
+        }
+      ],
+      "rowCount": 11
+    },
+    "shipment_types": {
+      "columns": [
+        {
+          "Field": "id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "PRI",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "freight_type_id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "MUL",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "name",
+          "Type": "varchar(100)",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "description",
+          "Type": "text",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "status",
+          "Type": "enum('active','inactive')",
+          "Null": "NO",
+          "Key": "",
+          "Default": "active",
+          "Extra": ""
+        },
+        {
+          "Field": "created_at",
+          "Type": "datetime",
+          "Null": "YES",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": ""
+        },
+        {
+          "Field": "updated_at",
+          "Type": "datetime",
+          "Null": "YES",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": "on update current_timestamp()"
+        }
+      ],
+      "createTable": "CREATE TABLE `shipment_types` (\n  `id` varchar(64) NOT NULL,\n  `freight_type_id` varchar(64) NOT NULL,\n  `name` varchar(100) NOT NULL,\n  `description` text DEFAULT NULL,\n  `status` enum('active','inactive') NOT NULL DEFAULT 'active',\n  `created_at` datetime DEFAULT current_timestamp(),\n  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),\n  PRIMARY KEY (`id`),\n  KEY `freight_type_id` (`freight_type_id`),\n  CONSTRAINT `shipment_types_ibfk_1` FOREIGN KEY (`freight_type_id`) REFERENCES `freight_types` (`id`) ON DELETE CASCADE\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+      "indexes": [
+        {
+          "keyName": "PRIMARY",
+          "columnName": "id",
+          "nonUnique": 0,
+          "seq": 1
+        },
+        {
+          "keyName": "freight_type_id",
+          "columnName": "freight_type_id",
+          "nonUnique": 1,
+          "seq": 1
+        }
+      ],
+      "rowCount": 4
+    },
+    "statistics": {
+      "columns": [
+        {
+          "Field": "id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "PRI",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "label",
+          "Type": "varchar(255)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "",
+          "Extra": ""
+        },
+        {
+          "Field": "value",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "",
+          "Extra": ""
+        },
+        {
+          "Field": "icon",
+          "Type": "varchar(128)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "flaticon-transport-9",
+          "Extra": ""
+        },
+        {
+          "Field": "status",
+          "Type": "enum('active','inactive')",
+          "Null": "NO",
+          "Key": "",
+          "Default": "active",
+          "Extra": ""
+        },
+        {
+          "Field": "sort_order",
+          "Type": "int(11)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "1",
+          "Extra": ""
+        },
+        {
+          "Field": "created_at",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": ""
+        },
+        {
+          "Field": "updated_at",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": "on update current_timestamp()"
+        }
+      ],
+      "createTable": "CREATE TABLE `statistics` (\n  `id` varchar(64) NOT NULL,\n  `label` varchar(255) NOT NULL DEFAULT '',\n  `value` varchar(64) NOT NULL DEFAULT '',\n  `icon` varchar(128) NOT NULL DEFAULT 'flaticon-transport-9',\n  `status` enum('active','inactive') NOT NULL DEFAULT 'active',\n  `sort_order` int(11) NOT NULL DEFAULT 1,\n  `created_at` datetime NOT NULL DEFAULT current_timestamp(),\n  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),\n  PRIMARY KEY (`id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+      "indexes": [
+        {
+          "keyName": "PRIMARY",
+          "columnName": "id",
+          "nonUnique": 0,
+          "seq": 1
+        }
+      ],
+      "rowCount": 4
+    },
+    "terms": {
+      "columns": [
+        {
+          "Field": "id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "PRI",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "name",
+          "Type": "varchar(100)",
+          "Null": "NO",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "status",
+          "Type": "enum('active','inactive')",
+          "Null": "NO",
+          "Key": "",
+          "Default": "active",
+          "Extra": ""
+        },
+        {
+          "Field": "created_at",
+          "Type": "datetime",
+          "Null": "YES",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": ""
+        },
+        {
+          "Field": "updated_at",
+          "Type": "datetime",
+          "Null": "YES",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": "on update current_timestamp()"
+        }
+      ],
+      "createTable": "CREATE TABLE `terms` (\n  `id` varchar(64) NOT NULL,\n  `name` varchar(100) NOT NULL,\n  `status` enum('active','inactive') NOT NULL DEFAULT 'active',\n  `created_at` datetime DEFAULT current_timestamp(),\n  `updated_at` datetime DEFAULT current_timestamp() ON UPDATE current_timestamp(),\n  PRIMARY KEY (`id`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+      "indexes": [
+        {
+          "keyName": "PRIMARY",
+          "columnName": "id",
+          "nonUnique": 0,
+          "seq": 1
+        }
+      ],
+      "rowCount": 4
+    },
+    "users": {
+      "columns": [
+        {
+          "Field": "id",
+          "Type": "varchar(64)",
+          "Null": "NO",
+          "Key": "PRI",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "name",
+          "Type": "varchar(255)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "",
+          "Extra": ""
+        },
+        {
+          "Field": "email",
+          "Type": "varchar(255)",
+          "Null": "NO",
+          "Key": "UNI",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "phone",
+          "Type": "varchar(64)",
+          "Null": "YES",
+          "Key": "",
+          "Default": "",
+          "Extra": ""
+        },
+        {
+          "Field": "password",
+          "Type": "varchar(512)",
+          "Null": "NO",
+          "Key": "",
+          "Default": "admin123",
+          "Extra": ""
+        },
+        {
+          "Field": "role",
+          "Type": "enum('Administrator','Manager','Content Moderator','Customer')",
+          "Null": "NO",
+          "Key": "",
+          "Default": "Customer",
+          "Extra": ""
+        },
+        {
+          "Field": "status",
+          "Type": "enum('Active','Inactive')",
+          "Null": "NO",
+          "Key": "",
+          "Default": "Active",
+          "Extra": ""
+        },
+        {
+          "Field": "avatar",
+          "Type": "varchar(512)",
+          "Null": "YES",
+          "Key": "",
+          "Default": "",
+          "Extra": ""
+        },
+        {
+          "Field": "reg_date",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": ""
+        },
+        {
+          "Field": "last_login",
+          "Type": "datetime",
+          "Null": "YES",
+          "Key": "",
+          "Default": null,
+          "Extra": ""
+        },
+        {
+          "Field": "created_at",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": ""
+        },
+        {
+          "Field": "updated_at",
+          "Type": "datetime",
+          "Null": "NO",
+          "Key": "",
+          "Default": "current_timestamp()",
+          "Extra": "on update current_timestamp()"
+        }
+      ],
+      "createTable": "CREATE TABLE `users` (\n  `id` varchar(64) NOT NULL,\n  `name` varchar(255) NOT NULL DEFAULT '',\n  `email` varchar(255) NOT NULL,\n  `phone` varchar(64) DEFAULT '',\n  `password` varchar(512) NOT NULL DEFAULT 'admin123',\n  `role` enum('Administrator','Manager','Content Moderator','Customer') NOT NULL DEFAULT 'Customer',\n  `status` enum('Active','Inactive') NOT NULL DEFAULT 'Active',\n  `avatar` varchar(512) DEFAULT '',\n  `reg_date` datetime NOT NULL DEFAULT current_timestamp(),\n  `last_login` datetime DEFAULT NULL,\n  `created_at` datetime NOT NULL DEFAULT current_timestamp(),\n  `updated_at` datetime NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),\n  PRIMARY KEY (`id`),\n  UNIQUE KEY `uq_email` (`email`)\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+      "indexes": [
+        {
+          "keyName": "PRIMARY",
+          "columnName": "id",
+          "nonUnique": 0,
+          "seq": 1
+        },
+        {
+          "keyName": "uq_email",
+          "columnName": "email",
+          "nonUnique": 0,
+          "seq": 1
+        }
+      ],
+      "rowCount": 3
+    }
+  },
+  "imageColumns": [
+    {
+      "table": "app_settings",
+      "column": "data",
+      "rowId": 1,
+      "storageType": "Relative Path / Local Asset",
+      "mimeType": "unknown",
+      "length": 2050,
+      "preview": "{\"site\":{\"siteName\":\"EasyFr8 Admin\",\"companyName\":\"Value Envision India Pvt Ltd\",\"address\"..."
+    },
+    {
+      "table": "blogs",
+      "column": "content",
+      "rowId": "BLG-401",
+      "storageType": "unknown",
+      "mimeType": "unknown",
+      "length": 32,
+      "preview": "fuydhfjhgkjhkl,lhglhkjn,miukjnm,"
+    },
+    {
+      "table": "blogs",
+      "column": "content",
+      "rowId": "BLG-402",
+      "storageType": "unknown",
+      "mimeType": "unknown",
+      "length": 38,
+      "preview": "hyftdgfawljhjdgqeqohilgktjehpeuighoqei"
+    },
+    {
+      "table": "blogs",
+      "column": "image",
+      "rowId": "BLG-401",
+      "storageType": "External URL",
+      "mimeType": "unknown",
+      "length": 90,
+      "preview": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=400&h=250"
+    },
+    {
+      "table": "blogs",
+      "column": "image",
+      "rowId": "BLG-402",
+      "storageType": "External URL",
+      "mimeType": "unknown",
+      "length": 93,
+      "preview": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=400&h=..."
+    },
+    {
+      "table": "cms_data",
+      "column": "data",
+      "rowId": 1,
+      "storageType": "Relative Path / Local Asset",
+      "mimeType": "unknown",
+      "length": 892589,
+      "preview": "{\"homepage\":{\"heroTitle\":\"Connecting Global Markets Seamlessly\",\"heroSubtitle\":\"Your trust..."
+    },
+    {
+      "table": "hero_slides",
+      "column": "image",
+      "rowId": "slide-1",
+      "storageType": "Base64 data URI",
+      "mimeType": "image/jpeg",
+      "length": 233167,
+      "preview": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAAB..."
+    },
+    {
+      "table": "hero_slides",
+      "column": "image",
+      "rowId": "slide-2",
+      "storageType": "Base64 data URI",
+      "mimeType": "image/jpeg",
+      "length": 233167,
+      "preview": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAAB..."
+    },
+    {
+      "table": "hero_slides",
+      "column": "image",
+      "rowId": "slide-3",
+      "storageType": "Base64 data URI",
+      "mimeType": "image/jpeg",
+      "length": 369439,
+      "preview": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAAB..."
+    },
+    {
+      "table": "media",
+      "column": "file_name",
+      "rowId": "MED-AVATAR-USR-081-1790966807945",
+      "storageType": "Relative Path / Local Asset",
+      "mimeType": "unknown",
+      "length": 18,
+      "preview": "easyfr8_avatar.png"
+    },
+    {
+      "table": "media",
+      "column": "file_name",
+      "rowId": "MED-AVATAR-USR-081-1790967549613",
+      "storageType": "Relative Path / Local Asset",
+      "mimeType": "unknown",
+      "length": 18,
+      "preview": "easyfr8_avatar.png"
+    },
+    {
+      "table": "media",
+      "column": "file_name",
+      "rowId": "MED-LEGACY-1",
+      "storageType": "Relative Path / Local Asset",
+      "mimeType": "unknown",
+      "length": 15,
+      "preview": "hero_banner.jpg"
+    },
+    {
+      "table": "media",
+      "column": "file_name",
+      "rowId": "MED-LEGACY-2",
+      "storageType": "Relative Path / Local Asset",
+      "mimeType": "unknown",
+      "length": 28,
+      "preview": "predefined_rate_template.csv"
+    },
+    {
+      "table": "media",
+      "column": "file_name",
+      "rowId": "MED-LEGACY-3",
+      "storageType": "Relative Path / Local Asset",
+      "mimeType": "unknown",
+      "length": 16,
+      "preview": "company_logo.png"
+    },
+    {
+      "table": "media",
+      "column": "file_url",
+      "rowId": "MED-AVATAR-USR-081-1790966807945",
+      "storageType": "Base64 data URI",
+      "mimeType": "image/png",
+      "length": 126,
+      "preview": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAYAAABytg0kAAAAFElEQVR42mNk+M/wHwwZ..."
+    },
+    {
+      "table": "media",
+      "column": "file_url",
+      "rowId": "MED-AVATAR-USR-081-1790967549613",
+      "storageType": "Base64 data URI",
+      "mimeType": "image/jpeg",
+      "length": 42843,
+      "preview": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/4QAYRXhpZgAASUkqAAgAAAAAAAAAAAAAAP/hAy9..."
+    },
+    {
+      "table": "media",
+      "column": "file_url",
+      "rowId": "MED-LEGACY-1",
+      "storageType": "External URL",
+      "mimeType": "unknown",
+      "length": 93,
+      "preview": "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=150&h=..."
+    },
+    {
+      "table": "media",
+      "column": "file_url",
+      "rowId": "MED-LEGACY-3",
+      "storageType": "External URL",
+      "mimeType": "unknown",
+      "length": 90,
+      "preview": "https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=150&h=150"
+    },
+    {
+      "table": "media",
+      "column": "file_type",
+      "rowId": "MED-AVATAR-USR-081-1790966807945",
+      "storageType": "unknown",
+      "mimeType": "unknown",
+      "length": 9,
+      "preview": "image/png"
+    },
+    {
+      "table": "media",
+      "column": "file_type",
+      "rowId": "MED-AVATAR-USR-081-1790967549613",
+      "storageType": "unknown",
+      "mimeType": "unknown",
+      "length": 9,
+      "preview": "image/png"
+    },
+    {
+      "table": "media",
+      "column": "file_type",
+      "rowId": "MED-LEGACY-2",
+      "storageType": "unknown",
+      "mimeType": "unknown",
+      "length": 8,
+      "preview": "document"
+    },
+    {
+      "table": "media",
+      "column": "file_size",
+      "rowId": "MED-LEGACY-1",
+      "storageType": "unknown",
+      "mimeType": "unknown",
+      "length": 6,
+      "preview": "320 KB"
+    },
+    {
+      "table": "partners",
+      "column": "logo",
+      "rowId": "partner-1",
+      "storageType": "Relative Path / Local Asset",
+      "mimeType": "unknown",
+      "length": 30,
+      "preview": "/uploads/partners/Picture1.png"
+    },
+    {
+      "table": "partners",
+      "column": "logo",
+      "rowId": "partner-2",
+      "storageType": "Relative Path / Local Asset",
+      "mimeType": "unknown",
+      "length": 30,
+      "preview": "/uploads/partners/Picture2.jpg"
+    },
+    {
+      "table": "partners",
+      "column": "logo",
+      "rowId": "partner-3",
+      "storageType": "Relative Path / Local Asset",
+      "mimeType": "unknown",
+      "length": 30,
+      "preview": "/uploads/partners/Picture3.png"
+    },
+    {
+      "table": "partners",
+      "column": "logo",
+      "rowId": "partner-4",
+      "storageType": "Relative Path / Local Asset",
+      "mimeType": "unknown",
+      "length": 30,
+      "preview": "/uploads/partners/Picture4.png"
+    },
+    {
+      "table": "partners",
+      "column": "logo",
+      "rowId": "partner-5",
+      "storageType": "Relative Path / Local Asset",
+      "mimeType": "unknown",
+      "length": 30,
+      "preview": "/uploads/partners/Picture5.png"
+    },
+    {
+      "table": "partners",
+      "column": "logo",
+      "rowId": "partner-6",
+      "storageType": "Relative Path / Local Asset",
+      "mimeType": "unknown",
+      "length": 30,
+      "preview": "/uploads/partners/Picture6.png"
+    },
+    {
+      "table": "services",
+      "column": "details",
+      "rowId": "1",
+      "storageType": "Relative Path / Local Asset",
+      "mimeType": "unknown",
+      "length": 703,
+      "preview": "Our Sea Freight solutions are designed for both import and export cargo, backed by a leade..."
+    },
+    {
+      "table": "services",
+      "column": "details",
+      "rowId": "1790960464497",
+      "storageType": "unknown",
+      "mimeType": "unknown",
+      "length": 35,
+      "preview": "tyjtyhtukrthesthakrjgheroiguhjaw4pg"
+    },
+    {
+      "table": "services",
+      "column": "details",
+      "rowId": "2",
+      "storageType": "Relative Path / Local Asset",
+      "mimeType": "unknown",
+      "length": 654,
+      "preview": "Our Air Freight services provide reliable and cost-effective domestic and international ca..."
+    },
+    {
+      "table": "services",
+      "column": "details",
+      "rowId": "3",
+      "storageType": "Relative Path / Local Asset",
+      "mimeType": "unknown",
+      "length": 598,
+      "preview": "End-to-end road transportation PAN India basis. supported by a readily available fleet for..."
+    },
+    {
+      "table": "services",
+      "column": "details",
+      "rowId": "4",
+      "storageType": "Relative Path / Local Asset",
+      "mimeType": "unknown",
+      "length": 616,
+      "preview": "Need a modern warehousing space for your requirement no matter how much space. ASK US!! Wi..."
+    },
+    {
+      "table": "services",
+      "column": "details",
+      "rowId": "5",
+      "storageType": "Relative Path / Local Asset",
+      "mimeType": "unknown",
+      "length": 504,
+      "preview": "Customs compliance shouldn't block your supply chain. Our certified brokerage team handles..."
+    },
+    {
+      "table": "services",
+      "column": "details",
+      "rowId": "6",
+      "storageType": "Relative Path / Local Asset",
+      "mimeType": "unknown",
+      "length": 505,
+      "preview": "Our specialized Container Freight Station (CFS) operations handle efficient cargo consolid..."
+    },
+    {
+      "table": "services",
+      "column": "details",
+      "rowId": "7",
+      "storageType": "Relative Path / Local Asset",
+      "mimeType": "unknown",
+      "length": 428,
+      "preview": "Manage complex logistics projects and supply chain setups under dedicated SLA contracts. W..."
+    },
+    {
+      "table": "services",
+      "column": "details",
+      "rowId": "8",
+      "storageType": "Relative Path / Local Asset",
+      "mimeType": "unknown",
+      "length": 511,
+      "preview": "Protect your transit investments with complete cargo insurance options. We offer comprehen..."
+    },
+    {
+      "table": "services",
+      "column": "image",
+      "rowId": "1",
+      "storageType": "Base64 data URI",
+      "mimeType": "image/jpeg",
+      "length": 84459,
+      "preview": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAAB..."
+    },
+    {
+      "table": "services",
+      "column": "image",
+      "rowId": "1790887601823",
+      "storageType": "Base64 data URI",
+      "mimeType": "image/jpeg",
+      "length": 71143,
+      "preview": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAAB..."
+    },
+    {
+      "table": "services",
+      "column": "image",
+      "rowId": "1790960464497",
+      "storageType": "Base64 data URI",
+      "mimeType": "image/jpeg",
+      "length": 88859,
+      "preview": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAAB..."
+    },
+    {
+      "table": "services",
+      "column": "image",
+      "rowId": "2",
+      "storageType": "External URL",
+      "mimeType": "unknown",
+      "length": 93,
+      "preview": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q..."
+    },
+    {
+      "table": "services",
+      "column": "image",
+      "rowId": "3",
+      "storageType": "External URL",
+      "mimeType": "unknown",
+      "length": 93,
+      "preview": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q..."
+    },
+    {
+      "table": "services",
+      "column": "image",
+      "rowId": "4",
+      "storageType": "External URL",
+      "mimeType": "unknown",
+      "length": 93,
+      "preview": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q..."
+    },
+    {
+      "table": "services",
+      "column": "image",
+      "rowId": "5",
+      "storageType": "External URL",
+      "mimeType": "unknown",
+      "length": 93,
+      "preview": "https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?auto=format&fit=crop&w=1200&q..."
+    },
+    {
+      "table": "services",
+      "column": "image",
+      "rowId": "6",
+      "storageType": "External URL",
+      "mimeType": "unknown",
+      "length": 93,
+      "preview": "https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?auto=format&fit=crop&w=1200&q..."
+    },
+    {
+      "table": "services",
+      "column": "image",
+      "rowId": "7",
+      "storageType": "External URL",
+      "mimeType": "unknown",
+      "length": 93,
+      "preview": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q..."
+    },
+    {
+      "table": "services",
+      "column": "image",
+      "rowId": "8",
+      "storageType": "External URL",
+      "mimeType": "unknown",
+      "length": 93,
+      "preview": "https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?auto=format&fit=crop&w=1200&q..."
+    },
+    {
+      "table": "services",
+      "column": "banner_image",
+      "rowId": "1",
+      "storageType": "Base64 data URI",
+      "mimeType": "image/jpeg",
+      "length": 206903,
+      "preview": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAAB..."
+    },
+    {
+      "table": "services",
+      "column": "banner_image",
+      "rowId": "1790887601823",
+      "storageType": "Base64 data URI",
+      "mimeType": "image/jpeg",
+      "length": 148795,
+      "preview": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAAB..."
+    },
+    {
+      "table": "services",
+      "column": "banner_image",
+      "rowId": "1790960464497",
+      "storageType": "Base64 data URI",
+      "mimeType": "image/jpeg",
+      "length": 220183,
+      "preview": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAAB..."
+    },
+    {
+      "table": "services",
+      "column": "banner_image",
+      "rowId": "2",
+      "storageType": "External URL",
+      "mimeType": "unknown",
+      "length": 93,
+      "preview": "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1200&q..."
+    },
+    {
+      "table": "services",
+      "column": "banner_image",
+      "rowId": "3",
+      "storageType": "External URL",
+      "mimeType": "unknown",
+      "length": 93,
+      "preview": "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1200&q..."
+    },
+    {
+      "table": "services",
+      "column": "banner_image",
+      "rowId": "4",
+      "storageType": "External URL",
+      "mimeType": "unknown",
+      "length": 93,
+      "preview": "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1200&q..."
+    },
+    {
+      "table": "services",
+      "column": "banner_image",
+      "rowId": "5",
+      "storageType": "External URL",
+      "mimeType": "unknown",
+      "length": 93,
+      "preview": "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1200&q..."
+    },
+    {
+      "table": "services",
+      "column": "banner_image",
+      "rowId": "6",
+      "storageType": "External URL",
+      "mimeType": "unknown",
+      "length": 93,
+      "preview": "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1200&q..."
+    },
+    {
+      "table": "services",
+      "column": "banner_image",
+      "rowId": "7",
+      "storageType": "External URL",
+      "mimeType": "unknown",
+      "length": 93,
+      "preview": "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1200&q..."
+    },
+    {
+      "table": "services",
+      "column": "banner_image",
+      "rowId": "8",
+      "storageType": "External URL",
+      "mimeType": "unknown",
+      "length": 93,
+      "preview": "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1200&q..."
+    },
+    {
+      "table": "users",
+      "column": "avatar",
+      "rowId": "USR-081",
+      "storageType": "API Streaming URL",
+      "mimeType": "unknown",
+      "length": 59,
+      "preview": "/api/media/MED-AVATAR-USR-081-1790967549613?v=1790967549613"
+    }
+  ],
+  "decodedImages": [
+    {
+      "table": "hero_slides",
+      "column": "image",
+      "rowId": "slide-1",
+      "fileName": "hero_slides_image_slide-1.jpeg",
+      "filePath": "D:\\New folder\\New folder\\easyfr8\\easyfr8_admin\\db-image-inspection\\hero_slides_image_slide-1.jpeg",
+      "storageType": "Base64 data URI",
+      "mimeType": "image/jpeg",
+      "fileSize": 174858,
+      "charLength": 233167,
+      "dimensions": "1500x857",
+      "aspectRatio": "1.75"
+    },
+    {
+      "table": "hero_slides",
+      "column": "image",
+      "rowId": "slide-2",
+      "fileName": "hero_slides_image_slide-2.jpeg",
+      "filePath": "D:\\New folder\\New folder\\easyfr8\\easyfr8_admin\\db-image-inspection\\hero_slides_image_slide-2.jpeg",
+      "storageType": "Base64 data URI",
+      "mimeType": "image/jpeg",
+      "fileSize": 174858,
+      "charLength": 233167,
+      "dimensions": "1500x857",
+      "aspectRatio": "1.75"
+    },
+    {
+      "table": "hero_slides",
+      "column": "image",
+      "rowId": "slide-3",
+      "fileName": "hero_slides_image_slide-3.jpeg",
+      "filePath": "D:\\New folder\\New folder\\easyfr8\\easyfr8_admin\\db-image-inspection\\hero_slides_image_slide-3.jpeg",
+      "storageType": "Base64 data URI",
+      "mimeType": "image/jpeg",
+      "fileSize": 277062,
+      "charLength": 369439,
+      "dimensions": "1920x1097",
+      "aspectRatio": "1.75"
+    },
+    {
+      "table": "media",
+      "column": "file_url",
+      "rowId": "MED-AVATAR-USR-081-1790966807945",
+      "fileName": "media_file_url_MED-AVATAR-USR-081-1790966807945.png",
+      "filePath": "D:\\New folder\\New folder\\easyfr8\\easyfr8_admin\\db-image-inspection\\media_file_url_MED-AVATAR-USR-081-1790966807945.png",
+      "storageType": "Base64 data URI",
+      "mimeType": "image/png",
+      "fileSize": 77,
+      "charLength": 126,
+      "dimensions": "2x2",
+      "aspectRatio": "1.00"
+    },
+    {
+      "table": "media",
+      "column": "file_url",
+      "rowId": "MED-AVATAR-USR-081-1790967549613",
+      "fileName": "media_file_url_MED-AVATAR-USR-081-1790967549613.jpeg",
+      "filePath": "D:\\New folder\\New folder\\easyfr8\\easyfr8_admin\\db-image-inspection\\media_file_url_MED-AVATAR-USR-081-1790967549613.jpeg",
+      "storageType": "Base64 data URI",
+      "mimeType": "image/jpeg",
+      "fileSize": 32114,
+      "charLength": 42843,
+      "dimensions": "675x550",
+      "aspectRatio": "1.23"
+    },
+    {
+      "table": "services",
+      "column": "image",
+      "rowId": "1",
+      "fileName": "services_image_1.jpeg",
+      "filePath": "D:\\New folder\\New folder\\easyfr8\\easyfr8_admin\\db-image-inspection\\services_image_1.jpeg",
+      "storageType": "Base64 data URI",
+      "mimeType": "image/jpeg",
+      "fileSize": 63327,
+      "charLength": 84459,
+      "dimensions": "1200x488",
+      "aspectRatio": "2.46"
+    },
+    {
+      "table": "services",
+      "column": "image",
+      "rowId": "1790887601823",
+      "fileName": "services_image_1790887601823.jpeg",
+      "filePath": "D:\\New folder\\New folder\\easyfr8\\easyfr8_admin\\db-image-inspection\\services_image_1790887601823.jpeg",
+      "storageType": "Base64 data URI",
+      "mimeType": "image/jpeg",
+      "fileSize": 53340,
+      "charLength": 71143,
+      "dimensions": "1200x525",
+      "aspectRatio": "2.29"
+    },
+    {
+      "table": "services",
+      "column": "image",
+      "rowId": "1790960464497",
+      "fileName": "services_image_1790960464497.jpeg",
+      "filePath": "D:\\New folder\\New folder\\easyfr8\\easyfr8_admin\\db-image-inspection\\services_image_1790960464497.jpeg",
+      "storageType": "Base64 data URI",
+      "mimeType": "image/jpeg",
+      "fileSize": 66626,
+      "charLength": 88859,
+      "dimensions": "1200x525",
+      "aspectRatio": "2.29"
+    },
+    {
+      "table": "services",
+      "column": "banner_image",
+      "rowId": "1",
+      "fileName": "services_banner_image_1.jpeg",
+      "filePath": "D:\\New folder\\New folder\\easyfr8\\easyfr8_admin\\db-image-inspection\\services_banner_image_1.jpeg",
+      "storageType": "Base64 data URI",
+      "mimeType": "image/jpeg",
+      "fileSize": 155158,
+      "charLength": 206903,
+      "dimensions": "1920x1001",
+      "aspectRatio": "1.92"
+    },
+    {
+      "table": "services",
+      "column": "banner_image",
+      "rowId": "1790887601823",
+      "fileName": "services_banner_image_1790887601823.jpeg",
+      "filePath": "D:\\New folder\\New folder\\easyfr8\\easyfr8_admin\\db-image-inspection\\services_banner_image_1790887601823.jpeg",
+      "storageType": "Base64 data URI",
+      "mimeType": "image/jpeg",
+      "fileSize": 111579,
+      "charLength": 148795,
+      "dimensions": "1920x840",
+      "aspectRatio": "2.29"
+    },
+    {
+      "table": "services",
+      "column": "banner_image",
+      "rowId": "1790960464497",
+      "fileName": "services_banner_image_1790960464497.jpeg",
+      "filePath": "D:\\New folder\\New folder\\easyfr8\\easyfr8_admin\\db-image-inspection\\services_banner_image_1790960464497.jpeg",
+      "storageType": "Base64 data URI",
+      "mimeType": "image/jpeg",
+      "fileSize": 165118,
+      "charLength": 220183,
+      "dimensions": "1920x840",
+      "aspectRatio": "2.29"
+    }
+  ],
+  "cmsContent": {
+    "hero_slides": [
+      {
+        "id": "slide-1",
+        "title": "Connecting Global Markets Seamlessly",
+        "subtitle": "",
+        "description": "AI-Powered Digital Freight Platform for Ocean, Air & Land Transport",
+        "button_text": "",
+        "button_url": "",
+        "image": "[BASE64 IMAGE — 233167 characters]",
+        "status": "active",
+        "sort_order": 2,
+        "created_at": "2026-07-07T13:01:36.000Z",
+        "updated_at": "2026-10-02T20:02:31.000Z"
+      },
+      {
+        "id": "slide-2",
+        "title": "GLOBAL LOGISTICS EXCELLENCE",
+        "subtitle": "INTELLIGENT FREIGHT SOLUTIONS",
+        "description": "Buyer-seller discovery tools and comprehensive trade-related reports to support strategic business growth.",
+        "button_text": "View Rates",
+        "button_url": "/rates",
+        "image": "[BASE64 IMAGE — 233167 characters]",
+        "status": "active",
+        "sort_order": 3,
+        "created_at": "2026-07-07T13:01:36.000Z",
+        "updated_at": "2026-10-02T20:02:31.000Z"
+      },
+      {
+        "id": "slide-3",
+        "title": "UNIFIED PLATFORM",
+        "subtitle": "",
+        "description": "Multimodal logistics solutions under one roof - ocean, air and road options in a single click.",
+        "button_text": "Learn More",
+        "button_url": "/about",
+        "image": "[BASE64 IMAGE — 369439 characters]",
+        "status": "active",
+        "sort_order": 1,
+        "created_at": "2026-07-07T13:01:36.000Z",
+        "updated_at": "2026-10-03T06:55:16.000Z"
+      }
+    ],
+    "services": [
+      {
+        "id": "1",
+        "title": "Ocean Freight Forwarding",
+        "slug": "ocean-freight-forwarding",
+        "category": "core",
+        "icon": "anchor",
+        "description": "Global container shipping with flexible contract rates.",
+        "long_description": "",
+        "details": "Our Sea Freight solutions are designed for both import and export cargo, backed by a leadership team with deep specialization in ocean logistics. We offer flexible shipping options through Main Line Operators, Feeders, NVOCCs, and Bulk & Breakbulk carriers, ensuring cost-efficient and scalable solutions for diverse cargo requirements.fhghjmhffdfjahfuiewhfoiehueoiughrg\n\nAdvantages:\n- Comprehensive import and export coverage across global trade lanes, thereby, providing solutions to varied requests under one roof.\n- Multiple carrier options for cost and transit comparisons.\n- Expertise in handling containerized, bulk, and breakbulk cargo.\n- Reliable planning and execution for long-haul shipments.",
+        "image": "[BASE64 IMAGE — 84459 characters]",
+        "banner_image": "[BASE64 IMAGE — 206903 characters]",
+        "sort_order": 1,
+        "show_on_homepage": 1,
+        "active": 1,
+        "created_at": "2026-10-03T06:18:23.000Z",
+        "updated_at": "2026-10-03T06:31:40.000Z"
+      },
+      {
+        "id": "1790887601823",
+        "title": "test",
+        "slug": "test",
+        "category": "value-added",
+        "icon": "anchor",
+        "description": "test",
+        "long_description": "",
+        "details": "test",
+        "image": "[BASE64 IMAGE — 71143 characters]",
+        "banner_image": "[BASE64 IMAGE — 148795 characters]",
+        "sort_order": 9,
+        "show_on_homepage": 0,
+        "active": 1,
+        "created_at": "2026-10-03T06:18:23.000Z",
+        "updated_at": "2026-10-03T06:31:40.000Z"
+      },
+      {
+        "id": "1790960464497",
+        "title": "test1",
+        "slug": "test1",
+        "category": "core",
+        "icon": "anchor",
+        "description": "ytrueyhtrjerahrj",
+        "long_description": "",
+        "details": "tyjtyhtukrthesthakrjgheroiguhjaw4pg",
+        "image": "[BASE64 IMAGE — 88859 characters]",
+        "banner_image": "[BASE64 IMAGE — 220183 characters]",
+        "sort_order": 10,
+        "show_on_homepage": 0,
+        "active": 1,
+        "created_at": "2026-10-03T06:18:23.000Z",
+        "updated_at": "2026-10-03T06:31:40.000Z"
+      },
+      {
+        "id": "1790972361532",
+        "title": "test2",
+        "slug": "test2",
+        "category": "value-added",
+        "icon": "truck",
+        "description": "Test 2 service offering for value-added logistics verification.",
+        "long_description": "",
+        "details": "",
+        "image": "",
+        "banner_image": "",
+        "sort_order": 11,
+        "show_on_homepage": 0,
+        "active": 1,
+        "created_at": "2026-10-03T06:18:23.000Z",
+        "updated_at": "2026-10-03T06:31:40.000Z"
+      },
+      {
+        "id": "2",
+        "title": "Air Freight Forwarding",
+        "slug": "air-freight-forwarding",
+        "category": "core",
+        "icon": "plane",
+        "description": "Next-flight-out express delivery for urgent cargo.",
+        "long_description": "",
+        "details": "Our Air Freight services provide reliable and cost-effective domestic and international cargo movement through strategic contracts with leading airlines and a wide network of IATA-certified agents. By leveraging multiple carrier options, we ensure optimal routing, competitive pricing, and timely delivery for shipments of all sizes across the globe.\n\nAdvantages:\n- Access to competitive rates through multiple domestic and international carriers.\n- Transit times comparison to select best airline and route selection as per your requirement.\n- Global coverage under one roof.\n- Professional handling as certified, experienced and well equipped partners.",
+        "image": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80",
+        "banner_image": "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1200&q=80",
+        "sort_order": 2,
+        "show_on_homepage": 1,
+        "active": 1,
+        "created_at": "2026-10-03T06:18:23.000Z",
+        "updated_at": "2026-10-03T06:31:40.000Z"
+      },
+      {
+        "id": "3",
+        "title": "Road Freight Forwarding",
+        "slug": "road-freight-forwarding",
+        "category": "core",
+        "icon": "truck",
+        "description": "Reliable domestic port-to-warehouse drayage transport.",
+        "long_description": "",
+        "details": "End-to-end road transportation PAN India basis. supported by a readily available fleet for all container types. Whether Trucks all sizes, Trailers all sizes, standard, reefer, flatbed containers etc, our road transport solutions are structured to ensure quick deployment, safe handling, and on-time delivery along with real time tracking.\n\nAdvantages:\n- Access to thousands of trucking companies, thereby, fulfilling your requirement within minutes.\n- Faster vehicle placement with optimised routing.\n- Seamless point to point movement.\n- Transparent and ready rate structures with instant booking.",
+        "image": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80",
+        "banner_image": "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1200&q=80",
+        "sort_order": 3,
+        "show_on_homepage": 1,
+        "active": 1,
+        "created_at": "2026-10-03T06:18:23.000Z",
+        "updated_at": "2026-10-03T06:31:40.000Z"
+      },
+      {
+        "id": "4",
+        "title": "Warehousing",
+        "slug": "warehousing",
+        "category": "core",
+        "icon": "package",
+        "description": "Secure storage and rapid distributions.",
+        "long_description": "",
+        "details": "Need a modern warehousing space for your requirement no matter how much space. ASK US!! With Plethora of space available all across the nation, we take your burden to find and provide warehouse space even for as low as 1000 Sq. Ft. to as much as you want. From Basic to Advanced to Green warehousing space.\n\nAdvantages:\n- Our secure warehouse facilities provide a safe and climate-controlled environment for storing goods.\n- We offer flexible storage solutions, including inventory management and cargo handling services.\n- Our warehouses are equipped with state-of-the-art security systems and surveillance cameras.",
+        "image": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80",
+        "banner_image": "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1200&q=80",
+        "sort_order": 4,
+        "show_on_homepage": 1,
+        "active": 1,
+        "created_at": "2026-10-03T06:18:23.000Z",
+        "updated_at": "2026-10-03T06:31:40.000Z"
+      },
+      {
+        "id": "5",
+        "title": "Custom Clearance",
+        "slug": "custom-clearance",
+        "category": "value-added",
+        "icon": "shield",
+        "description": "Automated compliance clearing and duty payments.",
+        "long_description": "",
+        "details": "Customs compliance shouldn't block your supply chain. Our certified brokerage team handles document preparation, tariff classification, duty valuation, and electronic processing for all import/export entries. We ensure rapid clearance times and prevent unexpected port delays or compliance penalty issues.\n\nAdvantages:\n- Quick customs declaration preparation.\n- Document compliance pre-verification.\n- Direct connections with local port authorities.\n- Safe cargo handling and storage inside customs area.",
+        "image": "https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?auto=format&fit=crop&w=1200&q=80",
+        "banner_image": "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1200&q=80",
+        "sort_order": 5,
+        "show_on_homepage": 1,
+        "active": 1,
+        "created_at": "2026-10-03T06:18:23.000Z",
+        "updated_at": "2026-10-03T06:31:40.000Z"
+      },
+      {
+        "id": "6",
+        "title": "CFS",
+        "slug": "cfs",
+        "category": "value-added",
+        "icon": "box",
+        "description": "Container Freight Station handling and consolidation.",
+        "long_description": "",
+        "details": "Our specialized Container Freight Station (CFS) operations handle efficient cargo consolidation and deconsolidation. We coordinate container stuffing and stripping for LCL shipments, safe transfer of heavy items, and cross-border manifest preparation to ensure streamlined transit operations at every port.\n\nAdvantages:\n- Efficient FCL/LCL consolidation services.\n- Safe and secure container stuffing and stripping.\n- Real-time container movement tracking.\n- Bonded and non-bonded warehouse storage areas.",
+        "image": "https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?auto=format&fit=crop&w=1200&q=80",
+        "banner_image": "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1200&q=80",
+        "sort_order": 6,
+        "show_on_homepage": 1,
+        "active": 1,
+        "created_at": "2026-10-03T06:18:23.000Z",
+        "updated_at": "2026-10-03T06:31:40.000Z"
+      },
+      {
+        "id": "7",
+        "title": "Contract Handling",
+        "slug": "contract-handling",
+        "category": "value-added",
+        "icon": "briefcase",
+        "description": "Enterprise logistics contract execution and planning.",
+        "long_description": "",
+        "details": "Manage complex logistics projects and supply chain setups under dedicated SLA contracts. We design custom handling routines, verify safety audits, and dedicate specialized machinery/teams to guarantee high-performance cargo routing and contract compliance.\n\nAdvantages:\n- Custom logistics solution design.\n- Dedicated equipment and expert operations teams.\n- Full supply chain audit compliance.\n- Strategic routing optimization.",
+        "image": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=1200&q=80",
+        "banner_image": "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1200&q=80",
+        "sort_order": 7,
+        "show_on_homepage": 1,
+        "active": 1,
+        "created_at": "2026-10-03T06:18:23.000Z",
+        "updated_at": "2026-10-03T06:31:40.000Z"
+      },
+      {
+        "id": "8",
+        "title": "Cargo Insurance",
+        "slug": "cargo-insurance",
+        "category": "value-added",
+        "icon": "umbrella",
+        "description": "Comprehensive cargo transit liability coverage.",
+        "long_description": "",
+        "details": "Protect your transit investments with complete cargo insurance options. We offer comprehensive liability coverage against physical damage, theft, or unforeseen cargo loss during marine, air, or road transportation. Instant certificate issuance and simplified claims processing keep your business protected.\n\nAdvantages:\n- All-risk coverage for global shipments.\n- Flexible policies adjusted for cargo valuation.\n- Direct integration with top global underwriters.\n- Rapid online claims submission and processing.",
+        "image": "https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?auto=format&fit=crop&w=1200&q=80",
+        "banner_image": "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1200&q=80",
+        "sort_order": 8,
+        "show_on_homepage": 1,
+        "active": 1,
+        "created_at": "2026-10-03T06:18:23.000Z",
+        "updated_at": "2026-10-03T06:31:40.000Z"
+      }
+    ],
+    "faqs": [
+      {
+        "id": "1",
+        "category": "Rates",
+        "question": "How are freight rates calculated?",
+        "answer": "Rates are based on weight/volume, route, fuel surcharges, and current port handling tariffs.",
+        "sort_order": 1,
+        "is_active": 1,
+        "created_at": "2026-10-03T06:18:23.000Z",
+        "updated_at": "2026-10-03T06:31:40.000Z"
+      },
+      {
+        "id": "2",
+        "category": "Compliance",
+        "question": "What documents are required for customs clearance?",
+        "answer": "Standard clearance requires a Commercial Invoice, Packing List, Bill of Lading, and Certificate of Origin.",
+        "sort_order": 2,
+        "is_active": 1,
+        "created_at": "2026-10-03T06:18:23.000Z",
+        "updated_at": "2026-10-03T06:31:40.000Z"
+      },
+      {
+        "id": "3",
+        "category": "Booking",
+        "question": "Can I cancel a scheduled container booking?",
+        "answer": "Yes, bookings can be cancelled free of charge up to 72 hours prior to cargo cut-off time.",
+        "sort_order": 3,
+        "is_active": 0,
+        "created_at": "2026-10-03T06:18:23.000Z",
+        "updated_at": "2026-10-03T06:31:40.000Z"
+      }
+    ],
+    "industries": [
+      {
+        "id": "ind-1",
+        "title": "Machinery And Equipmentuyg7t",
+        "slug": null,
+        "description": "Heavy machinery and industrial equipment transport",
+        "icon": "flaticon-cogwheel",
+        "status": "active",
+        "sort_order": 1,
+        "created_at": "2026-07-07T13:01:36.000Z",
+        "updated_at": "2026-10-02T19:57:13.000Z"
+      },
+      {
+        "id": "ind-2",
+        "title": "Automotive",
+        "slug": null,
+        "description": "Comprehensive logistics for vehicle components, assembly lines, and finished car distribution.",
+        "icon": "flaticon-delivery-truck",
+        "status": "active",
+        "sort_order": 2,
+        "created_at": "2026-07-07T13:01:36.000Z",
+        "updated_at": "2026-10-02T19:57:13.000Z"
+      },
+      {
+        "id": "ind-3",
+        "title": "Electronic",
+        "slug": null,
+        "description": "Handling high-value, fragile electronic components with climate-controlled transport.",
+        "icon": "flaticon-technology",
+        "status": "active",
+        "sort_order": 3,
+        "created_at": "2026-07-07T13:01:36.000Z",
+        "updated_at": "2026-10-02T19:57:13.000Z"
+      },
+      {
+        "id": "ind-4",
+        "title": "Chemicals",
+        "slug": null,
+        "description": "Safe handling of hazardous and non-hazardous chemicals with specialized documentation.",
+        "icon": "flaticon-science-1",
+        "status": "active",
+        "sort_order": 4,
+        "created_at": "2026-07-07T13:01:36.000Z",
+        "updated_at": "2026-10-02T19:57:13.000Z"
+      },
+      {
+        "id": "ind-5",
+        "title": "Construction",
+        "slug": null,
+        "description": "Delivery of construction materials, heavy machinery, and oversized loads.",
+        "icon": "flaticon-brickwall",
+        "status": "active",
+        "sort_order": 5,
+        "created_at": "2026-07-07T13:01:36.000Z",
+        "updated_at": "2026-10-02T19:57:13.000Z"
+      },
+      {
+        "id": "ind-6",
+        "title": "Food and Beverage",
+        "slug": null,
+        "description": "Advanced temperature-controlled logistics solutions for safely transporting perishable goods.",
+        "icon": "flaticon-transport-9",
+        "status": "active",
+        "sort_order": 6,
+        "created_at": "2026-07-07T13:01:36.000Z",
+        "updated_at": "2026-10-02T19:57:13.000Z"
+      },
+      {
+        "id": "ind-7",
+        "title": "Manufacturing",
+        "slug": null,
+        "description": "From raw material sourcing to finished product distribution.",
+        "icon": "flaticon-leaf",
+        "status": "active",
+        "sort_order": 7,
+        "created_at": "2026-07-07T13:01:36.000Z",
+        "updated_at": "2026-10-02T19:57:13.000Z"
+      },
+      {
+        "id": "ind-8",
+        "title": "Agricultural Products",
+        "slug": null,
+        "description": "Fresh produce and agricultural commodity shipping.",
+        "icon": "flaticon-farmer",
+        "status": "active",
+        "sort_order": 8,
+        "created_at": "2026-07-07T13:01:36.000Z",
+        "updated_at": "2026-10-02T19:57:13.000Z"
+      },
+      {
+        "id": "ind-9",
+        "title": "Textiles and Garments",
+        "slug": null,
+        "description": "Fashion and textile industry logistics.",
+        "icon": "flaticon-clothes",
+        "status": "active",
+        "sort_order": 9,
+        "created_at": "2026-07-07T13:01:36.000Z",
+        "updated_at": "2026-10-02T19:57:13.000Z"
+      }
+    ],
+    "partners": [
+      {
+        "id": "partner-1",
+        "name": "LX Pantos",
+        "logo": "/uploads/partners/Picture1.png",
+        "website_url": "https://pantos.com",
+        "status": "active",
+        "sort_order": 1,
+        "created_at": "2026-07-07T13:01:36.000Z",
+        "updated_at": "2026-09-29T16:37:40.000Z"
+      },
+      {
+        "id": "partner-2",
+        "name": "Saatvik",
+        "logo": "/uploads/partners/Picture2.jpg",
+        "website_url": "https://saatvik.com",
+        "status": "active",
+        "sort_order": 2,
+        "created_at": "2026-07-07T13:01:36.000Z",
+        "updated_at": "2026-09-29T16:37:40.000Z"
+      },
+      {
+        "id": "partner-3",
+        "name": "Bircher",
+        "logo": "/uploads/partners/Picture3.png",
+        "website_url": "https://bircher.com",
+        "status": "active",
+        "sort_order": 3,
+        "created_at": "2026-07-07T13:01:36.000Z",
+        "updated_at": "2026-09-29T16:37:40.000Z"
+      },
+      {
+        "id": "partner-4",
+        "name": "Hyundai Glovis",
+        "logo": "/uploads/partners/Picture4.png",
+        "website_url": "https://glovis.co.kr",
+        "status": "active",
+        "sort_order": 4,
+        "created_at": "2026-07-07T13:01:36.000Z",
+        "updated_at": "2026-09-29T16:37:40.000Z"
+      },
+      {
+        "id": "partner-5",
+        "name": "Elite Green",
+        "logo": "/uploads/partners/Picture5.png",
+        "website_url": "https://elitegreen.com",
+        "status": "active",
+        "sort_order": 5,
+        "created_at": "2026-07-07T13:01:36.000Z",
+        "updated_at": "2026-09-29T16:37:40.000Z"
+      },
+      {
+        "id": "partner-6",
+        "name": "Cargo Logistics",
+        "logo": "/uploads/partners/Picture6.png",
+        "website_url": "#",
+        "status": "active",
+        "sort_order": 6,
+        "created_at": "2026-07-07T13:01:36.000Z",
+        "updated_at": "2026-09-29T16:37:40.000Z"
+      }
+    ],
+    "statistics": [
+      {
+        "id": "stat-1",
+        "label": "Projects Completed",
+        "value": "1500+",
+        "icon": "flaticon-transport-9",
+        "status": "active",
+        "sort_order": 1,
+        "created_at": "2026-07-07T13:01:36.000Z",
+        "updated_at": "2026-09-29T16:37:40.000Z"
+      },
+      {
+        "id": "stat-2",
+        "label": "Clients Served",
+        "value": "120+",
+        "icon": "flaticon-people",
+        "status": "active",
+        "sort_order": 2,
+        "created_at": "2026-07-07T13:01:36.000Z",
+        "updated_at": "2026-09-29T16:37:40.000Z"
+      },
+      {
+        "id": "stat-3",
+        "label": "Global Shipments",
+        "value": "5000+",
+        "icon": "flaticon-route",
+        "status": "active",
+        "sort_order": 3,
+        "created_at": "2026-07-07T13:01:36.000Z",
+        "updated_at": "2026-09-29T16:37:40.000Z"
+      },
+      {
+        "id": "stat-4",
+        "label": "Countries Connected",
+        "value": "50+",
+        "icon": "flaticon-international-delivery",
+        "status": "active",
+        "sort_order": 4,
+        "created_at": "2026-07-07T13:01:36.000Z",
+        "updated_at": "2026-09-29T16:37:40.000Z"
+      }
+    ],
+    "blogs": [
+      {
+        "id": "BLG-401",
+        "title": "Navigating Blank Sailings in Q3 2026",
+        "slug": "navigating-blank-sailings-q3-2026",
+        "content": "fuydhfjhgkjhkl,lhglhkjn,miukjnm,",
+        "excerpt": "Navigating Blank Sailings in Q3 2026",
+        "image": "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=400&h=250",
+        "category": "Industry Updates",
+        "author": "easyfr8",
+        "status": "Published",
+        "published_at": "2026-07-01T18:30:00.000Z",
+        "created_at": "2026-07-07T13:01:36.000Z",
+        "updated_at": "2026-10-02T18:18:37.000Z"
+      },
+      {
+        "id": "BLG-402",
+        "title": "Essential Guide to Customs Bond Clearances",
+        "slug": "essential-guide-customs-bond-clearances",
+        "content": "hyftdgfawljhjdgqeqohilgktjehpeuighoqei",
+        "excerpt": "Essential Guide to Customs Bond Clearances",
+        "image": "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=400&h=250",
+        "category": "Compliance Guides",
+        "author": "easyfr8",
+        "status": "Published",
+        "published_at": "2026-06-27T18:30:00.000Z",
+        "created_at": "2026-07-07T13:01:36.000Z",
+        "updated_at": "2026-10-02T18:18:37.000Z"
+      }
+    ],
+    "media": [
+      {
+        "id": "MED-AVATAR-USR-081-1790966807945",
+        "file_name": "easyfr8_avatar.png",
+        "file_url": "[BASE64 IMAGE — 126 characters]",
+        "file_type": "image/png",
+        "file_size": "0 KB",
+        "uploaded_at": "2026-10-02T18:46:47.000Z",
+        "updated_at": "2026-10-02T18:46:47.000Z"
+      },
+      {
+        "id": "MED-AVATAR-USR-081-1790967549613",
+        "file_name": "easyfr8_avatar.png",
+        "file_url": "[BASE64 IMAGE — 42843 characters]",
+        "file_type": "image/png",
+        "file_size": "42 KB",
+        "uploaded_at": "2026-10-02T18:59:09.000Z",
+        "updated_at": "2026-10-02T18:59:09.000Z"
+      },
+      {
+        "id": "MED-LEGACY-1",
+        "file_name": "hero_banner.jpg",
+        "file_url": "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=150&h=150",
+        "file_type": "image",
+        "file_size": "320 KB",
+        "uploaded_at": "2026-10-03T06:18:23.000Z",
+        "updated_at": "2026-10-03T06:31:40.000Z"
+      },
+      {
+        "id": "MED-LEGACY-2",
+        "file_name": "predefined_rate_template.csv",
+        "file_url": "#",
+        "file_type": "document",
+        "file_size": "18 KB",
+        "uploaded_at": "2026-10-03T06:18:23.000Z",
+        "updated_at": "2026-10-03T06:31:40.000Z"
+      },
+      {
+        "id": "MED-LEGACY-3",
+        "file_name": "company_logo.png",
+        "file_url": "https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=150&h=150",
+        "file_type": "image",
+        "file_size": "45 KB",
+        "uploaded_at": "2026-10-03T06:18:23.000Z",
+        "updated_at": "2026-10-03T06:31:40.000Z"
+      }
+    ],
+    "app_settings": [
+      {
+        "id": 1,
+        "data": "{\"site\":{\"siteName\":\"EasyFr8 Admin\",\"companyName\":\"Value Envision India Pvt Ltd\",\"address\":\"Bank More, Dhanbad, Jharkhand - 826001\",\"phone\":\"+91 7011 874 347\",\"email\":\"admin@easyfr8.com\",\"logoUrl\":\"\",\"faviconUrl\":\"\",\"timezone\":\"Asia/Kolkata\",\"dateFormat\":\"DD/MM/YYYY\",\"timeFormat\":\"12h\"},\"siteConfig\":{\"siteUrl\":\"https://easyfr8.com\",\"maintenanceMode\":false,\"googleAnalyticsId\":\"\",\"googleTagManagerId\":\"\",\"googleMapsKey\":\"\",\"reCaptchaSiteKey\":\"\",\"reCaptchaSecretKey\":\"\",\"cookieBannerEnabled\":true,\"robotsTxt\":\"User-agent: *\\nAllow: /\\nDisallow: /admin/\",\"seoDefaultTitle\":\"EasyFr8 — Digital Freight Platform\",\"seoDefaultDesc\":\"Instant freight rates and shipment booking worldwide.\"},\"smtp\":{\"host\":\"smtp.gmail.com\",\"port\":587,\"username\":\"\",\"password\":\"\",\"encryption\":\"TLS\",\"senderName\":\"EasyFr8 Admin\",\"senderEmail\":\"noreply@easyfr8.com\",\"enabled\":false,\"notifyNewEnquiry\":true,\"notifyDocumentUpload\":true,\"notifyNewUser\":false},\"sms\":{\"provider\":\"None\",\"apiKey\":\"\",\"apiSecret\":\"\",\"senderId\":\"EASYFR8\",\"enabled\":false,\"notifyNewEnquiry\":false,\"notifyStatusChange\":false},\"payment\":{\"razorpay\":{\"enabled\":false,\"apiKey\":\"\",\"apiSecret\":\"\",\"webhookUrl\":\"\",\"mode\":\"test\"},\"stripe\":{\"enabled\":false,\"apiKey\":\"\",\"apiSecret\":\"\",\"webhookUrl\":\"\",\"mode\":\"test\"},\"paypal\":{\"enabled\":false,\"clientId\":\"\",\"clientSecret\":\"\",\"mode\":\"test\",\"webhookUrl\":\"\"},\"cashEnabled\":true},\"tax\":{\"gstEnabled\":true,\"gstRate\":18,\"vatEnabled\":false,\"vatRate\":20,\"defaultTaxLabel\":\"GST\",\"taxInclusive\":false},\"currency\":{\"defaultCurrency\":\"USD\",\"currencySymbol\":\"$\",\"symbolPosition\":\"before\",\"decimalPrecision\":2,\"thousandsSeparator\":\",\"},\"language\":{\"defaultLanguage\":\"en\",\"enabledLanguages\":[\"en\"],\"rtlEnabled\":false},\"roles\":{\"rolesList\":[\"Manager\",\"Content Moderator\"],\"permissionsMatrix\":{\"Manager\":{\"edit_cms\":true,\"manage_rates\":true,\"manage_enquiries\":true,\"manage_blogs\":true,\"view_audit_logs\":false,\"manage_users\":false},\"Content Moderator\":{\"edit_cms\":true,\"manage_rates\":false,\"manage_enquiries\":false,\"manage_blogs\":true,\"view_audit_logs\":false,\"manage_users\":false}}}}",
+        "updated_at": "2026-10-02T19:39:00.000Z"
+      }
+    ]
+  },
+  "duplicateContent": [],
+  "cmsDataParsed": {
+    "topLevelKeys": [
+      "homepage",
+      "aboutUs",
+      "services",
+      "faqs",
+      "contact",
+      "staticPages",
+      "media",
+      "seo"
+    ],
+    "homepage": {
+      "heroTitle": "Connecting Global Markets Seamlessly",
+      "heroSubtitle": "Your trusted freight forwarding partner with instant digital rate booking and automated compliance tracking.",
+      "heroImage": "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1200&q=80",
+      "ctaText": "Get Instant Quote",
+      "ctaLink": "/quote",
+      "testimonials": [
+        {
+          "id": 1,
+          "author": "Marcus Aurelius",
+          "company": "Rome Logistics Ltd",
+          "text": "EasyFr8 transformed our freight procurement cycle. We get instant rate transparency and complete visibility.",
+          "logo": "https://images.unsplash.com/photo-1560179707-f14e90ef3623?auto=format&fit=crop&w=80&h=80",
+          "rating": 5,
+          "sortOrder": 1
+        },
+        {
+          "id": 2,
+          "author": "Sarah Jenkins",
+          "company": "Apex Global Trade",
+          "text": "The CSV rate upload and compliance tracking saved our operations team hundreds of administrative hours per month.",
+          "logo": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=80&h=80",
+          "rating": 5,
+          "sortOrder": 2
+        }
+      ],
+      "featuredServices": [
+        {
+          "id": 1,
+          "title": "Lightning Speed Resultshhj",
+          "desc": "Instant rates and bookings in seconds, replacing traditional 1-2 day lead times with AI-powered real-time processing.hhjh",
+          "sortOrder": 1
+        },
+        {
+          "id": 2,
+          "title": "Complete Visibility",
+          "desc": "AI & ML-driven services and rate comparisons across all available options, bringing unprecedented transparency to freight decisions.",
+          "sortOrder": 2
+        },
+        {
+          "id": 3,
+          "title": "Unified Platform",
+          "desc": "Multimodal logistics solutions under one roof – ocean, air, road, and rail options accessible with a single click.",
+          "sortOrder": 3
+        },
+        {
+          "id": 4,
+          "title": "Value-Added Services",
+          "desc": "Door-to-door delivery, insurance, and cost liability management integrated seamlessly into our platform.",
+          "sortOrder": 4
+        },
+        {
+          "id": 5,
+          "title": "Knowledge Bank",
+          "desc": "Buyer-seller discovery tools and comprehensive trade-related reports to support strategic decision-making.",
+          "sortOrder": 5
+        }
+      ]
+    },
+    "aboutUs": {
+      "overview": "EasyFr8 is a pioneer in digital freight forwarding, founded in 2024 to simplify complex global trade supply chains.fhgdgfdvyfyutgihi",
+      "mission": "To empower SMEs and global enterprises with real-time digital rates, instant customs approval, and robust tracking mechanics.hfrwghrwu",
+      "vision": "To be the most trusted digital freight platform cotuihtiogejhnnecting every port in the world by 2030.",
+      "overviewImage": "data:image/jpeg;base64,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",
+      "coreValues": "Integrity, Innovation, Intelligence.rnrmtoi",
+      "team": [
+        {
+          "id": 1,
+          "name": "Alexander Pierce",
+          "role": "Co-Founder & CEO",
+          "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&h=150",
+          "linkedInUrl": "https://linkedin.com/in/alexander-pierce",
+          "sortOrder": 1
+        },
+        {
+          "id": 2,
+          "name": "Jane Montgomery",
+          "role": "VP Ocean Operations",
+          "avatar": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&h=150",
+          "linkedInUrl": "https://linkedin.com/in/jane-montgomery",
+          "sortOrder": 2
+        }
+      ]
+    },
+    "contact": {
+      "phones": [
+        "+91 9348574792",
+        "+91 8114794703"
+      ],
+      "emails": [
+        "test@easyfr8.com",
+        "test1@easyfr8.com"
+      ],
+      "officeAddress": "Gurunanak Service Station,janla,khordha",
+      "socialLinks": {
+        "twitter": "https://twitter.com/easyfr8",
+        "linkedin": "https://linkedin.com/company/easyfr8",
+        "facebook": "",
+        "instagram": "",
+        "youtube": "",
+        "whatsapp": "",
+        "googleMapsEmbed": ""
+      },
+      "copyright": "Copyright @ 2026 swagat, All Right Reserved",
+      "logoImage": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/4gHYSUNDX1BST0ZJTEUAAQEAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAAAChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZWiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAAE9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADb/2wBDAAUDBAQEAwUEBAQFBQUGBwwIBwcHBw8LCwkMEQ8SEhEPERETFhwXExQaFRERGCEYGh0dHx8fExciJCIeJBweHx7/2wBDAQUFBQcGBw4ICA4eFBEUHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh7/wAARCABmAZADASIAAhEBAxEB/8QAHAABAAICAwEAAAAAAAAAAAAAAAQHBQYBAgMI/8QAThAAAQMDAgMEBQgFCAYLAAAAAQACAwQFEQYSByExE0FRYRQVIoGTFzJUcZGhsdFCVZXB0iMzN0VScrPTVnWEktThCDZGYmRzhZSy8PH/xAAaAQEAAwEBAQAAAAAAAAAAAAAAAwQFAQIG/8QANxEAAQMCAwQGCAcBAQAAAAAAAQACAwQRBRIhEzFBURRSU2GBkQYVIjJxoeHwFiNUkqKxwdFC/9oADAMBAAIRAxEAPwD4yRERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERFt/D/RdRqKT0qq3wW5hwXgc5D/AGW/vK8SSNjbmcdFPTU0tTIIohclaiASQAMk9AuXsexxa9rmuHUEYIX0IKTSmk6IekNoaNhAIMoDnvweoHNx69y5p63Rmps08cttrXEn2HMDXuOO4OAcVR9YcQw25r6I+jBByOnYH9W/2fkvnhFZnELhy230st2shc6nYN0tO45LG95ae8eSrNXYpWytzNKwayimo5NnMLH+/giIikVRERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERSLZSvrrjTUcfz55Wxj6ycK/NQV1No7SbpaVjMUzBDSsLeTndxI+0lU5w1/pC09/rKD/ECsPjlJM3T1LGzPZun9v7OSzqsbSZjDuX1GCvNPQ1NQz3gAAeV/v5KpLlXVVyrpa2tmdNPK7c97j1Kjsc5jg5ji1wOQQcEFcItECy+YJJNyrx4T6lqL5aJaOvf21TS4DnuOS9p6E/gqs19a2WfVldRQjEO8SRDwa4bgPdnHuW28C6OY1tdXkOELWtjBxyc7mfuCw3GKoZNrN7GEkwwMY/nyycu5e5w9+Vnw2ZVOa3dZfVV7jPgsM0vvB1geY1/wCLTURFoL5RERERdmMc94Yxpc5xwABklSfVtx+g1Pwys7wqijm17bWSN3NDnux5hjiPvCt3XesafSktJHPQy1IqWOc0skDdu0gd481UnqHMeGMbclbeHYXDU076iaXIGm26+9UL6tuH0Go+GVx6tuH0Ko+GVajuLluP9SVPx2/kuBxct/6kqfjt/JeNvUdn81P6twv9X/EqrfVtw+g1Hwyormua4tcCHA4IPcrd+V6g7rJU/HH5Kq7tVenXOqrdu3t5XSbfDJypoZJXk5228VQr6Wkga0082cnfoRZRURFYWYuQCSABknoF3nhmgdtmifG7rhzSCt84RaX9ZV/resizTU7v5NrmnEjufMfUQt34k6bi1LZvTKICWupwezLCMyc8FpP2+9VH1bGShhW7TYBPPRuqQdeA4kDeQqIRcuBa4tIwQcFcK2sJF7wUdXUML4KaaVoOMsYSFM0pb47rqOgt0xIinna2THXb1OPPAKuzUupbLoaipaGKjc5z8llPD7IDRgFxPj0+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588rpzEYGRkloxndkfZ0Xlfra603E0b5e0cGNcTt29QDjHllc+snixttjI9mJzM6QOOXcsYTUFyddrm+tdC2Eua1uxpyBgAfuXE0Xvpe1Ut4rvQ5qyenkILmdnTiQEAEnOXtweXL9yx1a2lZUObRzTTQ/ovliEbj9bQ52PtUvT1zdaLm2tbHvLWOaBnHzmkfvWOS2qcEXeCPtZmR7ms3HG5xwB5rou8L+zla/a12D81w5FdXFkLvbqeiiY6OqlfIXYdHLAYyRj5zTkgtPPwWPhaHysYc4c4A4WQr7o2ot7aOOn7Ngk7TLn7i3Axhp7gsdE4MlY88w1wK4F0rtUsEdRJG3O1ry0Z68ipdLa5qm2SVsRJ2PLNgaTuwATg+ODn6geecAxKh4knkkAIDnEjPmVOp7tLT2dlBCwMeyr9JbKOvzNpbjwXVxedwt0lHR0lQ97XekBxwCDtIxy5E+I64XS0UZr7hHSh20ODnEjrhrS4488BdayrfVMjEgJe1znOeXZLnOOSVza6s0Nayqa3cWtcAM46tI/eiL0udHBTiOalnklp5CdpljEbxg97QT9x/5+NuphV1QhMnZjY927bn5rS7HvxhcVlZVVknaVU8krsk5cc8z1PvXa3VXodT23ZiQFjmFuccnAg8/ei6oylUcEctPUyP37omBzcHlnPevKpfA97TBA6Fobggv3ZOevQeS9KSpbBDURuj39szaOeNpz1RcUZbBetPRW6xUdybVVU7qmKOTAoyIm7h83tN3MjGMYWvrJ3m7y3CKkgaHQwU9PHD2bXna5zRgvI6ZKIoFOwSzxxF20PcGk4zjJ6rvXwtp66eBji5scjmgnqQCutHKIKuGct3CORry3xwc4XavmFTXT1DW7RJI54b4ZOURZvSGn4Lwyeoqpq1sMDmgspKUzSPz4DIx9awNQ1rJ5GMDw1riBvGHYz3+aylnvQobXU258Mjop5Gvc6KUxu5AjGfDmsTIWukcWNLWk8gTnHvRdWUtlBa5ba+quFxmpnGURMbHAJOeM5PtDl1/wCahXGlNFVvgMjJAObXt6OB6FSqGvpW200VbTySsbIZY9jg32sY5nwUOuqX1dS6d/LPIDOdoHQLiLwREXVxERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERERf//Z",
+      "footerAbout": "EasyFr8 simplifies global trade supply chains through instant digital freight rate booking and automated compliance tracking.nfgbnd\n"
+    },
+    "seo": {
+      "homeMetaTitle": "EasyFr8 — Digital Freight Forwarding Platform",
+      "homeMetaDesc": "Get instant freight rates, book containers, and track shipments worldwide with EasyFr8.",
+      "homeMetaKeywords": "freight, shipping, logistics, container, ocean freight, air cargo",
+      "homeOgImage": "https://images.unsplash.com/photo-1578575437130-527eed3abbec?auto=format&fit=crop&w=1200&q=80",
+      "aboutMetaTitle": "About Us — EasyFr8",
+      "aboutMetaDesc": "Learn about EasyFr8, the pioneering digital freight forwarding company.",
+      "servicesMetaTitle": "Freight Services — EasyFr8",
+      "servicesMetaDesc": "Explore our comprehensive freight services including ocean, air, and road haulage."
+    },
+    "staticPagesCount": 4,
+    "servicesCountInJson": 11,
+    "faqsCountInJson": 3,
+    "mediaCountInJson": 3
+  }
+}

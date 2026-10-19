@@ -11,6 +11,13 @@ interface Port {
   status: 'active' | 'inactive';
 }
 
+interface FreightType {
+  id: string;
+  name: string;
+  status: 'active' | 'inactive';
+  sort_order: number;
+}
+
 interface ImportRow {
   rowNumber: number;
   port_code: string;
@@ -47,6 +54,14 @@ export default function PortsPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [freightTypeFilter, setFreightTypeFilter] = useState('');
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalPorts, setTotalPorts] = useState(0);
+
+  // Dynamic Freight Types state from Freight Types module
+  const [freightTypes, setFreightTypes] = useState<FreightType[]>([]);
+  const [freightTypesLoading, setFreightTypesLoading] = useState(true);
+  const [freightTypesError, setFreightTypesError] = useState<string | null>(null);
 
   // CRUD Modals state
   const [modalOpen, setModalOpen] = useState(false);
@@ -57,7 +72,7 @@ export default function PortsPage() {
   const [formPortCode, setFormPortCode] = useState('');
   const [formPortName, setFormPortName] = useState('');
   const [formCountry, setFormCountry] = useState('');
-  const [formFreightType, setFormFreightType] = useState('Ocean');
+  const [formFreightType, setFormFreightType] = useState('');
   const [formStatus, setFormStatus] = useState<'active' | 'inactive'>('active');
 
   // Checkbox Selection state
@@ -85,10 +100,35 @@ export default function PortsPage() {
     setTimeout(() => setToast(null), 4000);
   };
 
-  const fetchPorts = async () => {
+  const fetchFreightTypes = async () => {
+    try {
+      setFreightTypesLoading(true);
+      setFreightTypesError(null);
+      const res = await fetch('/api/freight-types');
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setFreightTypes(data);
+      } else {
+        setFreightTypesError('Failed to load freight types');
+      }
+    } catch (err: any) {
+      console.error('Failed to load freight types:', err);
+      setFreightTypesError(err.message || 'Failed to load freight types');
+    } finally {
+      setFreightTypesLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchFreightTypes();
+  }, []);
+
+  const fetchPorts = async (targetPage = page) => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
+      params.append('page', String(targetPage));
+      params.append('limit', '50');
       if (searchQuery) params.append('search', searchQuery);
       if (freightTypeFilter) params.append('freight_type', freightTypeFilter);
 
@@ -96,6 +136,11 @@ export default function PortsPage() {
       const data = await res.json();
       if (data.success && Array.isArray(data.ports)) {
         setPorts(data.ports);
+        if (data.pagination) {
+          setPage(data.pagination.page);
+          setTotalPages(data.pagination.totalPages);
+          setTotalPorts(data.pagination.total);
+        }
       }
     } catch (e) {
       console.error(e);
@@ -106,27 +151,50 @@ export default function PortsPage() {
   };
 
   useEffect(() => {
-    fetchPorts();
+    setPage(1);
+    fetchPorts(1);
   }, [searchQuery, freightTypeFilter]);
 
   const handleOpenAddModal = () => {
+    fetchFreightTypes();
     setModalMode('create');
     setEditingPortId(null);
     setFormPortCode('');
     setFormPortName('');
     setFormCountry('');
-    setFormFreightType('Ocean');
+    const active = freightTypes.filter(ft => ft.status === 'active');
+    setFormFreightType(active[0]?.name || '');
     setFormStatus('active');
     setModalOpen(true);
   };
 
+  // Sync default freight type when modal opens or freight types finish loading
+  useEffect(() => {
+    if (modalOpen && modalMode === 'create' && !formFreightType && freightTypes.length > 0) {
+      const active = freightTypes.filter(ft => ft.status === 'active');
+      if (active.length > 0) {
+        setFormFreightType(active[0].name);
+      }
+    }
+  }, [modalOpen, modalMode, formFreightType, freightTypes]);
+
   const handleOpenEditModal = (p: Port) => {
+    fetchFreightTypes();
     setModalMode('edit');
     setEditingPortId(p.id);
     setFormPortCode(p.port_code);
     setFormPortName(p.port_name);
     setFormCountry(p.country);
-    setFormFreightType(p.freight_type);
+
+    // Match existing port's freight_type to configured freight types (by name, id, or legacy equivalent)
+    const matching = freightTypes.find(ft => 
+      ft.name.toLowerCase() === p.freight_type?.toLowerCase() ||
+      ft.id.toLowerCase() === p.freight_type?.toLowerCase() ||
+      (p.freight_type?.toLowerCase() === 'ocean' && ft.name.toLowerCase().includes('ocean')) ||
+      (p.freight_type?.toLowerCase() === 'air' && ft.name.toLowerCase().includes('air')) ||
+      (p.freight_type?.toLowerCase() === 'road' && ft.name.toLowerCase().includes('road'))
+    );
+    setFormFreightType(matching ? matching.name : (p.freight_type || ''));
     setFormStatus(p.status);
     setModalOpen(true);
   };
@@ -144,55 +212,68 @@ export default function PortsPage() {
         status: formStatus
       };
 
+      const token = typeof window !== 'undefined' ? localStorage.getItem('easyfr8_token') : null;
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+
       if (modalMode === 'create') {
-        const id = `port-${formPortCode.toUpperCase()}-${Math.floor(100 + Math.random() * 900)}`;
+        const cleanCode = formPortCode.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+        const id = `port-${cleanCode}-${Math.floor(100 + Math.random() * 900)}`;
         const res = await fetch('/api/ports', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({ id, ...payload }),
         });
-        if (res.ok) {
-          fetchPorts();
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.success) {
+          await fetchPorts(1);
           setModalOpen(false);
           showToast('Port created successfully.', 'success');
         } else {
-          showToast('Failed to create port.', 'danger');
+          showToast(data.error || 'Failed to create port in database.', 'danger');
         }
       } else {
         const res = await fetch(`/api/ports/${editingPortId}`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify(payload),
         });
-        if (res.ok) {
-          fetchPorts();
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.success) {
+          await fetchPorts(page);
           setModalOpen(false);
           showToast('Port updated successfully.', 'success');
         } else {
-          showToast('Failed to update port.', 'danger');
+          showToast(data.error || 'Failed to update port in database.', 'danger');
         }
       }
     } catch (err) {
       console.error(err);
-      showToast('An error occurred while saving.', 'danger');
+      showToast('An error occurred while saving to database.', 'danger');
     }
   };
 
   const handleDelete = async (id: string) => {
     if (confirm(`Are you sure you want to permanently delete Port ${id}?`)) {
       try {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('easyfr8_token') : null;
+        const headers: Record<string, string> = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
         const res = await fetch(`/api/ports/${id}`, {
           method: 'DELETE',
+          headers,
         });
-        if (res.ok) {
-          fetchPorts();
+        const data = await res.json().catch(() => ({}));
+        if (res.ok && data.success) {
+          await fetchPorts(page);
           showToast('Port deleted successfully.', 'success');
         } else {
-          showToast('Failed to delete port.', 'danger');
+          showToast(data.error || 'Failed to delete port from database.', 'danger');
         }
       } catch (err) {
         console.error(err);
-        showToast('An error occurred while deleting.', 'danger');
+        showToast('An error occurred while deleting port from database.', 'danger');
       }
     }
   };
@@ -465,13 +546,16 @@ export default function PortsPage() {
             className="form-control" 
             value={freightTypeFilter} 
             onChange={(e) => setFreightTypeFilter(e.target.value)}
-            style={{ width: '130px', height: '36px', padding: '0 8px', border: '1px solid #ccc', borderRadius: '4px' }}
+            style={{ width: '150px', height: '36px', padding: '0 8px', border: '1px solid #ccc', borderRadius: '4px' }}
           >
             <option value="">All Modes</option>
-            <option value="Ocean">Ocean</option>
-            <option value="Air">Air</option>
-            <option value="Road">Road</option>
-            <option value="Rail">Rail</option>
+            {freightTypes
+              .filter(ft => ft.status === 'active')
+              .map((ft) => (
+                <option key={ft.id} value={ft.name}>
+                  {ft.name}
+                </option>
+              ))}
           </select>
           <input
             type="text"
@@ -547,6 +631,29 @@ export default function PortsPage() {
             </tbody>
           </table>
         </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderTop: '1px solid #eee', background: '#fafafa', borderRadius: '0 0 8px 8px' }}>
+          <span style={{ fontSize: '0.85rem', color: '#666' }}>
+            Showing page <strong>{page}</strong> of <strong>{totalPages}</strong> ({totalPorts} ports total)
+          </span>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button
+              className="btn btn-secondary"
+              disabled={page <= 1 || loading}
+              onClick={() => { const p = Math.max(1, page - 1); setPage(p); fetchPorts(p); }}
+              style={{ padding: '6px 14px', fontSize: '0.85rem', background: '#fff', border: '1px solid #ccc' }}
+            >
+              Previous
+            </button>
+            <button
+              className="btn btn-secondary"
+              disabled={page >= totalPages || loading}
+              onClick={() => { const p = page + 1; setPage(p); fetchPorts(p); }}
+              style={{ padding: '6px 14px', fontSize: '0.85rem', background: '#fff', border: '1px solid #ccc' }}
+            >
+              Next
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* CRUD Add/Edit Modal */}
@@ -598,11 +705,29 @@ export default function PortsPage() {
                   value={formFreightType}
                   onChange={(e) => setFormFreightType(e.target.value)}
                   style={{ width: '100%', padding: '8px 12px', border: '1px solid #ccc', borderRadius: '4px' }}
+                  disabled={freightTypesLoading}
+                  required
                 >
-                  <option value="Ocean">Ocean</option>
-                  <option value="Air">Air</option>
-                  <option value="Road">Road</option>
-                  <option value="Rail">Rail</option>
+                  {freightTypesLoading ? (
+                    <option value="">Loading freight types...</option>
+                  ) : freightTypesError ? (
+                    <option value="">Error loading freight types</option>
+                  ) : freightTypes.filter(ft => ft.status === 'active').length === 0 ? (
+                    <option value="">No freight types available</option>
+                  ) : (
+                    <>
+                      {formFreightType && !freightTypes.some(ft => ft.status === 'active' && ft.name === formFreightType) && (
+                        <option value={formFreightType}>{formFreightType}</option>
+                      )}
+                      {freightTypes
+                        .filter(ft => ft.status === 'active')
+                        .map((ft) => (
+                          <option key={ft.id} value={ft.name}>
+                            {ft.name}
+                          </option>
+                        ))}
+                    </>
+                  )}
                 </select>
               </div>
               <div style={{ marginBottom: '20px' }}>

@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getPool } from '@/lib/db';
+import { authenticateRequest } from '@/lib/auth';
 
+/**
+ * @deprecated Legacy locations endpoint. Use /api/ports for canonical port management.
+ * Preserved for backward compatibility. Table `locations` is retained.
+ */
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -23,7 +28,11 @@ export async function GET(req: Request) {
     
     query += ' ORDER BY name ASC';
     const [rows]: any = await pool.query(query, params);
-    return NextResponse.json(rows);
+    return NextResponse.json(rows, {
+      headers: {
+        'X-API-Deprecated': 'Use /api/ports instead',
+      },
+    });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
@@ -31,6 +40,11 @@ export async function GET(req: Request) {
 
 export async function POST(req: Request) {
   try {
+    const auth = authenticateRequest(req, ['Administrator', 'Manager']);
+    if (!auth.authenticated) {
+      return NextResponse.json({ success: false, error: auth.error }, { status: auth.status });
+    }
+
     const body = await req.json();
     const { id, port_code, name, country, type } = body;
     const pool = getPool();

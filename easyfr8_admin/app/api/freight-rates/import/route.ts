@@ -1,32 +1,22 @@
 import { NextResponse } from 'next/server';
 import { getPool, logRateActivity, logAuditEvent } from '@/lib/db';
 import * as XLSX from 'xlsx';
-
-function verifyToken(token: string): any | null {
-  try {
-    const parts = token.split('.');
-    if (parts.length !== 3) return null;
-    const payload = JSON.parse(atob(parts[1]));
-    if (payload.exp < Date.now()) return null;
-    return payload;
-  } catch {
-    return null;
-  }
-}
+import { authenticateRequest } from '@/lib/auth';
 
 function getOperator(req: Request): string {
-  const authHeader = req.headers.get('Authorization');
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.split(' ')[1];
-    const decoded = verifyToken(token);
-    if (decoded && decoded.name) {
-      return decoded.name;
-    }
+  const auth = authenticateRequest(req);
+  if (auth.authenticated && auth.user) {
+    return auth.user.name || auth.user.email || 'Admin';
   }
   return 'Admin';
 }
 
 export async function POST(req: Request) {
+  const auth = authenticateRequest(req, ['Administrator', 'Manager']);
+  if (!auth.authenticated) {
+    return NextResponse.json({ success: false, error: auth.error }, { status: auth.status });
+  }
+
   const pool = getPool();
   let connection: any = null;
 
@@ -307,13 +297,13 @@ export async function POST(req: Request) {
               item.price,
               item.currency,
               item.transitTime,
-              item.carrier,
+              item.carrier ? String(item.carrier).trim() : '',
               item.status,
               targetExisting.id,
             ]
           );
 
-          const rateLogValue = { origin: item.originId, destination: item.destinationId, price: item.price, carrier: item.carrier };
+          const rateLogValue = { origin: item.originId, destination: item.destinationId, price: item.price, carrier: item.carrier || '' };
           await logRateActivity(targetExisting.id, 'update', null, rateLogValue, operator);
           updatedCount++;
           continue;
@@ -330,7 +320,7 @@ export async function POST(req: Request) {
         item.price,
         item.currency,
         item.transitTime,
-        item.carrier,
+        item.carrier ? String(item.carrier).trim() : '',
         item.status,
       ];
       console.log('[IMPORT INSERT PAYLOAD]', item.rateId, insertPayload);

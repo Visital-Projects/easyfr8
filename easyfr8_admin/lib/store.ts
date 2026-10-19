@@ -34,6 +34,7 @@ export interface Service {
   icon: string;
   desc: string;
   active: boolean;
+  show_on_homepage?: boolean;
   details?: string;
   image?: string;
   bannerImage?: string;
@@ -79,6 +80,8 @@ export interface FAQ {
   question: string;
   answer: string;
   published: boolean;
+  sort_order?: number;
+  sortOrder?: number;
 }
 
 export interface ContactInfo {
@@ -347,6 +350,11 @@ export interface LanguageSettings {
   rtlEnabled: boolean;
 }
 
+export interface RolesSettings {
+  rolesList: string[];
+  permissionsMatrix: Record<string, Record<string, boolean>>;
+}
+
 export interface AppSettings {
   site: SiteSettings;
   siteConfig: SiteConfigSettings;
@@ -356,6 +364,7 @@ export interface AppSettings {
   tax: TaxSettings;
   currency: CurrencySettings;
   language: LanguageSettings;
+  roles?: RolesSettings;
 }
 
 // ─── Default Data ─────────────────────────────────────────────────────────────
@@ -605,7 +614,7 @@ export const defaultBlogs: Blog[] = [
     status: 'Published',
     image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=400&h=250',
     date: '2026-07-02',
-    author: 'Biswajit Shaw',
+    author: 'easyfr8',
     seoTitle: 'Navigating Blank Sailings Q3 2026 | EasyFr8',
     seoDesc: 'Learn how to navigate blank sailings disruptions in Q3 2026 with EasyFr8 expert guidance.',
     metaKeywords: 'blank sailings, ocean freight, Q3 2026, shipping disruptions',
@@ -745,6 +754,13 @@ export const defaultAppSettings: AppSettings = {
     defaultLanguage: 'en',
     enabledLanguages: ['en'],
     rtlEnabled: false,
+  },
+  roles: {
+    rolesList: ['Manager', 'Content Moderator'],
+    permissionsMatrix: {
+      'Manager': { edit_cms: true, manage_rates: true, manage_enquiries: true, manage_blogs: true, view_audit_logs: false, manage_users: false },
+      'Content Moderator': { edit_cms: true, manage_rates: false, manage_enquiries: false, manage_blogs: true, view_audit_logs: false, manage_users: false },
+    },
   },
 };
 

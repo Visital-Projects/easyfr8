@@ -1,13 +1,16 @@
 import { NextResponse } from 'next/server';
 import { execute, query, logAuditEvent } from '@/lib/db';
+import { authenticateRequest } from '@/lib/auth';
 
 export async function GET() {
   try {
-    const rows = await query('SELECT * FROM media ORDER BY uploaded_at DESC');
+    const rows = await query(
+      'SELECT id, file_name, file_type, file_size, uploaded_at, updated_at FROM media ORDER BY uploaded_at DESC'
+    );
     const mapped = rows.map((r: any) => ({
       id: r.id,
       fileName: r.file_name,
-      fileUrl: r.file_url,
+      fileUrl: `/api/media/${r.id}?v=${new Date(r.updated_at || r.uploaded_at).getTime()}`,
       fileType: r.file_type,
       fileSize: r.file_size,
       uploadedAt: r.uploaded_at,
@@ -21,6 +24,11 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
+    const auth = authenticateRequest(req, ['Administrator', 'Manager']);
+    if (!auth.authenticated) {
+      return NextResponse.json({ success: false, error: auth.error }, { status: auth.status });
+    }
+
     const { fileName, fileUrl, fileType, fileSize, userEmail, userName } = await req.json();
     
     if (!fileName || !fileUrl) {
@@ -28,6 +36,7 @@ export async function POST(req: Request) {
     }
     
     const id = `MED-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const now = new Date();
     
     await execute(
       'INSERT INTO media (id, file_name, file_url, file_type, file_size) VALUES (?, ?, ?, ?, ?)',
@@ -45,10 +54,10 @@ export async function POST(req: Request) {
       media: {
         id,
         fileName,
-        fileUrl,
+        fileUrl: `/api/media/${id}?v=${now.getTime()}`,
         fileType,
         fileSize,
-        uploadedAt: new Date().toISOString()
+        uploadedAt: now.toISOString()
       }
     });
   } catch (error: any) {

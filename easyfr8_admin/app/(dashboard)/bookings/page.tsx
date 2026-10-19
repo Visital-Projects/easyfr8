@@ -14,6 +14,11 @@ interface Booking {
   loading_port_id: string;
   discharge_port_id: string;
   container_id: string;
+  freight_rate_id?: string | null;
+  price?: number | string | null;
+  currency?: string | null;
+  carrier?: string | null;
+  transit_time?: number | null;
   cargo_details: string;
   status: 'Pending' | 'Confirmed' | 'Completed';
   created_at: string;
@@ -25,6 +30,10 @@ interface Booking {
   discharge_port_name?: string;
   discharge_port_code?: string;
   container_name?: string;
+  transhipment_port_name?: string;
+  transhipment_port_code?: string;
+  freight_rate_local_thc?: string | number | null;
+  freight_rate_other_charges?: string | number | null;
 }
 
 export default function BookingsPage() {
@@ -84,7 +93,9 @@ export default function BookingsPage() {
   const filteredBookings = bookings.filter((b) =>
     b.booking_no.toLowerCase().includes(searchQuery.toLowerCase()) ||
     b.user_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    b.email.toLowerCase().includes(searchQuery.toLowerCase())
+    b.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (b.freight_rate_id && b.freight_rate_id.toLowerCase().includes(searchQuery.toLowerCase())) ||
+    (b.carrier && b.carrier.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   return (
@@ -92,7 +103,7 @@ export default function BookingsPage() {
       <div className="page-header">
         <div>
           <h1 className="page-title">Freight Bookings</h1>
-          <p className="page-subtitle">Manage client shipments, change booking status, and view cargo details.</p>
+          <p className="page-subtitle">Manage client shipments, change booking status, and view structured rate details.</p>
         </div>
       </div>
 
@@ -103,7 +114,7 @@ export default function BookingsPage() {
             className="form-control"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by booking no, name or email..."
+            placeholder="Search by booking no, name or rate..."
             style={{ height: '36px' }}
           />
         </div>
@@ -118,6 +129,7 @@ export default function BookingsPage() {
                 <th>Client</th>
                 <th>Route</th>
                 <th>Mode / Type</th>
+                <th>Rate & Pricing</th>
                 <th>Container & Incoterm</th>
                 <th>Cargo Details</th>
                 <th>Status</th>
@@ -127,11 +139,11 @@ export default function BookingsPage() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={8} style={{ textAlign: 'center', padding: 'var(--space-12) 0' }}>Loading...</td>
+                  <td colSpan={9} style={{ textAlign: 'center', padding: 'var(--space-12) 0' }}>Loading...</td>
                 </tr>
               ) : filteredBookings.length === 0 ? (
                 <tr>
-                  <td colSpan={8} style={{ textAlign: 'center', padding: 'var(--space-12) 0' }}>No bookings found.</td>
+                  <td colSpan={9} style={{ textAlign: 'center', padding: 'var(--space-12) 0' }}>No bookings found.</td>
                 </tr>
               ) : (
                 filteredBookings.map((b) => (
@@ -151,7 +163,13 @@ export default function BookingsPage() {
                       <div style={{ fontWeight: 500 }}>
                         {b.loading_port_name} ({b.loading_port_code})
                       </div>
-                      <div style={{ fontSize: '12px', color: '#888' }}>to</div>
+                      {b.transhipment_port_code ? (
+                        <div style={{ fontSize: '11px', color: '#d64238', fontWeight: 600 }}>
+                          via {b.transhipment_port_name || b.transhipment_port_code} ({b.transhipment_port_code})
+                        </div>
+                      ) : (
+                        <div style={{ fontSize: '12px', color: '#888' }}>to</div>
+                      )}
                       <div style={{ fontWeight: 500 }}>
                         {b.discharge_port_name} ({b.discharge_port_code})
                       </div>
@@ -161,10 +179,35 @@ export default function BookingsPage() {
                       <div style={{ fontSize: '12px', color: '#666', fontWeight: 600 }}>{b.shipment_type_name}</div>
                     </td>
                     <td>
+                      {b.freight_rate_id ? (
+                        <div>
+                          <div style={{ fontWeight: 700, color: 'var(--color-primary, #d64238)', fontSize: '14px' }}>
+                            ${b.price != null ? Number(b.price).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'} <span style={{ fontSize: '10px', color: '#666' }}>{b.currency || 'USD'}</span>
+                          </div>
+                          <div style={{ fontSize: '11px', color: '#333', marginTop: '2px' }}>
+                            Carrier: <strong>{b.carrier || 'Standard'}</strong>
+                          </div>
+                          <div style={{ fontSize: '11px', color: '#666' }}>
+                            Rate: <span style={{ fontFamily: 'monospace' }}>{b.freight_rate_id}</span>
+                            {b.transit_time ? ` · ${b.transit_time}d` : ''}
+                          </div>
+                          {(Number(b.freight_rate_local_thc) > 0 || Number(b.freight_rate_other_charges) > 0) && (
+                            <div style={{ fontSize: '11px', color: '#555', marginTop: '2px' }}>
+                              Local THC: ${Number(b.freight_rate_local_thc || 0).toFixed(2)} | Other: ${Number(b.freight_rate_other_charges || 0).toFixed(2)}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div style={{ fontSize: '12px', color: '#999', fontStyle: 'italic' }}>
+                          Custom Quote
+                        </div>
+                      )}
+                    </td>
+                    <td>
                       <div>{b.container_name || 'LCL/Air Cargo'}</div>
                       <div style={{ fontSize: '12px', color: '#888', textTransform: 'uppercase' }}>Incoterm: {b.term_name || 'N/A'}</div>
                     </td>
-                    <td style={{ maxWidth: '200px', whiteSpace: 'normal', fontSize: '12px', color: '#555' }}>
+                    <td style={{ maxWidth: '220px', whiteSpace: 'normal', fontSize: '12px', color: '#555' }}>
                       {b.cargo_details || '—'}
                     </td>
                     <td>

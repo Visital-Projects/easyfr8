@@ -1,5 +1,9 @@
 import { NextResponse } from 'next/server';
-import { readDb, writeDb } from '@/lib/db';
+import { getCmsData, execute } from '@/lib/db';
+import { authenticateRequest } from '@/lib/auth';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 const FOOTER_ABOUT_DEFAULT =
   'EasyFr8 simplifies global trade supply chains through instant digital freight rate booking and automated compliance tracking.';
@@ -11,12 +15,12 @@ const FOOTER_ABOUT_DEFAULT =
  */
 export async function GET() {
   try {
-    const db = await readDb();
+    const cms = await getCmsData();
 
     // Construct footer-specific CMS data containing only the contact and services details
     const footerCms = {
-      contact: db.cms?.contact || {},
-      services: db.cms?.services || [],
+      contact: cms?.contact || {},
+      services: cms?.services || [],
     };
 
     // Ensure contact.footerAbout is initialised to its own default if missing
@@ -37,30 +41,34 @@ export async function GET() {
  */
 export async function POST(req: Request) {
   try {
+    const auth = authenticateRequest(req, ['Administrator', 'Manager']);
+    if (!auth.authenticated) {
+      return NextResponse.json({ success: false, error: auth.error }, { status: auth.status });
+    }
+
     const body = await req.json();
-    const db = await readDb();
+    const cms = await getCmsData();
 
     // Accept either { contact: {...} } wrapper or flat contact fields
     const incomingContact = body.contact ?? body;
 
-    // Merge only into contact — aboutUs and other CMS sections are untouched
-    db.cms = {
-      ...db.cms,
+    const updatedCms = {
+      ...cms,
       contact: {
-        ...db.cms.contact,
+        ...cms.contact,
         ...incomingContact,
       },
     };
 
-    await writeDb(db);
-    return NextResponse.json({ success: true, contact: db.cms.contact });
+    const { services: _s, faqs: _f, ...cmsDataToStore } = updatedCms;
+
+    await execute(
+      'INSERT INTO cms_data (id, data) VALUES (1, ?) ON DUPLICATE KEY UPDATE data = VALUES(data)',
+      [JSON.stringify(cmsDataToStore)]
+    );
+
+    return NextResponse.json({ success: true, contact: updatedCms.contact });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
-
-// Allow PUT as alias for POST
-export async function PUT(req: Request) {
-  return POST(req);
-}
-

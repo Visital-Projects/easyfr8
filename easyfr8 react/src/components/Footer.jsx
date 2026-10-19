@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import logoImg from '../assets/images/easyfr8.png'
-import api, { getImageUrl } from '../services/api'
+import api, { getImageUrl, normalizeCategory } from '../services/api'
 
 const defaultFooterData = {
   contact: {
@@ -103,25 +103,13 @@ export default function Footer() {
               {/* Core Services */}
               <div className="footer-sidebar footer-2 col-xs-12 col-sm-6 col-md-4">
                 <div className="widget widget_nav_menu">
-                  <h4 className="widget-title">Core Services</h4>
+                  <h4 className="widget-title">
+                    <Link to="/services/core-services" style={{ color: 'inherit' }}>Core Services</Link>
+                  </h4>
                   <div className="menu-service-menu-container">
                     <ul className="menu">
-                      {services?.filter(s => s.active).slice(0, 4).map(service => {
-                        const servicePaths = {
-                          'Ocean Freight Forwarding': '/services/ocean-freight-forwarding',
-                          'Ocean Freight FCL/LCL': '/services/ocean-freight-forwarding',
-                          'Air Freight Forwarding': '/services/air-freight-forwarding',
-                          'Expedited Air Freight': '/services/air-freight-forwarding',
-                          'Road Freight Forwarding': '/services/road-freight-forwarding',
-                          'LTL & FTL Road Haulage': '/services/road-freight-forwarding',
-                          'Warehousing': '/services/warehousing',
-                          'Warehousing & Cross-Docking': '/services/warehousing',
-                          'Custom Clearance': '/services/custom-clearance',
-                          'CFS': '/services/cfs',
-                          'Contract Handling': '/services/contract-handling',
-                          'Cargo Insurance': '/services/cargo-insurance'
-                        };
-                        const path = servicePaths[service.title] || '/services';
+                      {services?.filter(s => s.active && normalizeCategory(s.category) === 'core').map(service => {
+                        const path = service.slug ? `/services/${service.slug}` : `/services/${service.id}`;
                         return (
                           <li key={service.id}><Link to={path}>{service.title}</Link></li>
                         );
@@ -134,25 +122,13 @@ export default function Footer() {
               {/* Value Added Services */}
               <div className="footer-sidebar footer-2 col-xs-12 col-sm-6 col-md-4">
                 <div className="widget widget_nav_menu">
-                  <h4 className="widget-title">Value-Added Services</h4>
+                  <h4 className="widget-title">
+                    <Link to="/services/value-added-services" style={{ color: 'inherit' }}>Value-Added Services</Link>
+                  </h4>
                   <div className="menu-service-menu-container">
                     <ul className="menu">
-                      {services?.filter(s => s.active).slice(4, 8).map(service => {
-                        const servicePaths = {
-                          'Ocean Freight Forwarding': '/services/ocean-freight-forwarding',
-                          'Ocean Freight FCL/LCL': '/services/ocean-freight-forwarding',
-                          'Air Freight Forwarding': '/services/air-freight-forwarding',
-                          'Expedited Air Freight': '/services/air-freight-forwarding',
-                          'Road Freight Forwarding': '/services/road-freight-forwarding',
-                          'LTL & FTL Road Haulage': '/services/road-freight-forwarding',
-                          'Warehousing': '/services/warehousing',
-                          'Warehousing & Cross-Docking': '/services/warehousing',
-                          'Custom Clearance': '/services/custom-clearance',
-                          'CFS': '/services/cfs',
-                          'Contract Handling': '/services/contract-handling',
-                          'Cargo Insurance': '/services/cargo-insurance'
-                        };
-                        const path = servicePaths[service.title] || '/services';
+                      {services?.filter(s => s.active && normalizeCategory(s.category) === 'value-added').map(service => {
+                        const path = service.slug ? `/services/${service.slug}` : `/services/${service.id}`;
                         return (
                           <li key={service.id}><Link to={path}>{service.title}</Link></li>
                         );

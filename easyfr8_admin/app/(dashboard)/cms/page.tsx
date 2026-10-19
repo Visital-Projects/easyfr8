@@ -56,8 +56,16 @@ function compressImageBase64(file: File, maxWidth = 1920, maxHeight = 1080, qual
   });
 }
 
+function resolveSlideImageUrl(image?: string, id?: string): string {
+  if (!image) return id ? `/api/cms/hero-slides/${id}/image` : '';
+  if (image.startsWith('data:') || image.startsWith('http://') || image.startsWith('https://')) {
+    return image;
+  }
+  return image.replace('/api/admin/cms/hero-slides/', '/api/cms/hero-slides/').replace('/admin/cms/hero-slides/', '/cms/hero-slides/');
+}
+
 export default function CMSPage() {
-  const { cms, updateCMS, showToast, heroSlides, addHeroSlide, updateHeroSlide, deleteHeroSlide, partners, addPartner, updatePartner, deletePartner, statistics, addStatistic, updateStatistic, deleteStatistic, industries, addIndustry, updateIndustry, deleteIndustry } = useData();
+  const { cms, updateCMS, updateCMSStateOnly, showToast, addService, updateService, deleteService, heroSlides, addHeroSlide, updateHeroSlide, deleteHeroSlide, partners, addPartner, updatePartner, deletePartner, statistics, addStatistic, updateStatistic, deleteStatistic, industries, addIndustry, updateIndustry, deleteIndustry } = useData();
 
   // Tab State
   const [activeTab, setActiveTab] = useState<'homepage' | 'about' | 'services' | 'faq' | 'contact' | 'static' | 'media' | 'seo' | 'partners' | 'statistics' | 'industries'>('homepage');
@@ -133,7 +141,8 @@ export default function CMSPage() {
 
   // Service Local States & Actions
   const [serviceModalOpen, setServiceModalOpen] = useState(false);
-  const [editingServiceId, setEditingServiceId] = useState<number | null>(null);
+  const [editingServiceId, setEditingServiceId] = useState<string | number | null>(null);
+  const [isSavingService, setIsSavingService] = useState(false);
   const [serviceTitle, setServiceTitle] = useState('');
   const [serviceSlug, setServiceSlug] = useState('');
   const [serviceCategory, setServiceCategory] = useState<'core' | 'value-added'>('core');
@@ -143,6 +152,7 @@ export default function CMSPage() {
   const [serviceImage, setServiceImage] = useState('');
   const [serviceBannerImage, setServiceBannerImage] = useState('');
   const [serviceActive, setServiceActive] = useState(true);
+  const [serviceShowOnHomepage, setServiceShowOnHomepage] = useState(true);
   const [serviceSortOrder, setServiceSortOrder] = useState(1);
 
   // Partners States & Actions
@@ -152,6 +162,7 @@ export default function CMSPage() {
   const [partnerLogo, setPartnerLogo] = useState('');
   const [partnerWebsiteUrl, setPartnerWebsiteUrl] = useState('');
   const [partnerStatus, setPartnerStatus] = useState<'active' | 'inactive'>('active');
+  const [partnerSortOrder, setPartnerSortOrder] = useState<number>(1);
 
   const handleOpenAddPartner = () => {
     setEditingPartnerId(null);
@@ -159,6 +170,8 @@ export default function CMSPage() {
     setPartnerLogo('');
     setPartnerWebsiteUrl('');
     setPartnerStatus('active');
+    const maxSort = partners.length > 0 ? Math.max(...partners.map(p => Number(p.sort_order) || 0)) : 0;
+    setPartnerSortOrder(maxSort + 1);
     setPartnerModalOpen(true);
   };
 
@@ -168,6 +181,7 @@ export default function CMSPage() {
     setPartnerLogo(partner.logo);
     setPartnerWebsiteUrl(partner.websiteUrl || '');
     setPartnerStatus(partner.status);
+    setPartnerSortOrder(partner.sort_order !== undefined ? Number(partner.sort_order) : 1);
     setPartnerModalOpen(true);
   };
 
@@ -179,7 +193,7 @@ export default function CMSPage() {
         logo: partnerLogo,
         websiteUrl: partnerWebsiteUrl,
         status: partnerStatus,
-        sort_order: partners.length + 1,
+        sort_order: partnerSortOrder,
       };
       if (editingPartnerId) {
         await updatePartner(editingPartnerId, data);
@@ -215,6 +229,7 @@ export default function CMSPage() {
   const [indDesc, setIndDesc] = useState('');
   const [indIcon, setIndIcon] = useState('flaticon-transport-1');
   const [indStatus, setIndStatus] = useState<'active' | 'inactive'>('active');
+  const [indSortOrder, setIndSortOrder] = useState<number>(1);
 
   const handleOpenAddInd = () => {
     setEditingIndId(null);
@@ -222,6 +237,8 @@ export default function CMSPage() {
     setIndDesc('');
     setIndIcon('flaticon-transport-1');
     setIndStatus('active');
+    const maxSort = industries.length > 0 ? Math.max(...industries.map(i => i.sort_order || 0)) : 0;
+    setIndSortOrder(maxSort + 1);
     setIndModalOpen(true);
   };
 
@@ -231,6 +248,7 @@ export default function CMSPage() {
     setIndDesc(ind.desc);
     setIndIcon(ind.icon);
     setIndStatus(ind.status);
+    setIndSortOrder(ind.sort_order);
     setIndModalOpen(true);
   };
 
@@ -242,7 +260,7 @@ export default function CMSPage() {
         desc: indDesc,
         icon: indIcon,
         status: indStatus,
-        sort_order: industries.length + 1,
+        sort_order: Number(indSortOrder),
       };
       if (editingIndId) {
         await updateIndustry(editingIndId, data);
@@ -313,7 +331,7 @@ export default function CMSPage() {
     setSlideDescription(slide.description);
     setSlideButtonText(slide.button_text);
     setSlideButtonUrl(slide.button_url);
-    setSlideImage(slide.image);
+    setSlideImage(resolveSlideImageUrl(slide.image, slide.id));
     setSlideStatus(slide.status);
     setSlideModalOpen(true);
   };
@@ -407,69 +425,77 @@ export default function CMSPage() {
   const [mediaSearch, setMediaSearch] = useState('');
   const [mediaTypeFilter, setMediaTypeFilter] = useState<'all' | 'image' | 'document'>('all');
 
-  // Fetch CMS data directly from backend
+  // Populate form states from CMS data
+  const populateFormFromCms = React.useCallback((data: CMSData) => {
+    if (!data) return;
+    
+    setHeroTitle(data.homepage?.heroTitle || '');
+    setHeroSubtitle(data.homepage?.heroSubtitle || '');
+    setHeroCtaText(data.homepage?.ctaText || '');
+    setHeroCtaLink(data.homepage?.ctaLink || '');
+    setHeroImage(data.homepage?.heroImage || '');
+    setWelcomeTitle(data.homepage?.welcomeTitle || '');
+    setWelcomeDesc(data.homepage?.welcomeDesc || '');
+    setCountersTitle(data.homepage?.countersTitle || '');
+    setCountersSubtitle(data.homepage?.countersSubtitle || '');
+
+    setAboutOverview(data.aboutUs?.overview || '');
+    setAboutMission(data.aboutUs?.mission || '');
+    setAboutVision(data.aboutUs?.vision || '');
+    setAboutOverviewImage(data.aboutUs?.overviewImage || '');
+    setAboutCoreValues(data.aboutUs?.coreValues || '');
+
+    setContactPhone1(data.contact?.phones?.[0] || '');
+    setContactPhone2(data.contact?.phones?.[1] || '');
+    setContactEmail1(data.contact?.emails?.[0] || '');
+    setContactEmail2(data.contact?.emails?.[1] || '');
+    setContactAddress(data.contact?.officeAddress || '');
+    setContactTwitter(data.contact?.socialLinks?.twitter || '');
+    setContactLinkedin(data.contact?.socialLinks?.linkedin || '');
+    setContactFacebook(data.contact?.socialLinks?.facebook || '');
+    setContactInstagram(data.contact?.socialLinks?.instagram || '');
+    setContactYoutube(data.contact?.socialLinks?.youtube || '');
+    setContactWhatsapp(data.contact?.socialLinks?.whatsapp || '');
+    setContactGoogleMaps(data.contact?.socialLinks?.googleMapsEmbed || '');
+    setContactCopyright(data.contact?.copyright || '');
+    setContactLogoImage(data.contact?.logoImage || '');
+    setContactFooterAbout(data.contact?.footerAbout || '');
+
+    setStaticPrivacy(data.staticPages?.privacyPolicy?.content || '');
+    setStaticPrivacyPub(data.staticPages?.privacyPolicy?.published ?? true);
+    setStaticTerms(data.staticPages?.termsConditions?.content || '');
+    setStaticTermsPub(data.staticPages?.termsConditions?.published ?? true);
+    setStaticRefund(data.staticPages?.refundPolicy?.content || '');
+    setStaticRefundPub(data.staticPages?.refundPolicy?.published ?? true);
+    setStaticDisclaimer(data.staticPages?.disclaimer?.content || '');
+    setStaticDisclaimerPub(data.staticPages?.disclaimer?.published ?? true);
+
+    setSeoHomeTitle(data.seo?.homeMetaTitle || '');
+    setSeoHomeDesc(data.seo?.homeMetaDesc || '');
+    setSeoHomeKeywords(data.seo?.homeMetaKeywords || '');
+    setSeoHomeOgImage(data.seo?.homeOgImage || '');
+    setSeoAboutTitle(data.seo?.aboutMetaTitle || '');
+    setSeoAboutDesc(data.seo?.aboutMetaDesc || '');
+    setSeoServicesTitle(data.seo?.servicesMetaTitle || '');
+    setSeoServicesDesc(data.seo?.servicesMetaDesc || '');
+  }, []);
+
+  // Sync form fields from context CMS data on mount and whenever cms updates
+  React.useEffect(() => {
+    if (cms) {
+      populateFormFromCms(cms);
+    }
+  }, [cms, populateFormFromCms]);
+
+  // Optional manual fetch CMS data directly from backend
   const fetchCmsData = async () => {
     try {
       const data = await CMSService.getHomepage();
-      
-      setHeroTitle(data.homepage.heroTitle || '');
-      setHeroSubtitle(data.homepage.heroSubtitle || '');
-      setHeroCtaText(data.homepage.ctaText || '');
-      setHeroCtaLink(data.homepage.ctaLink || '');
-      setHeroImage(data.homepage.heroImage || '');
-      setWelcomeTitle(data.homepage.welcomeTitle || '');
-      setWelcomeDesc(data.homepage.welcomeDesc || '');
-      setCountersTitle(data.homepage.countersTitle || '');
-      setCountersSubtitle(data.homepage.countersSubtitle || '');
-
-      setAboutOverview(data.aboutUs.overview || '');
-      setAboutMission(data.aboutUs.mission || '');
-      setAboutVision(data.aboutUs.vision || '');
-      setAboutOverviewImage(data.aboutUs.overviewImage || '');
-      setAboutCoreValues(data.aboutUs.coreValues || '');
-
-      setContactPhone1(data.contact.phones[0] || '');
-      setContactPhone2(data.contact.phones[1] || '');
-      setContactEmail1(data.contact.emails[0] || '');
-      setContactEmail2(data.contact.emails[1] || '');
-      setContactAddress(data.contact.officeAddress || '');
-      setContactTwitter(data.contact.socialLinks.twitter || '');
-      setContactLinkedin(data.contact.socialLinks.linkedin || '');
-      setContactFacebook(data.contact.socialLinks.facebook || '');
-      setContactInstagram(data.contact.socialLinks.instagram || '');
-      setContactYoutube(data.contact.socialLinks.youtube || '');
-      setContactWhatsapp(data.contact.socialLinks.whatsapp || '');
-      setContactGoogleMaps(data.contact.socialLinks.googleMapsEmbed || '');
-      setContactCopyright(data.contact.copyright || '');
-      setContactLogoImage(data.contact.logoImage || '');
-      setContactFooterAbout(data.contact.footerAbout || '');
-
-      setStaticPrivacy(data.staticPages.privacyPolicy?.content || '');
-      setStaticPrivacyPub(data.staticPages.privacyPolicy?.published ?? true);
-      setStaticTerms(data.staticPages.termsConditions?.content || '');
-      setStaticTermsPub(data.staticPages.termsConditions?.published ?? true);
-      setStaticRefund(data.staticPages.refundPolicy?.content || '');
-      setStaticRefundPub(data.staticPages.refundPolicy?.published ?? true);
-      setStaticDisclaimer(data.staticPages.disclaimer?.content || '');
-      setStaticDisclaimerPub(data.staticPages.disclaimer?.published ?? true);
-
-      setSeoHomeTitle(data.seo?.homeMetaTitle || '');
-      setSeoHomeDesc(data.seo?.homeMetaDesc || '');
-      setSeoHomeKeywords(data.seo?.homeMetaKeywords || '');
-      setSeoHomeOgImage(data.seo?.homeOgImage || '');
-      setSeoAboutTitle(data.seo?.aboutMetaTitle || '');
-      setSeoAboutDesc(data.seo?.aboutMetaDesc || '');
-      setSeoServicesTitle(data.seo?.servicesMetaTitle || '');
-      setSeoServicesDesc(data.seo?.servicesMetaDesc || '');
+      populateFormFromCms(data);
     } catch (err) {
       console.error('Failed to load CMS data:', err);
     }
   };
-
-  // Mount hook to load saved backend CMS data
-  React.useEffect(() => {
-    fetchCmsData();
-  }, []);
 
   // Save Homepage Hero and refresh
   const handleSaveHero = async (e: React.FormEvent) => {
@@ -486,14 +512,9 @@ export default function CMSPage() {
       },
     };
     
-    // Save to context
-    updateCMS(updated);
-
     try {
-      // Save directly to API and wait for it
-      await CMSService.updateCMSData(updated);
+      await updateCMS(updated);
       showToast('Homepage Hero Banner updated successfully!', 'success');
-      // Force reload saved data from the database to synchronize form fields
       await fetchCmsData();
     } catch (err: any) {
       console.error(err);
@@ -513,8 +534,12 @@ export default function CMSPage() {
           heroImage: compressed,
         },
       };
-      updateCMS(updated);
-      showToast('Hero Banner Image uploaded successfully!', 'success');
+      try {
+        await updateCMS(updated);
+        showToast('Hero Banner Image uploaded successfully!', 'success');
+      } catch (err: any) {
+        console.error(err);
+      }
     }
   };
 
@@ -541,7 +566,7 @@ export default function CMSPage() {
     setActiveModal('testimonial');
   };
 
-  const handleSaveTestimonial = (e: React.FormEvent) => {
+  const handleSaveTestimonial = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!testimonialAuthor || !testimonialCompany || !testimonialText) {
       showToast('All testimonial fields are required.', 'danger');
@@ -561,14 +586,12 @@ export default function CMSPage() {
         sortOrder: testimonialSort,
       };
       updatedTestiList.push(newTesti);
-      showToast('Testimonial added.', 'success');
     } else if (modalMode === 'edit' && testimonialId !== null) {
       updatedTestiList = updatedTestiList.map((t) =>
         t.id === testimonialId
           ? { ...t, author: testimonialAuthor, company: testimonialCompany, text: testimonialText, rating: testimonialRating, sortOrder: testimonialSort }
           : t
       );
-      showToast('Testimonial updated.', 'success');
     }
 
     // Sort by sortOrder ascending
@@ -581,11 +604,16 @@ export default function CMSPage() {
         testimonials: updatedTestiList,
       },
     };
-    updateCMS(updated);
-    setActiveModal(null);
+    try {
+      await updateCMS(updated);
+      showToast(modalMode === 'create' ? 'Testimonial added.' : 'Testimonial updated.', 'success');
+      setActiveModal(null);
+    } catch (err: any) {
+      console.error(err);
+    }
   };
 
-  const handleDeleteTestimonial = (id: number) => {
+  const handleDeleteTestimonial = async (id: number) => {
     if (confirm('Are you sure you want to delete this testimonial?')) {
       const updated: CMSData = {
         ...cms,
@@ -594,8 +622,12 @@ export default function CMSPage() {
           testimonials: cms.homepage.testimonials.filter((t) => t.id !== id),
         },
       };
-      updateCMS(updated);
-      showToast('Testimonial removed.', 'success');
+      try {
+        await updateCMS(updated);
+        showToast('Testimonial removed.', 'success');
+      } catch (err: any) {
+        console.error(err);
+      }
     }
   };
 
@@ -618,7 +650,7 @@ export default function CMSPage() {
     setActiveModal('highlight');
   };
 
-  const handleSaveHighlight = (e: React.FormEvent) => {
+  const handleSaveHighlight = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!highlightTitle || !highlightDesc) {
       showToast('All fields are required.', 'danger');
@@ -635,14 +667,12 @@ export default function CMSPage() {
         sortOrder: highlightSort,
       };
       updatedList.push(newHighlight);
-      showToast('Highlight added.', 'success');
     } else if (modalMode === 'edit' && highlightId !== null) {
       updatedList = updatedList.map((h) =>
         h.id === highlightId
           ? { ...h, title: highlightTitle, desc: highlightDesc, sortOrder: highlightSort }
           : h
       );
-      showToast('Highlight updated.', 'success');
     }
 
     updatedList.sort((a, b) => a.sortOrder - b.sortOrder);
@@ -654,11 +684,16 @@ export default function CMSPage() {
         featuredServices: updatedList,
       },
     };
-    updateCMS(updated);
-    setActiveModal(null);
+    try {
+      await updateCMS(updated);
+      showToast(modalMode === 'create' ? 'Highlight added.' : 'Highlight updated.', 'success');
+      setActiveModal(null);
+    } catch (err: any) {
+      console.error(err);
+    }
   };
 
-  const handleDeleteHighlight = (id: number) => {
+  const handleDeleteHighlight = async (id: number) => {
     if (confirm('Are you sure you want to delete this featured service highlight?')) {
       const updated: CMSData = {
         ...cms,
@@ -667,8 +702,12 @@ export default function CMSPage() {
           featuredServices: cms.homepage.featuredServices.filter((h) => h.id !== id),
         },
       };
-      updateCMS(updated);
-      showToast('Highlight removed.', 'success');
+      try {
+        await updateCMS(updated);
+        showToast('Highlight removed.', 'success');
+      } catch (err: any) {
+        console.error(err);
+      }
     }
   };
 
@@ -694,7 +733,7 @@ export default function CMSPage() {
       // Sync context so other parts of admin see the updated aboutUs
       const data = await res.json();
       if (data.success && data.aboutUs) {
-        updateCMS({ ...cms, aboutUs: data.aboutUs });
+        updateCMSStateOnly({ ...cms, aboutUs: data.aboutUs });
       }
       showToast('About Us profile details saved!', 'success');
       await fetchCmsData();
@@ -751,7 +790,7 @@ export default function CMSPage() {
     }
   };
 
-  const handleSaveTeam = (e: React.FormEvent) => {
+  const handleSaveTeam = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!teamMemberName || !teamMemberRole) {
       showToast('Name and Designation/Role are required.', 'danger');
@@ -789,11 +828,16 @@ export default function CMSPage() {
         team: updatedList,
       },
     };
-    updateCMS(updated);
-    setActiveModal(null);
+    try {
+      await updateCMS(updated);
+      showToast(teamMemberId !== null ? 'Team member updated.' : 'Team member added.', 'success');
+      setActiveModal(null);
+    } catch (err: any) {
+      console.error(err);
+    }
   };
 
-  const handleDeleteTeam = (id: number) => {
+  const handleDeleteTeam = async (id: number) => {
     if (confirm('Are you sure you want to remove this corporate team member?')) {
       const updated: CMSData = {
         ...cms,
@@ -802,33 +846,42 @@ export default function CMSPage() {
           team: cms.aboutUs.team.filter((t) => t.id !== id),
         },
       };
-      updateCMS(updated);
-      showToast('Team member removed.', 'success');
+      try {
+        await updateCMS(updated);
+        showToast('Team member removed.', 'success');
+      } catch (err: any) {
+        console.error(err);
+      }
     }
   };
 
   // Services Toggle
-  const handleToggleService = (idx: number, active: boolean) => {
-    const updatedList = [...cms.services];
-    updatedList[idx].active = active;
-    const updated: CMSData = {
-      ...cms,
-      services: updatedList,
-    };
-    updateCMS(updated);
-    showToast(`Service active status updated.`, 'success');
+  const handleToggleService = async (id: string | number, active: boolean) => {
+    try {
+      await updateService(id, { active });
+      showToast('Service active status updated.', 'success');
+    } catch (err: any) {
+      showToast(err.message || 'Failed to update service active status', 'danger');
+    }
   };
 
-  const handleDeleteService = (idx: number, title: string) => {
+  const handleToggleServiceHomepage = async (id: string | number, showOnHomepage: boolean) => {
+    try {
+      await updateService(id, { show_on_homepage: showOnHomepage });
+      showToast('Service homepage visibility updated.', 'success');
+    } catch (err: any) {
+      showToast(err.message || 'Failed to update homepage visibility', 'danger');
+    }
+  };
+
+  const handleDeleteService = async (id: string | number, title: string) => {
     if (confirm(`Remove the service offering '${title}'?`)) {
-      const updatedList = [...cms.services];
-      updatedList.splice(idx, 1);
-      const updated: CMSData = {
-        ...cms,
-        services: updatedList,
-      };
-      updateCMS(updated);
-      showToast('Service removed.', 'success');
+      try {
+        await deleteService(id);
+        showToast('Service removed.', 'success');
+      } catch (err: any) {
+        showToast(err.message || 'Failed to remove service', 'danger');
+      }
     }
   };
 
@@ -843,6 +896,7 @@ export default function CMSPage() {
     setServiceImage('');
     setServiceBannerImage('');
     setServiceActive(true);
+    setServiceShowOnHomepage(false);
     setServiceSortOrder((cms.services?.length || 0) + 1);
     setServiceModalOpen(true);
   };
@@ -858,64 +912,47 @@ export default function CMSPage() {
     setServiceImage(service.image || '');
     setServiceBannerImage(service.bannerImage || '');
     setServiceActive(service.active);
-    setServiceSortOrder(service.sortOrder || 1);
+    setServiceShowOnHomepage(service.show_on_homepage !== undefined ? service.show_on_homepage : true);
+    setServiceSortOrder(service.sortOrder !== undefined ? Number(service.sortOrder) : 1);
     setServiceModalOpen(true);
   };
 
-  const handleSaveService = (e: React.FormEvent) => {
+  const handleSaveService = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!serviceTitle || !serviceSlug || !serviceDesc) {
       showToast('Title, Slug, and Description are required.', 'danger');
       return;
     }
 
-    let updatedList = [...(cms.services || [])];
-
-    if (editingServiceId !== null) {
-      updatedList = updatedList.map((s) =>
-        s.id === editingServiceId
-          ? {
-              ...s,
-              title: serviceTitle,
-              slug: serviceSlug,
-              category: serviceCategory,
-              icon: serviceIcon,
-              desc: serviceDesc,
-              details: serviceDetails,
-              image: serviceImage,
-              bannerImage: serviceBannerImage,
-              active: serviceActive,
-              sortOrder: serviceSortOrder
-            }
-          : s
-      );
-      showToast('Service updated successfully.', 'success');
-    } else {
-      const newSvc: Service = {
-        id: Date.now(),
-        title: serviceTitle,
-        slug: serviceSlug,
-        category: serviceCategory,
-        icon: serviceIcon,
-        desc: serviceDesc,
-        details: serviceDetails,
-        image: serviceImage,
-        bannerImage: serviceBannerImage,
-        active: serviceActive,
-        sortOrder: serviceSortOrder
-      };
-      updatedList.push(newSvc);
-      showToast('New service added successfully.', 'success');
-    }
-
-    updatedList.sort((a, b) => (a.sortOrder || 0) - (b.sortOrder || 0));
-
-    const updated: CMSData = {
-      ...cms,
-      services: updatedList,
+    const servicePayload: Partial<Service> = {
+      title: serviceTitle,
+      slug: serviceSlug,
+      category: serviceCategory,
+      icon: serviceIcon,
+      desc: serviceDesc,
+      details: serviceDetails,
+      image: serviceImage,
+      bannerImage: serviceBannerImage,
+      active: serviceActive,
+      show_on_homepage: serviceShowOnHomepage,
+      sortOrder: serviceSortOrder,
     };
-    updateCMS(updated);
-    setServiceModalOpen(false);
+
+    setIsSavingService(true);
+    try {
+      if (editingServiceId !== null) {
+        await updateService(editingServiceId, servicePayload);
+        showToast('Service updated successfully.', 'success');
+      } else {
+        await addService(servicePayload);
+        showToast('New service added successfully.', 'success');
+      }
+      setServiceModalOpen(false);
+    } catch (err: any) {
+      showToast(err.message || 'Failed to save service', 'danger');
+    } finally {
+      setIsSavingService(false);
+    }
   };
 
   const handleServiceImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -953,7 +990,7 @@ export default function CMSPage() {
     setActiveModal('faq');
   };
 
-  const handleSaveFAQ = (e: React.FormEvent) => {
+  const handleSaveFAQ = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!faqFormQuestion || !faqFormAnswer) {
       showToast('Question and Answer are required.', 'danger');
@@ -967,7 +1004,6 @@ export default function CMSPage() {
           ? { ...f, category: faqFormCategory, question: faqFormQuestion, answer: faqFormAnswer, published: faqFormPublished }
           : f
       );
-      showToast('FAQ entry modified.', 'success');
     } else {
       const newFAQ: FAQ = {
         id: Date.now(),
@@ -977,25 +1013,33 @@ export default function CMSPage() {
         published: faqFormPublished,
       };
       updatedList.push(newFAQ);
-      showToast('New FAQ added.', 'success');
     }
 
     const updated: CMSData = {
       ...cms,
       faqs: updatedList,
     };
-    updateCMS(updated);
-    setActiveModal(null);
+    try {
+      await updateCMS(updated);
+      showToast(faqId !== null ? 'FAQ entry modified.' : 'New FAQ added.', 'success');
+      setActiveModal(null);
+    } catch (err: any) {
+      console.error(err);
+    }
   };
 
-  const handleDeleteFAQ = (id: number) => {
+  const handleDeleteFAQ = async (id: number) => {
     if (confirm('Are you sure you want to permanently delete this FAQ?')) {
       const updated: CMSData = {
         ...cms,
         faqs: cms.faqs.filter((f) => f.id !== id),
       };
-      updateCMS(updated);
-      showToast('FAQ entry deleted.', 'success');
+      try {
+        await updateCMS(updated);
+        showToast('FAQ entry deleted.', 'success');
+      } catch (err: any) {
+        console.error(err);
+      }
     }
   };
 
@@ -1039,7 +1083,7 @@ export default function CMSPage() {
       // Sync context so other parts of admin see the updated contact
       const data = await res.json();
       if (data.success && data.contact) {
-        updateCMS({ ...cms, contact: data.contact });
+        updateCMSStateOnly({ ...cms, contact: data.contact });
       }
       showToast('Contact & Footer details updated.', 'success');
       await fetchCmsData();
@@ -1050,7 +1094,7 @@ export default function CMSPage() {
   };
 
   // Save Static Pages
-  const handleSaveStatic = (e: React.FormEvent) => {
+  const handleSaveStatic = async (e: React.FormEvent) => {
     e.preventDefault();
     const nowStr = new Date().toISOString().split('T')[0];
     const updated: CMSData = {
@@ -1062,12 +1106,16 @@ export default function CMSPage() {
         disclaimer: { content: staticDisclaimer, published: staticDisclaimerPub, lastUpdated: nowStr },
       },
     };
-    updateCMS(updated);
-    showToast('Static legal copies saved.', 'success');
+    try {
+      await updateCMS(updated);
+      showToast('Static legal copies saved.', 'success');
+    } catch (err: any) {
+      console.error(err);
+    }
   };
 
   // Save SEO defaults
-  const handleSaveSEO = (e: React.FormEvent) => {
+  const handleSaveSEO = async (e: React.FormEvent) => {
     e.preventDefault();
     const updated: CMSData = {
       ...cms,
@@ -1082,8 +1130,12 @@ export default function CMSPage() {
         servicesMetaDesc: seoServicesDesc,
       },
     };
-    updateCMS(updated);
-    showToast('SEO default metadata values saved.', 'success');
+    try {
+      await updateCMS(updated);
+      showToast('SEO default metadata values saved.', 'success');
+    } catch (err: any) {
+      console.error(err);
+    }
   };
 
   // Media Library Actions
@@ -1102,19 +1154,27 @@ export default function CMSPage() {
         ...cms,
         media: [...cms.media, newAsset],
       };
-      updateCMS(updated);
-      showToast(`Uploaded asset '${file.name}'`, 'success');
+      try {
+        await updateCMS(updated);
+        showToast(`Uploaded asset '${file.name}'`, 'success');
+      } catch (err: any) {
+        console.error(err);
+      }
     }
   };
 
-  const handleDeleteMedia = (id: number, name: string) => {
+  const handleDeleteMedia = async (id: number, name: string) => {
     if (confirm(`Are you sure you want to permanently delete the asset '${name}'?`)) {
       const updated: CMSData = {
         ...cms,
         media: cms.media.filter((m) => m.id !== id),
       };
-      updateCMS(updated);
-      showToast('Asset deleted from library.', 'success');
+      try {
+        await updateCMS(updated);
+        showToast('Asset deleted from library.', 'success');
+      } catch (err: any) {
+        console.error(err);
+      }
     }
   };
 
@@ -1209,7 +1269,7 @@ export default function CMSPage() {
                         </td>
                         <td>
                           {slide.image ? (
-                            <img src={slide.image} alt={slide.title} style={{ width: '100px', height: '50px', objectFit: 'cover', borderRadius: '4px' }} />
+                            <img src={resolveSlideImageUrl(slide.image, slide.id)} alt={slide.title} style={{ width: '100px', height: '50px', objectFit: 'cover', borderRadius: '4px' }} />
                           ) : (
                             <div style={{ width: '100px', height: '50px', backgroundColor: 'var(--bg-secondary)', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.7rem', color: 'var(--text-muted)' }}>No Image</div>
                           )}
@@ -1264,9 +1324,8 @@ export default function CMSPage() {
                     countersSubtitle
                   }
                 };
-                updateCMS(updated);
                 try {
-                  await CMSService.updateCMSData(updated);
+                  await updateCMS(updated);
                   showToast('Welcome & Counters text saved!', 'success');
                 } catch {
                   showToast('Failed to save welcome & counters data', 'danger');
@@ -1459,6 +1518,7 @@ export default function CMSPage() {
                     <th>Icon Type</th>
                     <th>Description</th>
                     <th>Active Status</th>
+                    <th>Homepage</th>
                     <th style={{ textAlign: 'right' }}>Actions</th>
                   </tr>
                 </thead>
@@ -1478,16 +1538,31 @@ export default function CMSPage() {
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <label className="switch">
-                            <input type="checkbox" checked={service.active} onChange={(e) => handleToggleService(index, e.target.checked)} />
+                            <input type="checkbox" checked={service.active} onChange={(e) => handleToggleService(service.id, e.target.checked)} />
                             <span className="slider"></span>
                           </label>
                           <span style={{ fontSize: '0.8rem', fontWeight: 600 }}>{service.active ? 'Active' : 'Disabled'}</span>
                         </div>
                       </td>
+                      <td>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <label className="switch">
+                            <input 
+                              type="checkbox" 
+                              checked={service.show_on_homepage !== false} 
+                              onChange={(e) => handleToggleServiceHomepage(service.id, e.target.checked)} 
+                            />
+                            <span className="slider"></span>
+                          </label>
+                          <span style={{ fontSize: '0.8rem', fontWeight: 600, color: service.show_on_homepage !== false ? '#16a34a' : 'var(--text-muted)' }}>
+                            {service.show_on_homepage !== false ? 'Shown' : 'Hidden'}
+                          </span>
+                        </div>
+                      </td>
                       <td style={{ textAlign: 'right' }}>
                         <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                           <button className="btn btn-secondary btn-sm" onClick={() => handleOpenEditService(service)}>Edit</button>
-                          <button className="btn btn-danger btn-sm" onClick={() => handleDeleteService(index, service.title)}>Delete</button>
+                          <button className="btn btn-danger btn-sm" onClick={() => handleDeleteService(service.id, service.title)}>Delete</button>
                         </div>
                       </td>
                     </tr>
@@ -1824,7 +1899,7 @@ export default function CMSPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {[...partners].sort((a, b) => a.sort_order - b.sort_order).map((partner, idx) => (
+                  {[...partners].sort((a, b) => (Number(a.sort_order) || 0) - (Number(b.sort_order) || 0) || String(a.id).localeCompare(String(b.id))).map((partner, idx) => (
                     <tr key={partner.id}>
                       <td>{partner.sort_order}</td>
                       <td>
@@ -1953,7 +2028,7 @@ export default function CMSPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {[...industries].sort((a, b) => a.sort_order - b.sort_order).map((ind) => (
+                  {[...industries].sort((a, b) => a.sort_order - b.sort_order || a.id.localeCompare(b.id)).map((ind) => (
                     <tr key={ind.id}>
                       <td>{ind.sort_order}</td>
                       <td>
@@ -2220,7 +2295,7 @@ export default function CMSPage() {
                 {slideImage && (
                   <div style={{ marginTop: '12px' }}>
                     <label className="form-label">Background Preview</label>
-                    <img src={slideImage} alt="Preview" style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '4px' }} />
+                    <img src={resolveSlideImageUrl(slideImage, editingSlideId || undefined)} alt="Preview" style={{ width: '100%', height: '100px', objectFit: 'cover', borderRadius: '4px' }} />
                   </div>
                 )}
               </div>
@@ -2252,6 +2327,17 @@ export default function CMSPage() {
                   <input type="text" className="form-control" value={partnerWebsiteUrl} onChange={(e) => setPartnerWebsiteUrl(e.target.value)} placeholder="e.g. https://lxpantos.com" />
                 </div>
                 <div className="form-row" style={{ display: 'flex', gap: '16px' }}>
+                  <div className="form-group" style={{ width: '120px' }}>
+                    <label className="form-label">Sort Order *</label>
+                    <input
+                      type="number"
+                      className="form-control"
+                      value={partnerSortOrder}
+                      onChange={(e) => setPartnerSortOrder(Number(e.target.value))}
+                      min={1}
+                      required
+                    />
+                  </div>
                   <div className="form-group" style={{ flex: 1 }}>
                     <label className="form-label">Status</label>
                     <select className="form-control" value={partnerStatus} onChange={(e) => setPartnerStatus(e.target.value as any)}>
@@ -2262,17 +2348,45 @@ export default function CMSPage() {
                   <div className="form-group" style={{ flex: 1 }}>
                     <label className="form-label">Upload Partner Logo</label>
                     <div style={{ position: 'relative', border: '1px dashed var(--border-color)', padding: '8px', borderRadius: '4px', textAlign: 'center', cursor: 'pointer' }}>
-                      <span style={{ fontSize: '0.75rem' }}>Upload Image</span>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 600 }}>{partnerLogo ? 'Replace Logo (Upload File)' : 'Upload Logo from Computer'}</span>
                       <input type="file" accept="image/*" onChange={handlePartnerLogoUpload} style={{ position: 'absolute', inset: 0, opacity: 0, cursor: 'pointer' }} />
                     </div>
                   </div>
                 </div>
-                {partnerLogo && (
-                  <div style={{ marginTop: '12px' }}>
-                    <label className="form-label">Logo Preview</label>
-                    <img src={partnerLogo} alt="Preview" style={{ height: '50px', objectFit: 'contain', backgroundColor: 'var(--bg-secondary)', borderRadius: '4px', padding: '4px' }} />
+
+                {partnerLogo ? (
+                  <div style={{ marginTop: '12px', display: 'flex', alignItems: 'center', gap: '12px', background: 'var(--bg-secondary)', padding: '10px', borderRadius: '6px' }}>
+                    <img src={partnerLogo} alt="Preview" style={{ height: '48px', maxWidth: '140px', objectFit: 'contain', backgroundColor: '#fff', borderRadius: '4px', padding: '4px', border: '1px solid var(--border-color)' }} />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-primary)' }}>Logo Selected / Persisted</div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '250px', whiteSpace: 'nowrap' }}>{partnerLogo.slice(0, 50)}...</div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setPartnerLogo('')}
+                      className="btn btn-danger btn-sm"
+                      style={{ padding: '4px 8px', fontSize: '0.75rem' }}
+                    >
+                      ✕ Remove Logo
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ marginTop: '8px', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                    No logo uploaded yet.
                   </div>
                 )}
+
+                <div style={{ marginTop: '12px' }}>
+                  <label className="form-label" style={{ fontSize: '0.75rem' }}>Or Logo URL / Local Asset Path</label>
+                  <input
+                    type="text"
+                    className="form-control"
+                    value={partnerLogo}
+                    onChange={(e) => setPartnerLogo(e.target.value)}
+                    placeholder="e.g. /uploads/partners/Picture1.png or https://..."
+                    style={{ height: '32px', fontSize: '0.8rem' }}
+                  />
+                </div>
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn btn-secondary" onClick={() => setPartnerModalOpen(false)}>Cancel</button>
@@ -2348,6 +2462,10 @@ export default function CMSPage() {
                     <input type="text" className="form-control" value={indIcon} onChange={(e) => setIndIcon(e.target.value)} placeholder="e.g. flaticon-cogwheel" />
                   </div>
                   <div className="form-group" style={{ flex: 1 }}>
+                    <label className="form-label">Sort Order</label>
+                    <input type="number" className="form-control" value={indSortOrder} onChange={(e) => setIndSortOrder(Number(e.target.value))} min={1} required />
+                  </div>
+                  <div className="form-group" style={{ flex: 1 }}>
                     <label className="form-label">Status</label>
                     <select className="form-control" value={indStatus} onChange={(e) => setIndStatus(e.target.value as any)}>
                       <option value="active">Active</option>
@@ -2395,8 +2513,8 @@ export default function CMSPage() {
                     </select>
                   </div>
                   <div className="form-group" style={{ flex: 1 }}>
-                    <label className="form-label">Icon Identifier *</label>
-                    <input type="text" className="form-control" value={serviceIcon} onChange={(e) => setServiceIcon(e.target.value)} required placeholder="e.g. anchor, plane, truck" />
+                    <label className="form-label">Icon Identifier * <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>(anchor, plane, truck, package, shield, box, briefcase, umbrella)</span></label>
+                    <input type="text" className="form-control" value={serviceIcon} onChange={(e) => setServiceIcon(e.target.value)} required placeholder="e.g. anchor, plane, truck, package, shield, box, briefcase, umbrella" />
                   </div>
                 </div>
 
@@ -2426,6 +2544,13 @@ export default function CMSPage() {
                       <input type="checkbox" checked={serviceActive} onChange={(e) => setServiceActive(e.target.checked)} />
                       <span className="checkbox-mark"></span>
                       <span style={{ marginLeft: '8px', fontSize: '0.85rem', fontWeight: 600 }}>Active Status</span>
+                    </label>
+                  </div>
+                  <div className="form-group" style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '8px', paddingTop: '28px' }}>
+                    <label className="custom-checkbox">
+                      <input type="checkbox" checked={serviceShowOnHomepage} onChange={(e) => setServiceShowOnHomepage(e.target.checked)} />
+                      <span className="checkbox-mark"></span>
+                      <span style={{ marginLeft: '8px', fontSize: '0.85rem', fontWeight: 600 }}>Show on Homepage</span>
                     </label>
                   </div>
                 </div>
@@ -2459,7 +2584,9 @@ export default function CMSPage() {
               </div>
               <div className="modal-footer">
                 <button type="button" className="btn btn-secondary" onClick={() => setServiceModalOpen(false)}>Cancel</button>
-                <button type="submit" className="btn btn-primary">Save Service</button>
+                <button type="submit" className="btn btn-primary" disabled={isSavingService}>
+                  {isSavingService ? 'Saving...' : 'Save Service'}
+                </button>
               </div>
             </form>
           </div>
