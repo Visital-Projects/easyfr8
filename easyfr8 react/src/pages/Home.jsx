@@ -60,31 +60,27 @@ export default function Home() {
   const [originId, setOriginId] = useState('')
   const [destinationText, setDestinationText] = useState('')
   const [destinationId, setDestinationId] = useState('')
-  const [isTranshipmentEnabled, setIsTranshipmentEnabled] = useState(false)
-  const [transhipmentText, setTranshipmentText] = useState('')
-  const [transhipmentId, setTranshipmentId] = useState('')
   const [weight, setWeight] = useState('')
   const [weightUnit, setWeightUnit] = useState('KG')
 
-  // Container Selection and Rate Proceed states
-  const [availableContainers, setAvailableContainers] = useState([])
-  const [selectedContainer, setSelectedContainer] = useState(null)
-  const [showContainersSection, setShowContainersSection] = useState(false)
-  const [showRateResult, setShowRateResult] = useState(false)
-  const [rateChecking, setRateChecking] = useState(false)
+  // Available Routes and Container Pricing states
+  const [availableRoutes, setAvailableRoutes] = useState([])
+  const [selectedRoute, setSelectedRoute] = useState(null)
+  const [activeContainers, setActiveContainers] = useState([])
+  const [containersLoading, setContainersLoading] = useState(false)
+  const [noRoutesFound, setNoRoutesFound] = useState(false)
 
   // Dropdown suggestions state
-  const [locationResults, setLocationResults] = useState({ origin: [], destination: [], transhipment: [] })
-  const [showDropdown, setShowDropdown] = useState({ origin: false, destination: false, transhipment: false })
-  const [noMatchFound, setNoMatchFound] = useState({ origin: false, destination: false, transhipment: false })
-  const [selectedPortObjects, setSelectedPortObjects] = useState({ origin: null, destination: null, transhipment: null })
+  const [locationResults, setLocationResults] = useState({ origin: [], destination: [] })
+  const [showDropdown, setShowDropdown] = useState({ origin: false, destination: false })
+  const [noMatchFound, setNoMatchFound] = useState({ origin: false, destination: false })
+  const [selectedPortObjects, setSelectedPortObjects] = useState({ origin: null, destination: null })
 
   // Search availability & enquiry workflow states
   const [searchChecking, setSearchChecking] = useState(false)
   const [searchError, setSearchError] = useState(null)
   const [searchValidationMsg, setSearchValidationMsg] = useState(null)
   const [searchUnavailable, setSearchUnavailable] = useState(null)
-  const [availableRates, setAvailableRates] = useState([])
   const [isEnquiryModalOpen, setIsEnquiryModalOpen] = useState(false)
   const [enquiryContext, setEnquiryContext] = useState(null)
   const [enquiryToast, setEnquiryToast] = useState(null)
@@ -104,7 +100,8 @@ export default function Home() {
           // Only override defaults if API returns real data
           if (active.length > 0) {
             setModes(active)
-            setSelectedModeId(active[0].id)
+            const oceanMode = active.find(m => m.id === 'ocean-freight' || (m.name && m.name.toLowerCase().includes('ocean')))
+            setSelectedModeId(oceanMode ? oceanMode.id : active[0].id)
           }
         }
       })
@@ -132,7 +129,11 @@ export default function Home() {
           const active = data.filter(t => t.status === 'active')
           if (active.length > 0) {
             setShipmentTypes(active)
-            setSelectedShipmentTypeId(active[0].id)
+            const defaultShip = active.find(t => t.id === 'shiptype-fcl' || (t.name && t.name.toUpperCase().includes('FCL'))) || active[0]
+            setSelectedShipmentTypeId(defaultShip.id)
+            if (originText.trim() && destinationText.trim()) {
+              executeRouteSearch(selectedModeId, defaultShip.id)
+            }
           }
         }
         // else keep DEFAULT_SHIPMENT_TYPES
@@ -141,23 +142,15 @@ export default function Home() {
         // Keep defaults on error
       })
     
-    // Clear port inputs, transhipment, and previous search results when changing mode
-    setOriginText('')
-    setOriginId('')
-    setDestinationText('')
-    setDestinationId('')
-    setTranshipmentText('')
-    setTranshipmentId('')
-    setIsTranshipmentEnabled(false)
-    setSelectedPortObjects({ origin: null, destination: null, transhipment: null })
-    setLocationResults({ origin: [], destination: [], transhipment: [] })
-    setShowDropdown({ origin: false, destination: false, transhipment: false })
-    setNoMatchFound({ origin: false, destination: false, transhipment: false })
-    setAvailableContainers([])
-    setSelectedContainer(null)
-    setShowContainersSection(false)
-    setShowRateResult(false)
-    setAvailableRates([])
+    // Clear previous search results and container selection when changing mode
+    setSelectedPortObjects({ origin: null, destination: null })
+    setLocationResults({ origin: [], destination: [] })
+    setShowDropdown({ origin: false, destination: false })
+    setNoMatchFound({ origin: false, destination: false })
+    setAvailableRoutes([])
+    setSelectedRoute(null)
+    setActiveContainers([])
+    setNoRoutesFound(false)
     setSearchUnavailable(null)
     setSearchError(null)
     setSearchValidationMsg(null)
@@ -259,10 +252,17 @@ export default function Home() {
     const modeType = selectedMode?.name || selectedMode?.id || 'Ocean Freight'
     
     try {
-      // 1. Search ports strictly with freight_type filter for the active mode
-      const res = await fetch(`${API_URL}/ports?search=${encodeURIComponent(term)}&freight_type=${encodeURIComponent(modeType)}&status=active`)
-      const data = await res.json()
-      const portsList = (data.success && Array.isArray(data.ports)) ? data.ports : []
+      // 1. Search ports with freight_type filter for the active mode
+      let res = await fetch(`${API_URL}/ports?search=${encodeURIComponent(term)}&freight_type=${encodeURIComponent(modeType)}&status=active`)
+      let data = await res.json()
+      let portsList = (data.success && Array.isArray(data.ports)) ? data.ports : []
+
+      // Fallback: If mode-specific search returned nothing, search all active ports
+      if (portsList.length === 0) {
+        res = await fetch(`${API_URL}/ports?search=${encodeURIComponent(term)}&status=active`)
+        data = await res.json()
+        portsList = (data.success && Array.isArray(data.ports)) ? data.ports : []
+      }
 
       setLocationResults(prev => ({ ...prev, [field]: portsList }))
       setNoMatchFound(prev => ({ ...prev, [field]: portsList.length === 0 }))
@@ -282,16 +282,11 @@ export default function Home() {
       setDestinationText(val)
       setDestinationId('')
       setSelectedPortObjects(prev => ({ ...prev, destination: null }))
-    } else if (field === 'transhipment') {
-      setTranshipmentText(val)
-      setTranshipmentId('')
-      setSelectedPortObjects(prev => ({ ...prev, transhipment: null }))
     }
-    setAvailableRates([])
-    setAvailableContainers([])
-    setSelectedContainer(null)
-    setShowContainersSection(false)
-    setShowRateResult(false)
+    setAvailableRoutes([])
+    setSelectedRoute(null)
+    setActiveContainers([])
+    setNoRoutesFound(false)
     setSearchUnavailable(null)
     setSearchValidationMsg(null)
     setSearchError(null)
@@ -309,35 +304,13 @@ export default function Home() {
       setDestinationText(text)
       setDestinationId(item.id)
       setSelectedPortObjects(prev => ({ ...prev, destination: item }))
-    } else if (field === 'transhipment') {
-      setTranshipmentText(text)
-      setTranshipmentId(item.id)
-      setSelectedPortObjects(prev => ({ ...prev, transhipment: item }))
     }
     setShowDropdown(prev => ({ ...prev, [field]: false }))
     setNoMatchFound(prev => ({ ...prev, [field]: false }))
-    setAvailableRates([])
-    setAvailableContainers([])
-    setSelectedContainer(null)
-    setShowContainersSection(false)
-    setShowRateResult(false)
-    setSearchUnavailable(null)
-    setSearchValidationMsg(null)
-  }
-
-  const handleTranshipmentToggle = (checked) => {
-    setIsTranshipmentEnabled(checked)
-    if (!checked) {
-      setTranshipmentText('')
-      setTranshipmentId('')
-      setSelectedPortObjects(prev => ({ ...prev, transhipment: null }))
-      setShowDropdown(prev => ({ ...prev, transhipment: false }))
-      setNoMatchFound(prev => ({ ...prev, transhipment: false }))
-    }
-    setShowContainersSection(false)
-    setShowRateResult(false)
-    setSelectedContainer(null)
-    setAvailableRates([])
+    setAvailableRoutes([])
+    setSelectedRoute(null)
+    setActiveContainers([])
+    setNoRoutesFound(false)
     setSearchUnavailable(null)
     setSearchValidationMsg(null)
   }
@@ -346,35 +319,56 @@ export default function Home() {
     setShowDropdown(prev => ({ ...prev, [field]: false }))
     const currentMode = modes.find(m => m.id === selectedModeId)
     const currentShipment = shipmentTypes.find(t => t.id === selectedShipmentTypeId)
-    const containerObj = selectedContainer || containersList.find(c => c.id === selectedContainerId)
     
     setEnquiryContext({
       originText: originText.trim(),
       destinationText: destinationText.trim(),
-      transhipmentText: isTranshipmentEnabled ? transhipmentText.trim() : '',
+      transhipmentText: '',
       modeName: currentMode?.name || 'Ocean Freight',
       shipmentTypeName: currentShipment?.name || '',
-      containerName: containerObj?.name || '',
+      containerName: '',
       weight,
       weightUnit,
-      reason: field === 'origin' ? 'origin_not_found' : field === 'destination' ? 'destination_not_found' : 'transhipment_not_found'
+      reason: field === 'origin' ? 'origin_not_found' : 'destination_not_found'
     })
     setIsEnquiryModalOpen(true)
   }
 
-  const handleSearchSubmit = async (e) => {
-    e.preventDefault()
+  const renderTransportIcon = (modeIdOrName, customStyle = {}) => {
+    const m = (modeIdOrName || '').toLowerCase()
+    if (m.includes('air') || m.includes('plane') || m === 'mode-air') {
+      return (
+        <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#d64238', fontSize: '15px', ...customStyle }} title="Air Freight">
+          <i className="fa fa-plane" aria-hidden="true" />
+        </span>
+      )
+    }
+    if (m.includes('road') || m.includes('truck') || m.includes('ftype-190')) {
+      return (
+        <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#d64238', fontSize: '15px', ...customStyle }} title="Road Freight">
+          <i className="fa fa-truck" aria-hidden="true" />
+        </span>
+      )
+    }
+    // Default: Ocean Freight -> Ship icon
+    return (
+      <span style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', color: '#d64238', fontSize: '15px', ...customStyle }} title="Ocean Freight">
+        <i className="fa fa-ship" aria-hidden="true" />
+      </span>
+    )
+  }
+
+  const executeRouteSearch = async (targetModeId = selectedModeId, targetShipmentTypeId = selectedShipmentTypeId) => {
     setSearchError(null)
     setSearchValidationMsg(null)
     setSearchUnavailable(null)
-    setShowContainersSection(false)
-    setShowRateResult(false)
-    setSelectedContainer(null)
-    setAvailableRates([])
+    setNoRoutesFound(false)
+    setAvailableRoutes([])
+    setSelectedRoute(null)
+    setActiveContainers([])
 
     const trimmedOrigin = originText.trim()
     const trimmedDest = destinationText.trim()
-    const trimmedTrans = isTranshipmentEnabled ? transhipmentText.trim() : ''
 
     // 1. Validation check
     if (!trimmedOrigin || !trimmedDest) {
@@ -382,34 +376,35 @@ export default function Home() {
       return
     }
 
-    if (isTranshipmentEnabled && !trimmedTrans) {
-      setSearchValidationMsg('Please enter a transhipment port or uncheck the transhipment option.')
-      return
-    }
-
     setSearchChecking(true)
 
-    const selectedMode = modes.find(m => m.id === selectedModeId)
+    const selectedMode = (modes.length > 0 ? modes : DEFAULT_MODES).find(m => m.id === targetModeId)
     const modeType = selectedMode?.name || selectedMode?.id || 'Ocean Freight'
-    const shipmentTypeObj = shipmentTypes.find(t => t.id === selectedShipmentTypeId)
+    const shipmentTypeObj = (shipmentTypes.length > 0 ? shipmentTypes : DEFAULT_SHIPMENT_TYPES).find(t => t.id === targetShipmentTypeId)
 
     try {
       // 2. Check Origin Port in Database
       let resolvedOrigin = selectedPortObjects.origin
       if (!resolvedOrigin || (resolvedOrigin.id !== originId && resolvedOrigin.port_code !== originId)) {
-        const resO = await fetch(`${API_URL}/ports?search=${encodeURIComponent(trimmedOrigin)}&freight_type=${encodeURIComponent(modeType)}&status=active`)
-        const dataO = await resO.json()
-        const portsO = (dataO.success && Array.isArray(dataO.ports)) ? dataO.ports : []
+        let resO = await fetch(`${API_URL}/ports?search=${encodeURIComponent(trimmedOrigin)}&freight_type=${encodeURIComponent(modeType)}&status=active`)
+        let dataO = await resO.json()
+        let portsO = (dataO.success && Array.isArray(dataO.ports)) ? dataO.ports : []
+
+        if (portsO.length === 0) {
+          resO = await fetch(`${API_URL}/ports?search=${encodeURIComponent(trimmedOrigin)}&status=active`)
+          dataO = await resO.json()
+          portsO = (dataO.success && Array.isArray(dataO.ports)) ? dataO.ports : []
+        }
 
         if (portsO.length === 0) {
           setSearchChecking(false)
           setSearchUnavailable({
             type: 'origin',
-            title: 'Port Not Available in Database',
+            title: 'Origin Port Not Found in Database',
             description: `We couldn't find origin port "${trimmedOrigin}" in our global ports database.`,
             originText: trimmedOrigin,
             destinationText: trimmedDest,
-            transhipmentText: trimmedTrans,
+            transhipmentText: '',
             modeName: selectedMode?.name || 'Ocean Freight',
             shipmentTypeName: shipmentTypeObj?.name || '',
             reason: 'origin_not_found'
@@ -422,19 +417,25 @@ export default function Home() {
       // 3. Check Destination Port in Database
       let resolvedDest = selectedPortObjects.destination
       if (!resolvedDest || (resolvedDest.id !== destinationId && resolvedDest.port_code !== destinationId)) {
-        const resD = await fetch(`${API_URL}/ports?search=${encodeURIComponent(trimmedDest)}&freight_type=${encodeURIComponent(modeType)}&status=active`)
-        const dataD = await resD.json()
-        const portsD = (dataD.success && Array.isArray(dataD.ports)) ? dataD.ports : []
+        let resD = await fetch(`${API_URL}/ports?search=${encodeURIComponent(trimmedDest)}&freight_type=${encodeURIComponent(modeType)}&status=active`)
+        let dataD = await resD.json()
+        let portsD = (dataD.success && Array.isArray(dataD.ports)) ? dataD.ports : []
+
+        if (portsD.length === 0) {
+          resD = await fetch(`${API_URL}/ports?search=${encodeURIComponent(trimmedDest)}&status=active`)
+          dataD = await resD.json()
+          portsD = (dataD.success && Array.isArray(dataD.ports)) ? dataD.ports : []
+        }
 
         if (portsD.length === 0) {
           setSearchChecking(false)
           setSearchUnavailable({
             type: 'destination',
-            title: 'Port Not Available in Database',
+            title: 'Destination Port Not Found in Database',
             description: `We couldn't find destination port "${trimmedDest}" in our global ports database.`,
             originText: resolvedOrigin.port_name || resolvedOrigin.port_code || trimmedOrigin,
             destinationText: trimmedDest,
-            transhipmentText: trimmedTrans,
+            transhipmentText: '',
             modeName: selectedMode?.name || 'Ocean Freight',
             shipmentTypeName: shipmentTypeObj?.name || '',
             reason: 'destination_not_found'
@@ -444,226 +445,301 @@ export default function Home() {
         resolvedDest = portsD[0]
       }
 
-      // 4. Check Transhipment Port in Database (if enabled)
-      let resolvedTrans = null
-      if (isTranshipmentEnabled) {
-        resolvedTrans = selectedPortObjects.transhipment
-        if (!resolvedTrans || (resolvedTrans.id !== transhipmentId && resolvedTrans.port_code !== transhipmentId)) {
-          const resT = await fetch(`${API_URL}/ports?search=${encodeURIComponent(trimmedTrans)}&freight_type=${encodeURIComponent(modeType)}&status=active`)
-          const dataT = await resT.json()
-          const portsT = (dataT.success && Array.isArray(dataT.ports)) ? dataT.ports : []
+      setSelectedPortObjects({ origin: resolvedOrigin, destination: resolvedDest })
 
-          if (portsT.length === 0) {
-            setSearchChecking(false)
-            setSearchUnavailable({
-              type: 'transhipment',
-              title: 'Transhipment Port Not Available in Database',
-              description: `We couldn't find transhipment port "${trimmedTrans}" in our global ports database.`,
-              originText: resolvedOrigin.port_name || resolvedOrigin.port_code || trimmedOrigin,
-              destinationText: resolvedDest.port_name || resolvedDest.port_code || trimmedDest,
-              transhipmentText: trimmedTrans,
-              modeName: selectedMode?.name || 'Ocean Freight',
-              shipmentTypeName: shipmentTypeObj?.name || '',
-              reason: 'transhipment_not_found'
-            })
-            return
-          }
-          resolvedTrans = portsT[0]
+      // 4. Fetch matching freight rates from database with authoritative mode and shipment filters
+      const originQueryParam = resolvedOrigin.id || resolvedOrigin.port_code || trimmedOrigin
+      const destQueryParam = resolvedDest.id || resolvedDest.port_code || trimmedDest
+      
+      const rateQueryParams = new URLSearchParams({
+        origin_id: originQueryParam,
+        destination_id: destQueryParam,
+        status: 'active'
+      })
+      if (targetModeId) rateQueryParams.set('mode_id', targetModeId)
+      if (targetShipmentTypeId) rateQueryParams.set('shipment_type_id', targetShipmentTypeId)
+
+      const resRates = await fetch(`${API_URL}/freight-rates?${rateQueryParams.toString()}`)
+      const ratesData = await resRates.json()
+      const activeRates = Array.isArray(ratesData) ? ratesData.filter(r => r.status === 'active') : []
+
+      // Authoritative mode and FCL/LCL strict filtering
+      const isTargetFCL = (targetShipmentTypeId && targetShipmentTypeId.toLowerCase().includes('fcl')) ||
+        (shipmentTypeObj?.name && shipmentTypeObj.name.toUpperCase().includes('FCL'))
+      const isTargetLCL = (targetShipmentTypeId && targetShipmentTypeId.toLowerCase().includes('lcl')) ||
+        (shipmentTypeObj?.name && shipmentTypeObj.name.toUpperCase().includes('LCL'))
+
+      const isAirMode = targetModeId === 'air' || targetModeId === 'mode-air' || (selectedMode?.name && selectedMode.name.toLowerCase().includes('air'))
+      const isRoadMode = targetModeId === 'road' || targetModeId === 'ftype-190' || (selectedMode?.name && selectedMode.name.toLowerCase().includes('road'))
+      const isOceanMode = !isAirMode && !isRoadMode
+
+      const strictlyFilteredRates = activeRates.filter(r => {
+        // Mode match
+        const rIsAir = r.freight_mode_id === 'mode-air' || (r.mode_name && r.mode_name.toLowerCase().includes('air'))
+        const rIsRoad = r.freight_mode_id === 'ftype-190' || (r.mode_name && r.mode_name.toLowerCase().includes('road'))
+        const rIsOcean = !rIsAir && !rIsRoad
+
+        if (isAirMode && !rIsAir) return false
+        if (isRoadMode && !rIsRoad) return false
+        if (isOceanMode && !rIsOcean) return false
+
+        // Shipment Type match (FCL vs LCL)
+        if (isTargetFCL) {
+          const isFCL = (r.shipment_type_id && r.shipment_type_id.toLowerCase().includes('fcl')) ||
+            (r.shipment_name && r.shipment_name.toUpperCase().includes('FCL'))
+          if (!isFCL) return false
+        } else if (isTargetLCL) {
+          const isLCL = (r.shipment_type_id && r.shipment_type_id.toLowerCase().includes('lcl')) ||
+            (r.shipment_name && r.shipment_name.toUpperCase().includes('LCL'))
+          if (!isLCL) return false
+        } else if (targetShipmentTypeId) {
+          if (r.shipment_type_id && r.shipment_type_id !== targetShipmentTypeId) return false
         }
-      }
 
-      // Store resolved port objects in state
-      setSelectedPortObjects({ origin: resolvedOrigin, destination: resolvedDest, transhipment: resolvedTrans })
+        return true
+      })
 
-      // Check if mode uses containers
-      const isAir = selectedMode?.name?.toLowerCase().includes('air')
-
-      if (isAir) {
-        // Direct rate query for Air freight (does not use containers)
-        const originQueryParam = resolvedOrigin.port_code || resolvedOrigin.id
-        const destQueryParam = resolvedDest.port_code || resolvedDest.id
-        const resRates = await fetch(
-          `${API_URL}/freight-rates?mode_id=${selectedModeId}&shipment_type_id=${selectedShipmentTypeId}&origin_id=${encodeURIComponent(originQueryParam)}&destination_id=${encodeURIComponent(destQueryParam)}${isTranshipmentEnabled && resolvedTrans ? `&transhipment_id=${encodeURIComponent(resolvedTrans.port_code || resolvedTrans.id)}` : ''}&status=active`
-        )
-        const ratesData = await resRates.json()
-        const activeRates = Array.isArray(ratesData) ? ratesData.filter(r => r.status === 'active') : []
-        setSearchChecking(false)
-
-        if (activeRates.length > 0) {
-          setAvailableRates(activeRates)
-          setSearchUnavailable(null)
-        } else {
-          setAvailableRates([])
-          const originLabel = `${resolvedOrigin.port_name || resolvedOrigin.port_code} (${resolvedOrigin.port_code})`
-          const destLabel = `${resolvedDest.port_name || resolvedDest.port_code} (${resolvedDest.port_code})`
-          const transLabel = (isTranshipmentEnabled && resolvedTrans) ? `${resolvedTrans.port_name || resolvedTrans.port_code} (${resolvedTrans.port_code})` : ''
-          const fullRoute = transLabel ? `${originLabel} → Via ${transLabel} → ${destLabel}` : `${originLabel} → ${destLabel}`
-          setSearchUnavailable({
-            type: 'rate',
-            title: 'No freight rates are currently available for your selected route.',
-            description: `We couldn't find direct contract rates for ${fullRoute} in our current database.`,
-            originText: originLabel,
-            destinationText: destLabel,
-            transhipmentText: transLabel,
-            modeName: selectedMode?.name || 'Air Freight',
-            shipmentTypeName: shipmentTypeObj?.name || '',
-            weight,
-            weightUnit,
-            reason: 'rate_not_found'
-          })
-        }
-        return
-      }
-
-      // For Ocean Freight / containerized modes:
-      // Fetch fresh active containers from database
-      let containers = []
+      // Fetch active containers in parallel
       try {
         const resC = await fetch(`${API_URL}/containers?status=active`)
         const dataC = await resC.json()
         if (Array.isArray(dataC)) {
-          containers = dataC.filter(c => c.status === 'active')
-          setContainersList(containers)
+          setActiveContainers(dataC.filter(c => c.status === 'active'))
         }
       } catch (e) {
-        containers = containersList.filter(c => c.status === 'active')
+        console.error('Error fetching containers:', e)
       }
 
-      // Display all and only active container types from admin-managed data source
-      const activeContainers = containers.filter(c => c.status === 'active')
+      // Group matching rates into distinct Available Routes
+      const routeMap = new Map()
+      strictlyFilteredRates.forEach(rate => {
+        const transKey = rate.transhipment_code || rate.transhipment_id || 'direct'
+        const carrierKey = (rate.carrier || '').trim().toLowerCase() || 'std'
+        const transitKey = rate.transit_time || 0
+        const modeKey = (rate.freight_mode_id || '').trim().toLowerCase()
+        const shipKey = (rate.shipment_type_id || '').trim().toLowerCase()
+        const key = `${rate.origin_code || rate.origin_id}__${rate.destination_code || rate.destination_id}__${transKey}__${carrierKey}__${transitKey}__${modeKey}__${shipKey}`
 
+        if (!routeMap.has(key)) {
+          routeMap.set(key, {
+            routeKey: key,
+            routeId: rate.id,
+            origin: {
+              id: rate.origin_id,
+              code: rate.origin_code || resolvedOrigin.port_code,
+              name: rate.origin_name || resolvedOrigin.port_name,
+              country: rate.origin_country || resolvedOrigin.country,
+            },
+            destination: {
+              id: rate.destination_id,
+              code: rate.destination_code || resolvedDest.port_code,
+              name: rate.destination_name || resolvedDest.port_name,
+              country: rate.destination_country || resolvedDest.country,
+            },
+            isTranshipment: Boolean(rate.transhipment_code || rate.transhipment_id),
+            transhipment: (rate.transhipment_code || rate.transhipment_id) ? {
+              id: rate.transhipment_id,
+              code: rate.transhipment_code,
+              name: rate.transhipment_name || rate.transhipment_code,
+              country: rate.transhipment_country,
+            } : null,
+            carrier: (rate.carrier && rate.carrier.trim()) ? rate.carrier.trim() : 'Standard Line',
+            transitTime: rate.transit_time || 0,
+            freightModeId: rate.freight_mode_id || targetModeId,
+            modeName: rate.mode_name || selectedMode?.name || (isAirMode ? 'Air Freight' : isRoadMode ? 'Road Freight' : 'Ocean Freight'),
+            shipmentTypeId: rate.shipment_type_id || targetShipmentTypeId,
+            shipmentName: isTargetFCL ? 'FCL' : isTargetLCL ? 'LCL' : (rate.shipment_name || shipmentTypeObj?.name || 'FCL'),
+            rates: []
+          })
+        }
+        routeMap.get(key).rates.push(rate)
+      })
+
+      const routes = Array.from(routeMap.values())
       setSearchChecking(false)
 
-      if (activeContainers.length === 0) {
-        const originLabel = `${resolvedOrigin.port_name || resolvedOrigin.port_code} (${resolvedOrigin.port_code})`
-        const destLabel = `${resolvedDest.port_name || resolvedDest.port_code} (${resolvedDest.port_code})`
-        const transLabel = (isTranshipmentEnabled && resolvedTrans) ? `${resolvedTrans.port_name || resolvedTrans.port_code} (${resolvedTrans.port_code})` : ''
-        setSearchUnavailable({
-          type: 'container',
-          title: 'No Container Types Available',
-          description: `No applicable container specifications are configured in the system for this route.`,
-          originText: originLabel,
-          destinationText: destLabel,
-          transhipmentText: transLabel,
-          modeName: selectedMode?.name || 'Ocean Freight',
-          shipmentTypeName: shipmentTypeObj?.name || '',
-          reason: 'no_containers_available'
-        })
-        setShowContainersSection(false)
-        return
-      }
-
-      // Show container options for user to select
-      setAvailableContainers(activeContainers)
-      setSelectedContainer(null)
-      setShowContainersSection(true)
-      setAvailableRates([])
-      setSearchUnavailable(null)
-    } catch (err) {
-      console.error('[Rate Search] Query error:', err)
-      setSearchChecking(false)
-      setAvailableRates([])
-      setShowContainersSection(false)
-      setSearchError('Unable to connect to the freight rate server. Please check your connection and try again.')
-    }
-  }
-
-  const handleProceedWithContainer = async () => {
-    if (!selectedContainer) return
-
-    setRateChecking(true)
-    setSearchError(null)
-    setAvailableRates([])
-    setSearchUnavailable(null)
-    setShowRateResult(false)
-
-    const selectedMode = modes.find(m => m.id === selectedModeId)
-    const shipmentTypeObj = shipmentTypes.find(t => t.id === selectedShipmentTypeId)
-    const resolvedOrigin = selectedPortObjects.origin || {}
-    const resolvedDest = selectedPortObjects.destination || {}
-    const resolvedTrans = isTranshipmentEnabled ? (selectedPortObjects.transhipment || {}) : null
-
-    const originQueryParam = resolvedOrigin.port_code || resolvedOrigin.id || originText.trim()
-    const destQueryParam = resolvedDest.port_code || resolvedDest.id || destinationText.trim()
-    const transQueryParam = resolvedTrans ? (resolvedTrans.port_code || resolvedTrans.id || transhipmentText.trim()) : ''
-    const containerQueryParam = selectedContainer.id || selectedContainer.name
-
-    try {
-      let queryUrl = `${API_URL}/freight-rates?mode_id=${selectedModeId}&shipment_type_id=${selectedShipmentTypeId}&origin_id=${encodeURIComponent(originQueryParam)}&destination_id=${encodeURIComponent(destQueryParam)}&container_id=${encodeURIComponent(containerQueryParam)}&status=active`
-      if (isTranshipmentEnabled && transQueryParam) {
-        queryUrl += `&transhipment_id=${encodeURIComponent(transQueryParam)}`
-      }
-
-      const resRates = await fetch(queryUrl)
-      const ratesData = await resRates.json()
-      const activeRates = Array.isArray(ratesData) ? ratesData.filter(r => r.status === 'active') : []
-
-      setRateChecking(false)
-
-      const originLabel = `${resolvedOrigin.port_name || resolvedOrigin.port_code || originQueryParam} (${resolvedOrigin.port_code || originQueryParam})`
-      const destLabel = `${resolvedDest.port_name || resolvedDest.port_code || destQueryParam} (${resolvedDest.port_code || destQueryParam})`
-      const transLabel = (isTranshipmentEnabled && transQueryParam)
-        ? `${resolvedTrans?.port_name || resolvedTrans?.port_code || transQueryParam} (${resolvedTrans?.port_code || transQueryParam})`
-        : ''
-      const fullRoute = transLabel ? `${originLabel} → Via ${transLabel} → ${destLabel}` : `${originLabel} → ${destLabel}`
-
-      // If transhipment is enabled, ensure rate lookup respects full route (or proceeds to enquiry)
-      const matchingRates = isTranshipmentEnabled
-        ? activeRates.filter(r => (r.transhipment_id && (r.transhipment_id === transQueryParam || r.transhipment_code === transQueryParam)) || (r.transhipment && (r.transhipment === transQueryParam || r.transhipment === transLabel)))
-        : activeRates
-
-      if (matchingRates.length > 0) {
-        setAvailableRates(matchingRates)
-        setSearchUnavailable(null)
-        setShowRateResult(true)
+      if (routes.length === 0) {
+        setAvailableRoutes([])
+        setSelectedRoute(null)
+        setNoRoutesFound(true)
       } else {
-        // No matching rate for this route + container + transhipment combination -> proceed to enquiry
-        setAvailableRates([])
-        setSearchUnavailable({
-          type: 'rate',
-          title: 'No freight rates are currently available for your selected route.',
-          description: `We couldn't find direct contract rates for ${fullRoute} with ${selectedContainer.name} in our current database.`,
-          originText: originLabel,
-          destinationText: destLabel,
-          transhipmentText: transLabel,
-          modeName: selectedMode?.name || 'Ocean Freight',
-          shipmentTypeName: shipmentTypeObj?.name || '',
-          containerName: selectedContainer.name,
-          weight,
-          weightUnit,
-          reason: 'rate_not_found'
-        })
-        setShowRateResult(true)
+        setAvailableRoutes(routes)
+        setSelectedRoute(null)
+        setNoRoutesFound(false)
       }
     } catch (err) {
-      console.error('[Rate Proceed] Query error:', err)
-      setRateChecking(false)
-      setAvailableRates([])
-      setShowRateResult(false)
+      console.error('[Route Search] Query error:', err)
+      setSearchChecking(false)
+      setAvailableRoutes([])
+      setSelectedRoute(null)
       setSearchError('Unable to connect to the freight rate server. Please check your connection and try again.')
     }
   }
 
-  const handleBookRate = (rate) => {
+  const handleSearchSubmit = (e) => {
+    if (e && e.preventDefault) e.preventDefault()
+    executeRouteSearch(selectedModeId, selectedShipmentTypeId)
+  }
+
+  const handleShipmentTypeChange = (newShipmentTypeId) => {
+    setSelectedShipmentTypeId(newShipmentTypeId)
+    setSelectedRoute(null)
+    setSearchUnavailable(null)
+    setSearchError(null)
+    if (originText.trim() && destinationText.trim()) {
+      executeRouteSearch(selectedModeId, newShipmentTypeId)
+    }
+  }
+
+  const handleModeChange = (newModeId) => {
+    if (newModeId === selectedModeId) return
+    setSelectedModeId(newModeId)
+    setSelectedRoute(null)
+    setAvailableRoutes([])
+    setNoRoutesFound(false)
+    setSearchUnavailable(null)
+    setSearchError(null)
+    setSelectedPortObjects({ origin: null, destination: null })
+  }
+
+  const handleSelectRoute = async (route) => {
+    setSelectedRoute(route)
+    setContainersLoading(true)
+    try {
+      const res = await fetch(`${API_URL}/containers?status=active`)
+      const data = await res.json()
+      if (Array.isArray(data)) {
+        setActiveContainers(data.filter(c => c.status === 'active'))
+      }
+    } catch (err) {
+      console.error('Failed to load active containers:', err)
+    } finally {
+      setContainersLoading(false)
+    }
+
+    setTimeout(() => {
+      const el = document.querySelector('.container-pricing-section')
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    }, 60)
+  }
+
+  const resolveContainerPrice = (route, container) => {
+    if (!route || !route.rates || !Array.isArray(route.rates)) return null
+    return route.rates.find(r => {
+      const idMatch = r.container_id && (r.container_id === container.id || r.container_id === container.name)
+      const nameMatch = r.container_name && container.name && r.container_name.toLowerCase().trim() === container.name.toLowerCase().trim()
+      const isRateActive = r.status === 'active'
+      const hasPrice = Number(r.price) > 0
+      return (idMatch || nameMatch) && isRateActive && hasPrice
+    })
+  }
+
+  const handleBookRate = (route, container, rate) => {
     const selectedMode = modes.find(m => m.id === selectedModeId)
-    const shipmentTypeObj = shipmentTypes.find(t => t.id === selectedShipmentTypeId)
-    const containerObj = selectedContainer || containersList.find(c => c.id === selectedContainerId)
-    const resolvedOrigin = selectedPortObjects.origin || {}
-    const resolvedDest = selectedPortObjects.destination || {}
+
+    const fromPort = route.origin?.code || rate.origin_code || route.origin?.id || originText.trim()
+    const toPort = route.destination?.code || rate.destination_code || route.destination?.id || destinationText.trim()
+    const containerType = container?.name || rate.container_name || ''
+    const freightType = route.shipmentName 
+      ? route.shipmentName.toLowerCase() 
+      : (selectedMode?.name?.toLowerCase().includes('air') ? 'air' : 'fcl')
+    const transVal = route.transhipment?.code || rate.transhipment_code || route.transhipment?.name || rate.transhipment_name || ''
 
     const params = new URLSearchParams({
-      fromPort: rate.origin_code || resolvedOrigin.port_code || resolvedOrigin.id || originText.trim(),
-      toPort: rate.destination_code || resolvedDest.port_code || resolvedDest.id || destinationText.trim(),
-      containerType: rate.container_name || (containerObj ? containerObj.name : ''),
-      freight_type: shipmentTypeObj ? shipmentTypeObj.name.toLowerCase() : (selectedMode?.name?.toLowerCase().includes('air') ? 'air' : 'fcl'),
+      fromPort,
+      toPort,
+      containerType,
+      freight_type: freightType,
       rate_id: rate.id,
       rateId: rate.id
     })
-    const transVal = rate.transhipment_code || rate.transhipment_name || rate.transhipment_id || (isTranshipmentEnabled ? transhipmentText.trim() : '')
     if (transVal) {
       params.set('transhipment', transVal)
     }
-    navigate('/booking?' + params.toString())
+
+    const statePayload = {
+      route,
+      container: {
+        id: container?.id || rate.container_id || '',
+        name: containerType,
+        size: container?.size || ''
+      },
+      rate: {
+        ...rate,
+        origin_code: route.origin?.code || rate.origin_code,
+        origin_name: route.origin?.name || rate.origin_name,
+        destination_code: route.destination?.code || rate.destination_code,
+        destination_name: route.destination?.name || rate.destination_name,
+        transhipment_code: transVal,
+        transhipment_name: route.transhipment?.name || rate.transhipment_name || transVal,
+        container_name: containerType,
+        container_id: container?.id || rate.container_id,
+        carrier: route.carrier || rate.carrier || 'Standard Line',
+        transit_time: route.transitTime || rate.transit_time || 0
+      },
+      fromPort,
+      toPort,
+      transhipment: transVal,
+      containerType,
+      freight_type: freightType,
+      carrier: route.carrier || rate.carrier || 'Standard Line',
+      pricing: {
+        price: rate.price,
+        currency: rate.currency || 'USD',
+        local_thc: rate.local_thc,
+        other_charges: rate.other_charges,
+        transit_time: route.transitTime || rate.transit_time || 0
+      }
+    }
+
+    navigate('/booking?' + params.toString(), { state: statePayload })
+  }
+
+  const handleOpenContainerEnquiry = (route, container) => {
+    const oLabel = `${route.origin?.name || route.origin?.code} (${route.origin?.code})`
+    const dLabel = `${route.destination?.name || route.destination?.code} (${route.destination?.code})`
+    const tLabel = route.transhipment ? `${route.transhipment.name || route.transhipment.code} (${route.transhipment.code})` : ''
+
+    setEnquiryContext({
+      originText: oLabel,
+      destinationText: dLabel,
+      transhipmentText: tLabel,
+      routeId: route.routeId || '',
+      carrier: route.carrier || '',
+      transitTime: route.transitTime || '',
+      containerId: container.id,
+      containerName: container.name,
+      containerSize: container.size,
+      modeName: route.modeName || 'Ocean Freight',
+      shipmentTypeName: route.shipmentName || 'FCL',
+      quantity: 1,
+      reason: 'container_rate_unavailable'
+    })
+    setIsEnquiryModalOpen(true)
+  }
+
+  const handleOpenRouteEnquiry = () => {
+    const selMode = modes.find(m => m.id === selectedModeId)
+    const selShipment = shipmentTypes.find(t => t.id === selectedShipmentTypeId)
+    const oLabel = selectedPortObjects.origin 
+      ? `${selectedPortObjects.origin.port_name} (${selectedPortObjects.origin.port_code})` 
+      : originText.trim()
+    const dLabel = selectedPortObjects.destination 
+      ? `${selectedPortObjects.destination.port_name} (${selectedPortObjects.destination.port_code})` 
+      : destinationText.trim()
+
+    setEnquiryContext({
+      originText: oLabel,
+      destinationText: dLabel,
+      transhipmentText: '',
+      routeId: '',
+      modeName: selMode?.name || 'Ocean Freight',
+      shipmentTypeName: selShipment?.name || '',
+      reason: 'route_not_found'
+    })
+    setIsEnquiryModalOpen(true)
   }
 
   const searchStyle = {
@@ -935,101 +1011,29 @@ export default function Home() {
           padding: 0 14px !important;
         }
 
-        /* Specific styles for Transhipment control and 9px checkbox */
-        .booking-transhipment-label {
-          display: flex !important;
-          align-items: center !important;
-          gap: 6px !important;
-          height: 42px !important;
-          padding: 0 12px !important;
-          background: #ffffff !important;
-          border: 1px solid #e0e0e0 !important;
-          cursor: pointer !important;
-          box-sizing: border-box !important;
-          margin: 0 !important;
-          user-select: none !important;
-          white-space: nowrap !important;
-        }
-
-        .booking-transhipment-checkbox {
-          width: 9px !important;
-          height: 9px !important;
-          min-width: 9px !important;
-          min-height: 9px !important;
-          max-width: 9px !important;
-          max-height: 9px !important;
-          box-sizing: border-box !important;
-          margin: 0 !important;
-          padding: 0 !important;
-          appearance: none !important;
-          -webkit-appearance: none !important;
-          -moz-appearance: none !important;
-          border: 1px solid #767676 !important;
-          border-radius: 2px !important;
-          background-color: #ffffff !important;
-          cursor: pointer !important;
-          display: inline-block !important;
-          align-self: center !important;
-          vertical-align: middle !important;
-          flex-shrink: 0 !important;
-          outline: none !important;
-          line-height: 1 !important;
-          transform: none !important;
-        }
-
-        .booking-transhipment-checkbox:checked {
-          background-color: #d64238 !important;
-          border: 1px solid #d64238 !important;
-          background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 10' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M2 5.2L4 7.2L8 2.8' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") !important;
-          background-repeat: no-repeat !important;
-          background-position: center !important;
-          background-size: 7px 7px !important;
-          transform: none !important;
-        }
-
-        .booking-transhipment-checkbox:focus {
-          outline: none !important;
-        }
-
-        .booking-transhipment-text {
-          font-size: 13px !important;
-          font-weight: 500 !important;
-          color: #555555 !important;
-          line-height: 1 !important;
-          user-select: none !important;
-          display: inline-flex !important;
-          align-items: center !important;
-        }
-
         @media (min-width: 992px) {
           .booking-input-origin {
             flex: 1 1 0% !important;
-            min-width: 160px;
+            min-width: 200px;
           }
           .booking-input-destination {
             flex: 1 1 0% !important;
-            min-width: 160px;
-          }
-          .booking-input-transhipment {
-            flex: 1 1 0% !important;
-            min-width: 160px;
+            min-width: 200px;
           }
           .booking-input-weight {
-            flex: 1 1 0% !important;
+            flex: 0 0 180px !important;
             min-width: 160px;
           }
-          .booking-input-transhipment-check {
-            flex: 0 0 auto !important;
-          }
           .booking-input-button {
-            flex: 0 0 120px !important;
-            width: 120px !important;
-            max-width: 120px !important;
+            flex: 0 0 160px !important;
+            width: 160px !important;
+            max-width: 160px !important;
             flex-shrink: 0 !important;
           }
           .booking-form-row {
             flex-wrap: nowrap !important;
             justify-content: space-between !important;
+            gap: 12px !important;
           }
         }
 
@@ -1038,16 +1042,15 @@ export default function Home() {
             width: 92%;
           }
           .booking-input-origin,
-          .booking-input-destination,
-          .booking-input-transhipment {
+          .booking-input-destination {
             flex: 1 1 calc(50% - 6px) !important;
             min-width: 200px;
           }
-          .booking-input-transhipment-check {
-            flex: 0 0 auto !important;
+          .booking-input-weight {
+            flex: 1 1 100% !important;
           }
           .booking-input-button {
-            flex: 1 1 auto !important;
+            flex: 1 1 100% !important;
             min-width: 130px;
           }
         }
@@ -1076,12 +1079,134 @@ export default function Home() {
             flex: 1 1 100% !important;
             min-width: 0 !important;
           }
-          .booking-input-transhipment-check {
-            flex: 1 1 100% !important;
-          }
           .booking-input-button {
             flex: 1 1 100% !important;
             width: 100% !important;
+          }
+        }
+
+        /* ── Available Routes & Container Pricing Styles ── */
+        .route-card {
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 8px;
+          padding: 22px 26px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+          position: relative;
+          cursor: pointer;
+          user-select: none;
+          text-align: left;
+          outline: none;
+        }
+        .route-card:hover {
+          border-color: #d64238;
+          box-shadow: 0 8px 24px rgba(214, 66, 56, 0.14);
+          transform: translateY(-2px);
+          background: #fffdfd;
+        }
+        .route-card:focus-visible {
+          border-color: #d64238;
+          box-shadow: 0 0 0 3px rgba(214, 66, 56, 0.25), 0 8px 24px rgba(214, 66, 56, 0.14);
+          outline: none;
+        }
+        .route-card:active {
+          transform: translateY(0);
+          box-shadow: 0 3px 10px rgba(214, 66, 56, 0.12);
+        }
+        .route-card.selected {
+          border: 2px solid #d64238;
+          box-shadow: 0 6px 20px rgba(214, 66, 56, 0.15);
+          background: #fffafa;
+        }
+        .route-card-cta {
+          color: #d64238;
+          font-weight: 700;
+          font-size: 13px;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          transition: transform 0.2s ease, color 0.2s ease;
+        }
+        .route-card:hover .route-card-cta {
+          transform: translateX(4px);
+          color: #b53229;
+        }
+        .badge-direct {
+          background: #ecfdf5;
+          color: #065f46;
+          border: 1px solid #a7f3d0;
+          padding: 4px 12px;
+          border-radius: 14px;
+          font-size: 11px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.3px;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+        }
+        .badge-transhipment {
+          background: #eff6ff;
+          color: #1e40af;
+          border: 1px solid #bfdbfe;
+          padding: 4px 12px;
+          border-radius: 14px;
+          font-size: 11px;
+          font-weight: 700;
+          letter-spacing: 0.3px;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+        }
+        .container-list-wrapper {
+          display: grid !important;
+          grid-template-columns: minmax(0, 1fr) !important;
+          width: 100% !important;
+          gap: 16px !important;
+        }
+        .container-card {
+          background: #ffffff;
+          border: 1px solid #e2e8f0;
+          border-radius: 8px;
+          padding: 18px 24px;
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+          transition: all 0.25s ease;
+          display: flex;
+          flex-direction: row;
+          align-items: center;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 16px;
+          width: 100%;
+          min-width: 0;
+          box-sizing: border-box;
+        }
+        .container-card:hover {
+          border-color: #cbd5e1;
+          box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+        }
+        .container-card.has-price {
+          border-left: 4px solid #10b981;
+        }
+        .container-card.no-price {
+          border-left: 4px solid #f59e0b;
+        }
+        @media (max-width: 768px) {
+          .container-card {
+            flex-direction: column;
+            align-items: stretch;
+            padding: 16px;
+          }
+          .container-card-actions {
+            width: 100%;
+            justify-content: space-between !important;
+            padding-top: 14px;
+            border-top: 1px solid #f1f5f9;
+          }
+          .container-card-actions > div:first-child {
+            text-align: left !important;
+            align-items: flex-start !important;
           }
         }
       `}} />
@@ -1158,8 +1283,8 @@ export default function Home() {
                 return (
                   <button
                     key={mode.id}
-                    onClick={() => setSelectedModeId(mode.id)}
-                    className={`booking-mode-btn ${active ? 'active' : 'inactive'} ${mode.id === 'air' ? 'mode-air' : 'mode-ocean'}`}
+                    onClick={() => handleModeChange(mode.id)}
+                    className={`booking-mode-btn ${active ? 'active' : 'inactive'} ${mode.id === 'air' || mode.id === 'mode-air' ? 'mode-air' : 'mode-ocean'}`}
                   >
                     {mode.name}
                   </button>
@@ -1175,12 +1300,7 @@ export default function Home() {
                 return (
                   <button
                     key={type.id}
-                    onClick={() => {
-                      setSelectedShipmentTypeId(type.id)
-                      setAvailableRates([])
-                      setSearchUnavailable(null)
-                      setSearchError(null)
-                    }}
+                    onClick={() => handleShipmentTypeChange(type.id)}
                     className={`booking-shipment-btn ${active ? 'active' : 'inactive'}`}
                   >
                     {shortCode}
@@ -1331,78 +1451,6 @@ export default function Home() {
                 )
               })()}
 
-              {/* Conditional Transhipment Port input */}
-              {isTranshipmentEnabled && (
-                <div className="booking-input-col booking-input-transhipment">
-                  <input
-                    type="text"
-                    value={transhipmentText}
-                    onChange={e => handleLocationInput(e.target.value, 'transhipment')}
-                    onBlur={() => setTimeout(() => setShowDropdown(p => ({ ...p, transhipment: false })), 200)}
-                    placeholder="Transhipment"
-                    autoComplete="off"
-                    className="booking-input-field"
-                  />
-                  {showDropdown.transhipment && (
-                    <div style={searchStyle}>
-                      {locationResults.transhipment?.length > 0 ? (
-                        locationResults.transhipment.map((l, i) => (
-                          <div
-                            key={i}
-                            style={searchItemStyle}
-                            onMouseDown={() => selectLocation(l, 'transhipment')}
-                          >
-                            <div style={{ fontWeight: 600, fontSize: '13px' }}>
-                              {l.port_code} ({l.port_name})
-                            </div>
-                            <div style={{ fontSize: '11px', color: '#888' }}>{l.country}</div>
-                          </div>
-                        ))
-                      ) : noMatchFound.transhipment ? (
-                        <div style={{ padding: '16px', background: '#fff' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#b91c1c', fontWeight: 600, fontSize: '13px', marginBottom: '4px' }}>
-                            <span>⚠️</span> Port Not Found in Database
-                          </div>
-                          <div style={{ fontSize: '12px', color: '#64748b', marginBottom: '12px' }}>
-                            We couldn't find "{transhipmentText}" in our 6,000+ ports directory.
-                          </div>
-                          <button
-                            type="button"
-                            onMouseDown={() => handleOpenDropdownEnquiry('transhipment')}
-                            style={{
-                              background: '#d64238',
-                              color: 'white',
-                              border: 'none',
-                              padding: '7px 14px',
-                              borderRadius: '4px',
-                              fontSize: '12px',
-                              fontWeight: 600,
-                              cursor: 'pointer'
-                            }}
-                          >
-                            Send Enquiry for this Port →
-                          </button>
-                        </div>
-                      ) : null}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Transhipment Checkbox */}
-              <div className="booking-input-col booking-input-transhipment-check">
-                <label className="booking-transhipment-label">
-                  <input
-                    type="checkbox"
-                    className="booking-transhipment-checkbox"
-                    checked={isTranshipmentEnabled}
-                    onChange={e => handleTranshipmentToggle(e.target.checked)}
-                  />
-                  <span className="booking-transhipment-text">
-                    Transhipment
-                  </span>
-                </label>
-              </div>
 
               {/* Check Rates button */}
               <div className="booking-input-button">
@@ -1504,234 +1552,215 @@ export default function Home() {
               </div>
             )}
 
-            {/* Container Selection Section (Shown before Proceed) */}
-            {showContainersSection && availableContainers.length > 0 && !showRateResult && (
-              <div className="available-containers-selection-section" style={{
+            {/* 1. Available Routes Section (Shown when routes match and no single route is actively drilled into) */}
+            {availableRoutes.length > 0 && !selectedRoute && (
+              <div className="available-routes-section" style={{
                 marginTop: '28px',
                 padding: '24px 28px',
                 backgroundColor: '#ffffff',
                 border: '1px solid #e2e8f0',
-                borderRadius: '6px',
+                borderRadius: '8px',
                 boxShadow: '0 4px 14px rgba(0,0,0,0.06)'
               }}>
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'space-between',
-                  marginBottom: '18px',
+                  marginBottom: '20px',
                   flexWrap: 'wrap',
-                  gap: '12px'
+                  gap: '12px',
+                  paddingBottom: '16px',
+                  borderBottom: '1px solid #f1f5f9'
                 }}>
                   <div>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      marginBottom: '4px'
-                    }}>
-                      <span style={{ fontSize: '20px' }}>📦</span>
-                      <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>
-                        Available Container Options
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                      {renderTransportIcon(selectedModeId, { fontSize: '20px' })}
+                      <h3 style={{ margin: 0, fontSize: '19px', fontWeight: 700, color: '#1e293b' }}>
+                        Available Routes
                       </h3>
                     </div>
                     <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>
-                      Select a container specification below to calculate and check live freight rates.
+                      Select a verified route below to view live container availability and carrier contract pricing.
                     </p>
                   </div>
 
-                  {/* Route pill */}
-                  <div style={{
-                    fontSize: '12px',
-                    fontWeight: 600,
-                    color: '#475569',
-                    background: '#f8fafc',
-                    border: '1px solid #cbd5e1',
+                  <span style={{
+                    background: '#eff6ff',
+                    color: '#1d4ed8',
+                    border: '1px solid #bfdbfe',
                     padding: '6px 14px',
                     borderRadius: '20px',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px'
+                    fontSize: '12px',
+                    fontWeight: 700
                   }}>
-                    <span>{selectedPortObjects.origin?.port_code || originText}</span>
-                    {isTranshipmentEnabled && (selectedPortObjects.transhipment?.port_code || transhipmentText) ? (
-                      <>
-                        <span style={{ color: '#d64238' }}>→ Via {selectedPortObjects.transhipment?.port_code || transhipmentText} →</span>
-                      </>
-                    ) : (
-                      <span style={{ color: '#94a3b8' }}>→</span>
-                    )}
-                    <span>{selectedPortObjects.destination?.port_code || destinationText}</span>
-                  </div>
+                    {availableRoutes.length} route{availableRoutes.length > 1 ? 's' : ''} available
+                  </span>
                 </div>
 
-                {/* Container Options Grid */}
-                <div style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-                  gap: '14px',
-                  marginBottom: '22px'
-                }}>
-                  {availableContainers.map(container => {
-                    const isSelected = selectedContainer?.id === container.id
+                {/* List of Available Routes */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {availableRoutes.map((route, idx) => {
+                    const originLabel = route.origin.name || route.origin.code
+                    const destLabel = route.destination.name || route.destination.code
+                    const cardLabel = `Select route ${route.routeId} from ${originLabel} to ${destLabel}`
+
                     return (
                       <div
-                        key={container.id}
-                        onClick={() => {
-                          setSelectedContainer(container)
-                          setAvailableRates([])
-                          setSearchUnavailable(null)
-                          setShowRateResult(false)
-                        }}
-                        style={{
-                          padding: '16px 18px',
-                          background: isSelected ? '#fff8f7' : '#ffffff',
-                          border: `2px solid ${isSelected ? '#d64238' : '#e2e8f0'}`,
-                          borderRadius: '6px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '14px',
-                          boxShadow: isSelected ? '0 4px 12px rgba(214, 66, 56, 0.12)' : '0 1px 3px rgba(0,0,0,0.02)',
-                          transition: 'all 0.2s ease'
+                        key={route.routeKey || route.routeId || idx}
+                        className="route-card"
+                        role="button"
+                        tabIndex={0}
+                        aria-label={cardLabel}
+                        onClick={() => handleSelectRoute(route)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault()
+                            handleSelectRoute(route)
+                          }
                         }}
                       >
-                        {/* Radio indicator */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px', marginBottom: '14px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <span style={{
+                              background: '#fee2e2',
+                              color: '#d64238',
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              textTransform: 'uppercase',
+                              padding: '3px 9px',
+                              borderRadius: '4px',
+                              letterSpacing: '0.4px'
+                            }}>
+                              Carrier: {route.carrier || 'Standard Line'}
+                            </span>
+                            <span style={{
+                              background: '#f1f5f9',
+                              color: '#475569',
+                              fontSize: '11px',
+                              fontWeight: 600,
+                              padding: '3px 8px',
+                              borderRadius: '4px',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '5px'
+                            }}>
+                              {renderTransportIcon(route.freightModeId || route.modeName, { fontSize: '11px' })}
+                              <span>{route.modeName || 'Ocean Freight'}</span>
+                            </span>
+                            <span style={{
+                              background: route.shipmentName === 'FCL' ? '#eff6ff' : '#fef3c7',
+                              color: route.shipmentName === 'FCL' ? '#1d4ed8' : '#92400e',
+                              border: route.shipmentName === 'FCL' ? '1px solid #bfdbfe' : '1px solid #fde68a',
+                              fontSize: '11px',
+                              fontWeight: 700,
+                              padding: '3px 8px',
+                              borderRadius: '4px'
+                            }}>
+                              {route.shipmentName || 'FCL'}
+                            </span>
+                          </div>
+
+                          <div>
+                            {route.isTranshipment ? (
+                              <span className="badge-transhipment">
+                                <span>⇄</span>
+                                <span>Transhipment: {route.transhipment?.name || route.transhipment?.code} ({route.transhipment?.code})</span>
+                              </span>
+                            ) : (
+                              <span className="badge-direct">
+                                <span>✓</span>
+                                <span>Direct Route</span>
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Route Path Display */}
                         <div style={{
-                          width: '20px',
-                          height: '20px',
-                          borderRadius: '50%',
-                          border: `2px solid ${isSelected ? '#d64238' : '#cbd5e1'}`,
                           display: 'flex',
                           alignItems: 'center',
-                          justifyContent: 'center',
-                          flexShrink: 0,
-                          background: '#ffffff'
+                          justifyContent: 'space-between',
+                          flexWrap: 'wrap',
+                          gap: '16px',
+                          marginBottom: '16px',
+                          background: '#f8fafc',
+                          padding: '16px 20px',
+                          borderRadius: '6px',
+                          border: '1px solid #e2e8f0'
                         }}>
-                          {isSelected && (
-                            <div style={{
-                              width: '10px',
-                              height: '10px',
-                              borderRadius: '50%',
-                              backgroundColor: '#d64238'
-                            }} />
-                          )}
-                        </div>
-
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{
-                            fontWeight: 700,
-                            fontSize: '14px',
-                            color: isSelected ? '#d64238' : '#1e293b',
-                            whiteSpace: 'nowrap',
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis'
-                          }}>
-                            {container.name} {container.size && !container.name.includes(container.size) ? `(${container.size})` : ''}
-                          </div>
-                          {container.description && (
-                            <div style={{
-                              fontSize: '12px',
-                              color: '#64748b',
-                              marginTop: '2px',
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis'
-                            }}>
-                              {container.description}
+                          {/* Origin Port */}
+                          <div style={{ flex: '1 1 200px' }}>
+                            <div style={{ fontSize: '11px', textTransform: 'uppercase', color: '#64748b', fontWeight: 600, marginBottom: '2px' }}>
+                              Origin Port
                             </div>
-                          )}
+                            <div style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a' }}>
+                              {route.origin.name || route.origin.code}
+                            </div>
+                            <div style={{ fontSize: '12px', color: '#d64238', fontWeight: 700 }}>
+                              {route.origin.code} {route.origin.country ? `• ${route.origin.country}` : ''}
+                            </div>
+                          </div>
+
+                          {/* Transit / Path Arrow */}
+                          <div style={{ textAlign: 'center', padding: '0 12px', flex: '0 0 auto' }}>
+                            <div style={{ fontSize: '12px', fontWeight: 600, color: '#0f172a', marginBottom: '2px' }}>
+                              ⏱️ {route.transitTime} Days
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#94a3b8' }}>
+                              <span style={{ height: '2px', width: '32px', background: '#cbd5e1', display: 'inline-block' }}></span>
+                              {renderTransportIcon(route.freightModeId || route.modeName, { fontSize: '15px' })}
+                              <span style={{ height: '2px', width: '32px', background: '#cbd5e1', display: 'inline-block' }}></span>
+                            </div>
+                            {route.isTranshipment && (
+                              <div style={{ fontSize: '11px', color: '#1e40af', marginTop: '2px', fontWeight: 600 }}>
+                                Via {route.transhipment?.code}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Destination Port */}
+                          <div style={{ flex: '1 1 200px', textAlign: 'right' }}>
+                            <div style={{ fontSize: '11px', textTransform: 'uppercase', color: '#64748b', fontWeight: 600, marginBottom: '2px' }}>
+                              Destination Port
+                            </div>
+                            <div style={{ fontSize: '16px', fontWeight: 700, color: '#0f172a' }}>
+                              {route.destination.name || route.destination.code}
+                            </div>
+                            <div style={{ fontSize: '12px', color: '#d64238', fontWeight: 700 }}>
+                              {route.destination.code} {route.destination.country ? `• ${route.destination.country}` : ''}
+                            </div>
+                          </div>
                         </div>
 
-                        {isSelected && (
-                          <span style={{
-                            fontSize: '11px',
-                            fontWeight: 700,
-                            color: '#d64238',
-                            background: '#fee2e2',
-                            padding: '2px 8px',
-                            borderRadius: '12px'
-                          }}>
-                            Selected
+                        {/* Bottom action row */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+                          <span style={{ fontSize: '12px', color: '#64748b' }}>
+                            Route ID: <code style={{ background: '#f1f5f9', padding: '3px 8px', borderRadius: '4px', color: '#1e293b', fontWeight: 600 }}>{route.routeId}</code>
                           </span>
-                        )}
+
+                          <span className="route-card-cta">
+                            <span>View Container Pricing</span>
+                            <span style={{ fontSize: '15px' }}>→</span>
+                          </span>
+                        </div>
                       </div>
                     )
                   })}
                 </div>
-
-                {/* Proceed Action Bar */}
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  flexWrap: 'wrap',
-                  gap: '14px',
-                  paddingTop: '16px',
-                  borderTop: '1px solid #e2e8f0'
-                }}>
-                  <div style={{ fontSize: '13px', color: '#64748b' }}>
-                    {selectedContainer ? (
-                      <span>Selected: <strong style={{ color: '#1e293b' }}>{selectedContainer.name}</strong></span>
-                    ) : (
-                      <span style={{ color: '#d64238', fontWeight: 600 }}>* Please select a container type above to continue</span>
-                    )}
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={handleProceedWithContainer}
-                    disabled={!selectedContainer || rateChecking}
-                    style={{
-                      background: selectedContainer ? '#d64238' : '#cbd5e1',
-                      color: 'white',
-                      border: 'none',
-                      padding: '12px 32px',
-                      fontWeight: 700,
-                      fontSize: '14px',
-                      borderRadius: '4px',
-                      cursor: selectedContainer && !rateChecking ? 'pointer' : 'not-allowed',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      boxShadow: selectedContainer ? '0 2px 6px rgba(214, 66, 56, 0.3)' : 'none',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    {rateChecking ? (
-                      <>
-                        <span style={{
-                          display: 'inline-block',
-                          width: '14px',
-                          height: '14px',
-                          border: '2px solid white',
-                          borderTopColor: 'transparent',
-                          borderRadius: '50%',
-                          animation: 'spin 0.8s linear infinite'
-                        }} />
-                        Checking Rate...
-                      </>
-                    ) : (
-                      <>
-                        <span>Proceed</span>
-                        <span>→</span>
-                      </>
-                    )}
-                  </button>
-                </div>
               </div>
             )}
 
-            {/* Rate Result Display Section (Replaces Container Options after Proceed) */}
-            {showContainersSection && showRateResult && (
-              <div className="rate-result-display-section" style={{
+            {/* 2. Route Selected → All Active Containers & Pricing View */}
+            {selectedRoute && (
+              <div className="container-pricing-section" style={{
                 marginTop: '28px',
                 padding: '24px 28px',
                 backgroundColor: '#ffffff',
                 border: '1px solid #e2e8f0',
-                borderRadius: '6px',
+                borderRadius: '8px',
                 boxShadow: '0 4px 14px rgba(0,0,0,0.06)'
               }}>
-                {/* Navigation Bar: "Change Container" action & Route summary pill */}
+                {/* Header bar: Back button + Route details pill */}
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -1744,11 +1773,7 @@ export default function Home() {
                 }}>
                   <button
                     type="button"
-                    onClick={() => {
-                      setShowRateResult(false)
-                      setAvailableRates([])
-                      setSearchUnavailable(null)
-                    }}
+                    onClick={() => setSelectedRoute(null)}
                     style={{
                       background: '#f8fafc',
                       border: '1px solid #cbd5e1',
@@ -1773,10 +1798,10 @@ export default function Home() {
                     }}
                   >
                     <span style={{ fontSize: '15px' }}>←</span>
-                    <span>Change Container</span>
+                    <span>Back to Available Routes</span>
                   </button>
 
-                  {/* Route pill indicator */}
+                  {/* Route summary pill */}
                   <div style={{
                     fontSize: '12px',
                     fontWeight: 600,
@@ -1787,279 +1812,281 @@ export default function Home() {
                     borderRadius: '20px',
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: '6px'
+                    gap: '8px',
+                    flexWrap: 'wrap'
                   }}>
-                    <span>{selectedPortObjects.origin?.port_code || originText}</span>
-                    {isTranshipmentEnabled && (selectedPortObjects.transhipment?.port_code || transhipmentText) ? (
-                      <span style={{ color: '#d64238' }}>→ Via {selectedPortObjects.transhipment?.port_code || transhipmentText} →</span>
+                    <strong style={{ color: '#0f172a' }}>{selectedRoute.origin.name || selectedRoute.origin.code} ({selectedRoute.origin.code})</strong>
+                    {selectedRoute.isTranshipment ? (
+                      <span style={{ color: '#d64238' }}>→ Via {selectedRoute.transhipment?.name || selectedRoute.transhipment?.code} ({selectedRoute.transhipment?.code}) →</span>
                     ) : (
                       <span style={{ color: '#94a3b8' }}>→</span>
                     )}
-                    <span>{selectedPortObjects.destination?.port_code || destinationText}</span>
-                    {selectedContainer && (
-                      <span style={{
-                        marginLeft: '6px',
-                        paddingLeft: '8px',
-                        borderLeft: '1px solid #cbd5e1',
-                        color: '#1e293b'
-                      }}>
-                        📦 {selectedContainer.name}
-                      </span>
-                    )}
+                    <strong style={{ color: '#0f172a' }}>{selectedRoute.destination.name || selectedRoute.destination.code} ({selectedRoute.destination.code})</strong>
+                    <span style={{ color: '#cbd5e1' }}>|</span>
+                    <span>Route ID: <strong style={{ color: '#d64238' }}>{selectedRoute.routeId}</strong></span>
+                    <span style={{ color: '#cbd5e1' }}>|</span>
+                    <span>Carrier: <strong>{selectedRoute.carrier}</strong></span>
+                    <span style={{ color: '#cbd5e1' }}>|</span>
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      Mode: <strong>{renderTransportIcon(selectedRoute.freightModeId || selectedRoute.modeName, { fontSize: '13px', marginRight: '3px' })}{selectedRoute.modeName}</strong>
+                    </span>
+                    <span style={{ color: '#cbd5e1' }}>|</span>
+                    <span>Type: <strong style={{ color: selectedRoute.shipmentName === 'FCL' ? '#1d4ed8' : '#d64238' }}>{selectedRoute.shipmentName || 'FCL'}</strong></span>
+                    <span style={{ color: '#cbd5e1' }}>|</span>
+                    <span>Transit: <strong>{selectedRoute.transitTime} Days</strong></span>
                   </div>
                 </div>
 
-                {/* Matching Freight Rate Result */}
-                {availableRates && availableRates.length > 0 && (
+                {/* Section Title */}
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: '18px',
+                  flexWrap: 'wrap',
+                  gap: '12px'
+                }}>
                   <div>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      marginBottom: '16px',
-                      flexWrap: 'wrap',
-                      gap: '8px'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ color: '#d64238', fontSize: '20px' }}>⚓</span>
-                        <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>
-                          Matching Freight Rate
-                        </h3>
-                      </div>
-                      <span style={{
-                        background: '#ecfdf5',
-                        color: '#065f46',
-                        border: '1px solid #a7f3d0',
-                        padding: '4px 12px',
-                        borderRadius: '16px',
-                        fontSize: '12px',
-                        fontWeight: 700
-                      }}>
-                        {availableRates.length} active rate{availableRates.length > 1 ? 's' : ''} available
-                      </span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+                      <span style={{ fontSize: '20px' }}>📦</span>
+                      <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 700, color: '#1e293b' }}>
+                        Active Containers &amp; Route Pricing
+                      </h3>
                     </div>
+                    <p style={{ margin: 0, fontSize: '13px', color: '#64748b' }}>
+                      Displaying all active containers. Valid database contract prices are shown; containers without published rates can be requested via enquiry.
+                    </p>
+                  </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                      {availableRates.map((rate, idx) => (
-                        <div key={rate.id || idx} style={{
-                          background: '#ffffff',
-                          border: '1px solid #e2e8f0',
-                          borderRadius: '6px',
-                          padding: '20px 24px',
-                          boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'space-between',
-                          flexWrap: 'wrap',
-                          gap: '20px'
-                        }}>
-                          <div style={{ flex: '1 1 350px' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
-                              <span style={{
-                                background: '#fee2e2',
-                                color: '#d64238',
-                                fontSize: '11px',
-                                fontWeight: 700,
-                                textTransform: 'uppercase',
-                                padding: '3px 8px',
-                                borderRadius: '3px',
-                                letterSpacing: '0.5px'
-                              }}>
-                                Carrier: {rate.carrier || 'Standard Line'}
-                              </span>
-                              <span style={{
-                                background: '#f1f5f9',
-                                color: '#475569',
-                                fontSize: '11px',
-                                fontWeight: 600,
-                                padding: '3px 8px',
-                                borderRadius: '3px'
-                              }}>
-                                {rate.mode_name || 'Ocean Freight'}
-                              </span>
-                              <span style={{
-                                background: '#f1f5f9',
-                                color: '#475569',
-                                fontSize: '11px',
-                                fontWeight: 600,
-                                padding: '3px 8px',
-                                borderRadius: '3px'
-                              }}>
-                                {rate.shipment_name || 'FCL'}
-                              </span>
-                            </div>
+                  <span style={{
+                    background: '#ecfdf5',
+                    color: '#065f46',
+                    border: '1px solid #a7f3d0',
+                    padding: '5px 12px',
+                    borderRadius: '16px',
+                    fontSize: '12px',
+                    fontWeight: 700
+                  }}>
+                    {activeContainers.length} Active Container{activeContainers.length > 1 ? 's' : ''}
+                  </span>
+                </div>
 
-                            <h4 style={{ margin: '0 0 6px 0', fontSize: '17px', fontWeight: 700, color: '#0f172a' }}>
-                              {rate.origin_name || rate.origin_code} ({rate.origin_code})
-                              {rate.transhipment_code ? ` → Via ${rate.transhipment_name || rate.transhipment_code} (${rate.transhipment_code}) → ` : ' → '}
-                              {rate.destination_name || rate.destination_code} ({rate.destination_code})
-                            </h4>
-
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', fontSize: '13px', color: '#64748b' }}>
-                              <span>
-                                <strong style={{ color: '#334155' }}>Container:</strong> {rate.container_name || selectedContainer?.name || 'Standard'}
-                              </span>
-                              <span>
-                                <strong style={{ color: '#334155' }}>Transit:</strong> {rate.transit_time} Days
-                              </span>
-                              <span>
-                                <strong style={{ color: '#334155' }}>Transshipment Port:</strong>{' '}
-                                {rate.transhipment_code ? (
-                                  <span style={{ color: '#0f172a', fontWeight: 600 }}>
-                                    {rate.transhipment_name || rate.transhipment_code} ({rate.transhipment_code})
-                                  </span>
-                                ) : (
-                                  <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>No transshipment</span>
-                                )}
-                              </span>
-                              <span style={{ fontSize: '11px', color: '#94a3b8' }}>
-                                Rate ID: {rate.id}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-                            <div style={{ textAlign: 'right' }}>
-                              <div style={{ fontSize: '30px', fontWeight: 800, color: '#d64238', lineHeight: 1 }}>
-                                ${rate.price}
-                              </div>
-                              <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px', textTransform: 'uppercase', fontWeight: 600 }}>
-                                {rate.currency || 'USD'} Freight Charge
-                              </div>
-                              {(Number(rate.local_thc) > 0 || Number(rate.other_charges) > 0) && (
-                                <div style={{
-                                  marginTop: '6px',
-                                  paddingTop: '6px',
-                                  borderTop: '1px dashed #e2e8f0',
-                                  fontSize: '11px',
-                                  color: '#64748b',
-                                  display: 'flex',
-                                  flexDirection: 'column',
-                                  gap: '2px',
-                                  textAlign: 'right'
-                                }}>
-                                  <div>Local THC: <strong style={{ color: '#0f172a' }}>${Number(rate.local_thc || 0).toFixed(2)}</strong></div>
-                                  <div>Other Charges: <strong style={{ color: '#0f172a' }}>${Number(rate.other_charges || 0).toFixed(2)}</strong></div>
-                                </div>
-                              )}
-                            </div>
-
-                            <button
-                              type="button"
-                              onClick={() => handleBookRate(rate)}
-                              style={{
-                                background: '#d64238',
-                                color: '#ffffff',
-                                border: 'none',
-                                padding: '12px 28px',
-                                fontWeight: 700,
-                                fontSize: '14px',
-                                borderRadius: '4px',
-                                cursor: 'pointer',
-                                whiteSpace: 'nowrap',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '8px',
-                                boxShadow: '0 2px 4px rgba(214, 66, 56, 0.25)',
-                                transition: 'background 0.2s ease'
-                              }}
-                              onMouseOver={e => e.currentTarget.style.background = '#c0352c'}
-                              onMouseOut={e => e.currentTarget.style.background = '#d64238'}
-                            >
-                              <span>Booking</span>
-                              <span style={{ fontSize: '16px' }}>→</span>
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
+                {/* Containers Loading indicator */}
+                {containersLoading && (
+                  <div style={{ textAlign: 'center', padding: '40px 0', color: '#64748b', fontSize: '14px' }}>
+                    <span style={{
+                      display: 'inline-block',
+                      width: '20px',
+                      height: '20px',
+                      border: '2px solid #cbd5e1',
+                      borderTopColor: '#d64238',
+                      borderRadius: '50%',
+                      animation: 'spin 0.8s linear infinite',
+                      marginRight: '8px',
+                      verticalAlign: 'middle'
+                    }} />
+                    Loading active container pricing...
                   </div>
                 )}
 
-                {/* If No Matching Rate Exists (Enquiry Flow) */}
-                {searchUnavailable && (
-                  <div className="port-unavailable-card" style={{
-                    padding: '20px 24px',
-                    backgroundColor: '#fff8f7',
-                    border: '1px solid #fed7d7',
-                    borderLeft: '4px solid #d64238',
-                    borderRadius: '4px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    flexWrap: 'wrap',
-                    gap: '20px',
-                    boxShadow: '0 2px 8px rgba(214, 66, 56, 0.08)'
-                  }}>
-                    <div style={{ flex: '1 1 450px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
-                        <span style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          width: '24px',
-                          height: '24px',
-                          borderRadius: '50%',
-                          backgroundColor: '#fee2e2',
-                          color: '#d64238',
-                          fontSize: '13px',
-                          fontWeight: 'bold'
-                        }}>
-                          !
-                        </span>
-                        <h4 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#1f2937' }}>
-                          {searchUnavailable.title}
-                        </h4>
-                      </div>
-                      <p style={{ margin: '0 0 6px 0', fontSize: '13px', color: '#4b5563', lineHeight: '1.5' }}>
-                        {searchUnavailable.description}
-                      </p>
-                      <div style={{ fontSize: '12px', color: '#6b7280' }}>
-                        Need help with this route? Submit an enquiry and our freight operations team will assist you with custom availability and pricing.
-                      </div>
-                    </div>
-                    <div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEnquiryContext(searchUnavailable)
-                          setIsEnquiryModalOpen(true)
-                        }}
-                        style={{
-                          background: '#d64238',
-                          color: 'white',
-                          border: 'none',
-                          padding: '12px 28px',
-                          fontWeight: 600,
-                          fontSize: '14px',
-                          borderRadius: '4px',
-                          cursor: 'pointer',
-                          whiteSpace: 'nowrap',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          boxShadow: '0 2px 4px rgba(214, 66, 56, 0.25)',
-                          transition: 'all 0.2s ease'
-                        }}
-                      >
-                        <span>Send Enquiry</span>
-                        <span style={{ fontSize: '15px' }}>→</span>
-                      </button>
-                    </div>
+                {/* Containers Grid */}
+                {!containersLoading && (
+                  <div
+                    className="container-list-wrapper"
+                    style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'minmax(0, 1fr)',
+                      width: '100%',
+                      gap: '16px'
+                    }}
+                  >
+                    {activeContainers.map(container => {
+                      const rateObj = resolveContainerPrice(selectedRoute, container)
+                      const hasPrice = Boolean(rateObj && Number(rateObj.price) > 0)
+
+                      return (
+                        <div
+                          key={container.id}
+                          className={`container-card ${hasPrice ? 'has-price' : 'no-price'}`}
+                          style={{
+                            width: '100%',
+                            minWidth: 0,
+                            boxSizing: 'border-box'
+                          }}
+                        >
+                          {/* Left Column: Container Information */}
+                          <div style={{ flex: '1 1 320px', minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '4px' }}>
+                              <h4 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: '#0f172a' }}>
+                                {container.name} {container.size && !container.name.includes(container.size) ? `(${container.size})` : ''}
+                              </h4>
+                            </div>
+
+                            {container.description && (
+                              <div style={{ fontSize: '13px', color: '#64748b', marginBottom: '8px', lineHeight: 1.4 }}>
+                                {container.description}
+                              </div>
+                            )}
+
+                            <div style={{ fontSize: '12px', color: '#64748b', display: 'flex', gap: '14px', flexWrap: 'wrap', alignItems: 'center' }}>
+                              <span>Container ID: <code style={{ color: '#334155', background: '#f1f5f9', padding: '2px 6px', borderRadius: '4px' }}>{container.id}</code></span>
+                              {container.size && <span>Size: <strong style={{ color: '#1e293b' }}>{container.size}</strong></span>}
+                            </div>
+                          </div>
+
+                          {/* Right Column: Price, Status & Action */}
+                          <div
+                            className="container-card-actions"
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'flex-end',
+                              gap: '20px',
+                              flexWrap: 'wrap',
+                              flexShrink: 0
+                            }}
+                          >
+                            <div style={{
+                              textAlign: 'right',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'flex-end',
+                              gap: '3px'
+                            }}>
+                              {hasPrice ? (
+                                <>
+                                  <span style={{
+                                    background: '#ecfdf5',
+                                    color: '#065f46',
+                                    border: '1px solid #a7f3d0',
+                                    padding: '3px 8px',
+                                    borderRadius: '12px',
+                                    fontSize: '11px',
+                                    fontWeight: 700,
+                                    whiteSpace: 'nowrap'
+                                  }}>
+                                    ✓ Rate Available
+                                  </span>
+                                  <div style={{ fontSize: '24px', fontWeight: 800, color: '#d64238', lineHeight: 1.1, marginTop: '2px' }}>
+                                    ${rateObj.price}
+                                  </div>
+                                  <div style={{ fontSize: '11px', color: '#64748b', textTransform: 'uppercase', fontWeight: 600 }}>
+                                    {rateObj.currency || 'USD'} Freight Rate
+                                  </div>
+                                  {(Number(rateObj.local_thc) > 0 || Number(rateObj.other_charges) > 0) && (
+                                    <div style={{
+                                      fontSize: '11px',
+                                      color: '#64748b',
+                                      display: 'flex',
+                                      flexDirection: 'column',
+                                      alignItems: 'flex-end',
+                                      gap: '1px'
+                                    }}>
+                                      {Number(rateObj.local_thc) > 0 && <span>Local THC: <strong>${Number(rateObj.local_thc).toFixed(2)}</strong></span>}
+                                      {Number(rateObj.other_charges) > 0 && <span>Other: <strong>${Number(rateObj.other_charges).toFixed(2)}</strong></span>}
+                                    </div>
+                                  )}
+                                </>
+                              ) : (
+                                <>
+                                  <span style={{
+                                    background: '#fffbeb',
+                                    color: '#b45309',
+                                    border: '1px solid #fde68a',
+                                    padding: '3px 8px',
+                                    borderRadius: '12px',
+                                    fontSize: '11px',
+                                    fontWeight: 700,
+                                    whiteSpace: 'nowrap'
+                                  }}>
+                                    Rate Upon Request
+                                  </span>
+                                  <div style={{ fontSize: '13px', fontWeight: 600, color: '#b45309', marginTop: '2px' }}>
+                                    Price not published
+                                  </div>
+                                  <div style={{ fontSize: '11px', color: '#94a3b8' }}>
+                                    Custom quote upon request
+                                  </div>
+                                </>
+                              )}
+                            </div>
+
+                            <div>
+                              {hasPrice ? (
+                                <button
+                                  type="button"
+                                  onClick={() => handleBookRate(selectedRoute, container, rateObj)}
+                                  style={{
+                                    background: '#d64238',
+                                    color: 'white',
+                                    border: 'none',
+                                    padding: '10px 22px',
+                                    fontWeight: 700,
+                                    fontSize: '13px',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    boxShadow: '0 2px 6px rgba(214, 66, 56, 0.25)',
+                                    transition: 'all 0.2s ease',
+                                    whiteSpace: 'nowrap'
+                                  }}
+                                  onMouseOver={e => e.currentTarget.style.background = '#b53229'}
+                                  onMouseOut={e => e.currentTarget.style.background = '#d64238'}
+                                >
+                                  <span>Booking</span>
+                                  <span>→</span>
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => handleOpenContainerEnquiry(selectedRoute, container)}
+                                  style={{
+                                    background: '#f8fafc',
+                                    color: '#b45309',
+                                    border: '1px solid #f59e0b',
+                                    padding: '9px 18px',
+                                    fontWeight: 700,
+                                    fontSize: '13px',
+                                    borderRadius: '4px',
+                                    cursor: 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    transition: 'all 0.2s ease',
+                                    whiteSpace: 'nowrap'
+                                  }}
+                                  onMouseOver={e => {
+                                    e.currentTarget.style.background = '#fef3c7'
+                                  }}
+                                  onMouseOut={e => {
+                                    e.currentTarget.style.background = '#f8fafc'
+                                  }}
+                                >
+                                  <span>Send Enquiry</span>
+                                  <span>→</span>
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    })}
                   </div>
                 )}
               </div>
             )}
 
-            {/* Step 4 — Visual Enquiry Card when port or rate is not available (for Air or initial port errors) */}
-            {searchUnavailable && !showContainersSection && (
-              <div className="port-unavailable-card" style={{
+            {/* 3. No Routes Found Card */}
+            {noRoutesFound && availableRoutes.length === 0 && !searchUnavailable && (
+              <div className="no-routes-found-card" style={{
                 marginTop: '24px',
                 padding: '24px 28px',
                 backgroundColor: '#fff8f7',
                 border: '1px solid #fed7d7',
                 borderLeft: '4px solid #d64238',
-                borderRadius: '4px',
+                borderRadius: '6px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
@@ -2067,7 +2094,7 @@ export default function Home() {
                 gap: '20px',
                 boxShadow: '0 2px 8px rgba(214, 66, 56, 0.08)'
               }}>
-                <div style={{ flex: '1 1 500px' }}>
+                <div style={{ flex: '1 1 450px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
                     <span style={{
                       display: 'inline-flex',
@@ -2078,7 +2105,79 @@ export default function Home() {
                       borderRadius: '50%',
                       backgroundColor: '#fee2e2',
                       color: '#d64238',
-                      fontSize: '13px',
+                      fontSize: '14px',
+                      fontWeight: 'bold'
+                    }}>
+                      !
+                    </span>
+                    <h4 style={{ margin: 0, fontSize: '17px', fontWeight: 700, color: '#1f2937' }}>
+                      No routes available for this selection
+                    </h4>
+                  </div>
+                  <p style={{ margin: '0 0 6px 0', fontSize: '13px', color: '#4b5563', lineHeight: '1.5' }}>
+                    There are currently no published scheduled routes connecting <strong>{selectedPortObjects.origin?.port_name || originText}</strong> to <strong>{selectedPortObjects.destination?.port_name || destinationText}</strong>.
+                  </p>
+                  <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                    Submit an enquiry and our specialized freight chartering team will source direct carrier alternatives and custom quotes for you.
+                  </div>
+                </div>
+
+                <div>
+                  <button
+                    type="button"
+                    onClick={handleOpenRouteEnquiry}
+                    style={{
+                      background: '#d64238',
+                      color: 'white',
+                      border: 'none',
+                      padding: '12px 28px',
+                      fontWeight: 700,
+                      fontSize: '14px',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      whiteSpace: 'nowrap',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      boxShadow: '0 2px 4px rgba(214, 66, 56, 0.25)',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    <span>Send Route Enquiry</span>
+                    <span style={{ fontSize: '15px' }}>→</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* 4. Port Not Found in Database Card */}
+            {searchUnavailable && (
+              <div className="port-unavailable-card" style={{
+                marginTop: '24px',
+                padding: '24px 28px',
+                backgroundColor: '#fff8f7',
+                border: '1px solid #fed7d7',
+                borderLeft: '4px solid #d64238',
+                borderRadius: '6px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '20px',
+                boxShadow: '0 2px 8px rgba(214, 66, 56, 0.08)'
+              }}>
+                <div style={{ flex: '1 1 450px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                    <span style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      width: '26px',
+                      height: '26px',
+                      borderRadius: '50%',
+                      backgroundColor: '#fee2e2',
+                      color: '#d64238',
+                      fontSize: '14px',
                       fontWeight: 'bold'
                     }}>
                       !
@@ -2087,13 +2186,14 @@ export default function Home() {
                       {searchUnavailable.title}
                     </h4>
                   </div>
-                  <p style={{ margin: '0 0 6px 0', fontSize: '14px', color: '#4b5563', lineHeight: '1.5' }}>
+                  <p style={{ margin: '0 0 6px 0', fontSize: '13px', color: '#4b5563', lineHeight: '1.5' }}>
                     {searchUnavailable.description}
                   </p>
-                  <div style={{ fontSize: '13px', color: '#6b7280' }}>
-                    Need help with this route? Submit an enquiry and our freight operations team will assist you with custom availability and pricing.
+                  <div style={{ fontSize: '12px', color: '#6b7280' }}>
+                    Need help with this port or location? Submit an enquiry and our freight operations team will assist you with custom routing and pricing.
                   </div>
                 </div>
+
                 <div>
                   <button
                     type="button"
@@ -2106,7 +2206,7 @@ export default function Home() {
                       color: 'white',
                       border: 'none',
                       padding: '12px 28px',
-                      fontWeight: 600,
+                      fontWeight: 700,
                       fontSize: '14px',
                       borderRadius: '4px',
                       cursor: 'pointer',
@@ -2121,189 +2221,6 @@ export default function Home() {
                     <span>Send Enquiry</span>
                     <span style={{ fontSize: '15px' }}>→</span>
                   </button>
-                </div>
-              </div>
-            )}
-
-            {/* Available Freight Rates Result Section (for Air mode or direct searches) */}
-            {availableRates && availableRates.length > 0 && !showContainersSection && (
-              <div className="available-rates-results-section" style={{
-                marginTop: '28px',
-                paddingTop: '24px',
-                borderTop: '2px dashed #e2e8f0'
-              }}>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  marginBottom: '18px',
-                  flexWrap: 'wrap',
-                  gap: '12px'
-                }}>
-                  <div>
-                    <h3 style={{
-                      margin: 0,
-                      fontSize: '20px',
-                      fontWeight: 700,
-                      color: '#1e293b',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px'
-                    }}>
-                      <span style={{ color: '#d64238' }}>⚓</span> Available Freight Rates
-                    </h3>
-                    <p style={{ margin: '4px 0 0 0', fontSize: '13px', color: '#64748b' }}>
-                      Verified contract freight rates matching your exact route and container specifications.
-                    </p>
-                  </div>
-                  <span style={{
-                    background: '#ecfdf5',
-                    color: '#065f46',
-                    border: '1px solid #a7f3d0',
-                    padding: '6px 14px',
-                    borderRadius: '20px',
-                    fontSize: '12px',
-                    fontWeight: 700
-                  }}>
-                    {availableRates.length} active rate{availableRates.length > 1 ? 's' : ''} available
-                  </span>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                  {availableRates.map((rate, idx) => (
-                    <div key={rate.id || idx} style={{
-                      background: '#ffffff',
-                      border: '1px solid #e2e8f0',
-                      borderRadius: '6px',
-                      padding: '20px 24px',
-                      boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      flexWrap: 'wrap',
-                      gap: '20px'
-                    }}>
-                      <div style={{ flex: '1 1 350px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
-                          <span style={{
-                            background: '#fee2e2',
-                            color: '#d64238',
-                            fontSize: '11px',
-                            fontWeight: 700,
-                            textTransform: 'uppercase',
-                            padding: '3px 8px',
-                            borderRadius: '3px',
-                            letterSpacing: '0.5px'
-                          }}>
-                            Carrier: {rate.carrier || 'Standard Line'}
-                          </span>
-                          <span style={{
-                            background: '#f1f5f9',
-                            color: '#475569',
-                            fontSize: '11px',
-                            fontWeight: 600,
-                            padding: '3px 8px',
-                            borderRadius: '3px'
-                          }}>
-                            {rate.mode_name || 'Ocean Freight'}
-                          </span>
-                          <span style={{
-                            background: '#f1f5f9',
-                            color: '#475569',
-                            fontSize: '11px',
-                            fontWeight: 600,
-                            padding: '3px 8px',
-                            borderRadius: '3px'
-                          }}>
-                            {rate.shipment_name || 'FCL'}
-                          </span>
-                        </div>
-
-                        <h4 style={{ margin: '0 0 6px 0', fontSize: '17px', fontWeight: 700, color: '#0f172a' }}>
-                          {rate.origin_name || rate.origin_code} ({rate.origin_code})
-                          {rate.transhipment_code ? (
-                            <span style={{ color: '#d64238' }}> → Via {rate.transhipment_name || rate.transhipment_code} ({rate.transhipment_code}) → </span>
-                          ) : ' → '}
-                          {rate.destination_name || rate.destination_code} ({rate.destination_code})
-                        </h4>
-
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', fontSize: '13px', color: '#64748b' }}>
-                          <span>
-                            <strong style={{ color: '#334155' }}>Container:</strong> {rate.container_name || 'Standard'}
-                          </span>
-                          <span>
-                            <strong style={{ color: '#334155' }}>Transit:</strong> {rate.transit_time} Days
-                          </span>
-                          <span>
-                            <strong style={{ color: '#334155' }}>Transshipment Port:</strong>{' '}
-                            {rate.transhipment_code ? (
-                              <span style={{ color: '#0f172a', fontWeight: 600 }}>
-                                {rate.transhipment_name || rate.transhipment_code} ({rate.transhipment_code})
-                              </span>
-                            ) : (
-                              <span style={{ color: '#94a3b8', fontStyle: 'italic' }}>No transshipment</span>
-                            )}
-                          </span>
-                          <span style={{ fontSize: '11px', color: '#94a3b8' }}>
-                            Rate ID: {rate.id}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
-                        <div style={{ textAlign: 'right' }}>
-                          <div style={{ fontSize: '30px', fontWeight: 800, color: '#d64238', lineHeight: 1 }}>
-                            ${rate.price}
-                          </div>
-                          <div style={{ fontSize: '11px', color: '#64748b', marginTop: '4px', textTransform: 'uppercase', fontWeight: 600 }}>
-                            {rate.currency || 'USD'} Freight Charge
-                          </div>
-                          {(Number(rate.local_thc) > 0 || Number(rate.other_charges) > 0) && (
-                            <div style={{
-                              marginTop: '6px',
-                              paddingTop: '6px',
-                              borderTop: '1px dashed #e2e8f0',
-                              fontSize: '11px',
-                              color: '#64748b',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              gap: '2px',
-                              textAlign: 'right'
-                            }}>
-                              <div>Local THC: <strong style={{ color: '#0f172a' }}>${Number(rate.local_thc || 0).toFixed(2)}</strong></div>
-                              <div>Other Charges: <strong style={{ color: '#0f172a' }}>${Number(rate.other_charges || 0).toFixed(2)}</strong></div>
-                            </div>
-                          )}
-                        </div>
-
-                        <button
-                          type="button"
-                          onClick={() => handleBookRate(rate)}
-                          style={{
-                            background: '#d64238',
-                            color: '#ffffff',
-                            border: 'none',
-                            padding: '12px 28px',
-                            fontWeight: 700,
-                            fontSize: '14px',
-                            borderRadius: '4px',
-                            cursor: 'pointer',
-                            whiteSpace: 'nowrap',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            boxShadow: '0 2px 4px rgba(214, 66, 56, 0.25)',
-                            transition: 'background 0.2s ease'
-                          }}
-                          onMouseOver={e => e.currentTarget.style.background = '#c0352c'}
-                          onMouseOut={e => e.currentTarget.style.background = '#d64238'}
-                        >
-                          <span>Booking</span>
-                          <span style={{ fontSize: '16px' }}>→</span>
-                        </button>
-                      </div>
-                    </div>
-                  ))}
                 </div>
               </div>
             )}

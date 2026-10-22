@@ -104,7 +104,92 @@ export async function POST(req: Request) {
 
     const pool = getPool();
 
-    // Ensure container_id points to a valid container row in containers table to satisfy foreign key constraints
+    // 1. Ensure freight_type_id resolves to a valid row in freight_types table
+    let finalFreightTypeId = freight_type_id;
+    const [ftCheck]: any = await pool.query('SELECT id FROM freight_types WHERE id = ? LIMIT 1', [finalFreightTypeId]);
+    if (!ftCheck || ftCheck.length === 0) {
+      const lowerFt = String(finalFreightTypeId || '').toLowerCase();
+      const [ftFuzzy]: any = await pool.query(
+        'SELECT id FROM freight_types WHERE LOWER(name) LIKE ? OR LOWER(id) LIKE ? LIMIT 1',
+        [`%${lowerFt}%`, `%${lowerFt}%`]
+      );
+      if (ftFuzzy && ftFuzzy.length > 0) {
+        finalFreightTypeId = ftFuzzy[0].id;
+      } else {
+        const [defaultFt]: any = await pool.query('SELECT id FROM freight_types ORDER BY sort_order ASC LIMIT 1');
+        finalFreightTypeId = defaultFt?.[0]?.id || 'ocean-freight';
+      }
+    }
+
+    // 2. Ensure shipment_type_id resolves to a valid row in shipment_types table
+    let finalShipmentTypeId = shipment_type_id;
+    const [stCheck]: any = await pool.query('SELECT id FROM shipment_types WHERE id = ? LIMIT 1', [finalShipmentTypeId]);
+    if (!stCheck || stCheck.length === 0) {
+      const lowerSt = String(finalShipmentTypeId || '').toLowerCase();
+      const [stFuzzy]: any = await pool.query(
+        'SELECT id FROM shipment_types WHERE freight_type_id = ? OR LOWER(name) LIKE ? LIMIT 1',
+        [finalFreightTypeId, `%${lowerSt}%`]
+      );
+      if (stFuzzy && stFuzzy.length > 0) {
+        finalShipmentTypeId = stFuzzy[0].id;
+      } else {
+        const [defaultSt]: any = await pool.query('SELECT id FROM shipment_types LIMIT 1');
+        finalShipmentTypeId = defaultSt?.[0]?.id || 'shiptype-fcl';
+      }
+    }
+
+    // 3. Ensure term_id resolves to a valid row in terms table
+    let finalTermId = term_id;
+    const [termCheck]: any = await pool.query('SELECT id FROM terms WHERE id = ? LIMIT 1', [finalTermId]);
+    if (!termCheck || termCheck.length === 0) {
+      const lowerTerm = String(finalTermId || '').toLowerCase();
+      const [termFuzzy]: any = await pool.query(
+        'SELECT id FROM terms WHERE LOWER(name) LIKE ? OR LOWER(id) LIKE ? LIMIT 1',
+        [`%${lowerTerm}%`, `%${lowerTerm}%`]
+      );
+      if (termFuzzy && termFuzzy.length > 0) {
+        finalTermId = termFuzzy[0].id;
+      } else {
+        const [defaultTerm]: any = await pool.query('SELECT id FROM terms WHERE status = "active" LIMIT 1');
+        finalTermId = defaultTerm?.[0]?.id || 'term-fob';
+      }
+    }
+
+    // 4. Ensure loading_port_id resolves to a valid row in ports table
+    let finalLoadingPortId = loading_port_id;
+    const [loadCheck]: any = await pool.query('SELECT id FROM ports WHERE id = ? LIMIT 1', [finalLoadingPortId]);
+    if (!loadCheck || loadCheck.length === 0) {
+      const cleanLoad = String(finalLoadingPortId).replace(/^(port|loc)-/, '').replace(/-\d+$/, '');
+      const [loadFuzzy]: any = await pool.query(
+        'SELECT id FROM ports WHERE port_code = ? OR locode = ? OR id LIKE ? LIMIT 1',
+        [finalLoadingPortId, finalLoadingPortId, `%${cleanLoad}%`]
+      );
+      if (loadFuzzy && loadFuzzy.length > 0) {
+        finalLoadingPortId = loadFuzzy[0].id;
+      } else {
+        const [defaultPort]: any = await pool.query('SELECT id FROM ports LIMIT 1');
+        finalLoadingPortId = defaultPort?.[0]?.id || 'loc-sgpin';
+      }
+    }
+
+    // 5. Ensure discharge_port_id resolves to a valid row in ports table
+    let finalDischargePortId = discharge_port_id;
+    const [disCheck]: any = await pool.query('SELECT id FROM ports WHERE id = ? LIMIT 1', [finalDischargePortId]);
+    if (!disCheck || disCheck.length === 0) {
+      const cleanDis = String(finalDischargePortId).replace(/^(port|loc)-/, '').replace(/-\d+$/, '');
+      const [disFuzzy]: any = await pool.query(
+        'SELECT id FROM ports WHERE port_code = ? OR locode = ? OR id LIKE ? LIMIT 1',
+        [finalDischargePortId, finalDischargePortId, `%${cleanDis}%`]
+      );
+      if (disFuzzy && disFuzzy.length > 0) {
+        finalDischargePortId = disFuzzy[0].id;
+      } else {
+        const [defaultDisPort]: any = await pool.query('SELECT id FROM ports WHERE id != ? LIMIT 1', [finalLoadingPortId]);
+        finalDischargePortId = defaultDisPort?.[0]?.id || finalLoadingPortId;
+      }
+    }
+
+    // 6. Ensure container_id points to a valid container row in containers table
     let finalContainerId = container_id || null;
     if (finalContainerId) {
       const [contCheck]: any = await pool.query('SELECT id FROM containers WHERE id = ? LIMIT 1', [finalContainerId]);
@@ -175,11 +260,11 @@ export async function POST(req: Request) {
         verifiedUserName,
         verifiedEmail,
         verifiedPhone,
-        freight_type_id,
-        shipment_type_id,
-        term_id,
-        loading_port_id,
-        discharge_port_id,
+        finalFreightTypeId,
+        finalShipmentTypeId,
+        finalTermId,
+        finalLoadingPortId,
+        finalDischargePortId,
         finalContainerId,
         rateIdToStore,
         priceToStore,
@@ -189,6 +274,7 @@ export async function POST(req: Request) {
         finalCargoDetails,
       ]
     );
+
     
     return NextResponse.json({ success: true, booking_no });
   } catch (error: any) {

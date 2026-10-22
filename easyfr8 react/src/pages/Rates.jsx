@@ -119,6 +119,8 @@ export default function Rates() {
     const toPortCode = rate.destination_code || destLoc?.port_code || destination_id
     const contName = rate.container_name || containerName
     const freightType = rate.mode_name || modeName
+    const transVal = rate.transhipment_code || rate.transhipment_name || rate.transhipment_id || ''
+
     const params = new URLSearchParams({
       rate_id: rate.id,
       rateId: rate.id,
@@ -127,11 +129,43 @@ export default function Rates() {
       containerType: contName,
       freight_type: freightType
     })
-    const transVal = rate.transhipment_code || rate.transhipment_name || rate.transhipment_id
     if (transVal) {
       params.set('transhipment', transVal)
     }
-    navigate(`/booking?${params.toString()}`)
+
+    const statePayload = {
+      rate: {
+        ...rate,
+        origin_code: fromPortCode,
+        origin_name: rate.origin_name || originLabel,
+        destination_code: toPortCode,
+        destination_name: rate.destination_name || destLabel,
+        transhipment_code: transVal,
+        transhipment_name: rate.transhipment_name || transVal,
+        container_name: contName,
+        carrier: rate.carrier || 'Standard Line',
+        transit_time: rate.transit_time || 0
+      },
+      container: {
+        id: rate.container_id || '',
+        name: contName
+      },
+      fromPort: fromPortCode,
+      toPort: toPortCode,
+      transhipment: transVal,
+      containerType: contName,
+      freight_type: freightType,
+      carrier: rate.carrier || 'Standard Line',
+      pricing: {
+        price: rate.price,
+        currency: rate.currency || 'USD',
+        local_thc: rate.local_thc,
+        other_charges: rate.other_charges,
+        transit_time: rate.transit_time || 0
+      }
+    }
+
+    navigate(`/booking?${params.toString()}`, { state: statePayload })
   }
 
   const handleEnquirySubmit = async (e) => {

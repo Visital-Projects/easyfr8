@@ -1,0 +1,262 @@
+[
+  {
+    "table": "app_settings",
+    "purpose": "Global application configuration, theme settings, contact info",
+    "pk": "id",
+    "rows": 1,
+    "writePath": "Admin /settings (PUT /api/settings)",
+    "readPath": "Public site & Admin /settings (GET /api/settings)",
+    "testStatus": "PASS",
+    "finding": "Singleton record persisted in MariaDB."
+  },
+  {
+    "table": "audit_logs",
+    "purpose": "Security and operational audit log recording administrative actions",
+    "pk": "id",
+    "rows": 90,
+    "writePath": "Backend logAuditEvent() in lib/db.ts",
+    "readPath": "Admin settings & audit-logs API",
+    "testStatus": "PASS",
+    "finding": "84+ audit events logged with user ID, name, timestamp, and action description."
+  },
+  {
+    "table": "blogs",
+    "purpose": "News articles, insights, and industry updates",
+    "pk": "id",
+    "rows": 4,
+    "writePath": "Admin /blogs (POST/PUT/DELETE /api/blogs)",
+    "readPath": "Public /blog and /blog/:slug (GET /api/blogs)",
+    "testStatus": "PASS",
+    "finding": "4 published blogs persisted with slug, content, excerpt, and author."
+  },
+  {
+    "table": "bookings",
+    "purpose": "Client freight booking orders, container allocations, pricing, ports, and carrier info",
+    "pk": "id",
+    "rows": 23,
+    "writePath": "Public Booking /booking (POST /api/bookings) & Admin /bookings (PUT status, DELETE)",
+    "readPath": "Public /booking/confirmation, User Portal /user/bookings, Admin /bookings (GET /api/bookings)",
+    "testStatus": "PASS",
+    "finding": "Persisted with foreign key lookups to ports, freight_types, shipment_types, and containers."
+  },
+  {
+    "table": "cms_data",
+    "purpose": "Unified CMS JSON payload storage for fast site-wide static hydration",
+    "pk": "id",
+    "rows": 1,
+    "writePath": "Admin /cms (PUT /api/cms)",
+    "readPath": "Public site homepage & /api/cms",
+    "testStatus": "PASS",
+    "finding": "Persisted JSON blob (113724 bytes) updated at Wed Oct 07 2026 10:39:51 GMT+0530 (India Standard Time)."
+  },
+  {
+    "table": "containers",
+    "purpose": "Master repository of standard container specifications and active/inactive statuses",
+    "pk": "id",
+    "rows": 8,
+    "writePath": "Admin /containers (POST/PUT/DELETE /api/containers) & CSV import",
+    "readPath": "Admin /containers & Public Booking /booking container dropdown",
+    "testStatus": "PASS",
+    "finding": "Single source of truth. Active containers filtered correctly on public booking flow."
+  },
+  {
+    "table": "enquiries",
+    "purpose": "Customer quotes, contact requests, and freight inquiries",
+    "pk": "id",
+    "rows": 22,
+    "writePath": "Public Contact/Quote forms (POST /api/enquiries)",
+    "readPath": "Admin /enquiries (GET/PUT status /api/enquiries)",
+    "testStatus": "PASS",
+    "finding": "Persisted with status pipeline (New -> In Progress -> Responded -> Closed)."
+  },
+  {
+    "table": "faqs",
+    "purpose": "Frequently Asked Questions on shipping and compliance",
+    "pk": "id",
+    "rows": 3,
+    "writePath": "Admin /cms FAQs Section (POST/PUT/DELETE /api/faqs)",
+    "readPath": "Public /faq and support pages",
+    "testStatus": "PASS",
+    "finding": "3 active FAQ entries persisted with categories and answers."
+  },
+  {
+    "table": "freight_modes",
+    "purpose": "Transport modes (Sea Freight, Air Freight) and activation toggle",
+    "pk": "id",
+    "rows": 2,
+    "writePath": "Admin /freight-modes (POST/PUT/DELETE /api/freight-modes)",
+    "readPath": "Admin /freight-modes & Public rate filters",
+    "testStatus": "PASS",
+    "finding": "Configured with Sea and Air freight modes."
+  },
+  {
+    "table": "freight_rates",
+    "purpose": "Primary matrix of freight rates, local THC, other charges, transit days, and carriers",
+    "pk": "id",
+    "rows": 13,
+    "writePath": "Admin /rates modal (POST/PUT/DELETE /api/freight-rates)",
+    "readPath": "Public search /rates & Admin /rates (GET /api/freight-rates)",
+    "testStatus": "PASS",
+    "finding": "Persisted. Local THC, other charges, and transhipment_id successfully mapped and verified."
+  },
+  {
+    "table": "freight_types",
+    "purpose": "Freight categories (FCL, LCL, Air Cargo, etc.)",
+    "pk": "id",
+    "rows": 4,
+    "writePath": "Admin /freight-types (POST/PUT/DELETE /api/freight-types)",
+    "readPath": "Public rate calculator & Admin /freight-types",
+    "testStatus": "PASS",
+    "finding": "Persisted in MariaDB. Used across rates and booking validation."
+  },
+  {
+    "table": "hero_slides",
+    "purpose": "Homepage carousel hero banner slides and CTA buttons",
+    "pk": "id",
+    "rows": 4,
+    "writePath": "Admin /cms Hero Section (POST/PUT/DELETE /api/hero-slides)",
+    "readPath": "Public homepage hero banner (GET /api/hero-slides)",
+    "testStatus": "PASS",
+    "finding": "4 slides with image, title, and button URLs persisted."
+  },
+  {
+    "table": "iata_codes",
+    "purpose": "IATA airport reference codes for air cargo routing",
+    "pk": "id",
+    "rows": 20,
+    "writePath": "Admin /airports or IATA seeds",
+    "readPath": "Air freight quote calculators",
+    "testStatus": "PASS",
+    "finding": "20 standard global airport codes persisted."
+  },
+  {
+    "table": "industries",
+    "purpose": "Industry sector verticals served (Automotive, Pharma, Retail, etc.)",
+    "pk": "id",
+    "rows": 11,
+    "writePath": "Admin /cms Industries Section (POST/PUT/DELETE /api/industries)",
+    "readPath": "Public /industries pages",
+    "testStatus": "PASS",
+    "finding": "11 industry categories persisted with icons and descriptions."
+  },
+  {
+    "table": "kyc_documents",
+    "purpose": "Stores shipper KYC and shipping compliance document metadata and base64 payloads",
+    "pk": "id",
+    "rows": 5,
+    "writePath": "Shipper Portal /user/documents (POST /api/documents) & Admin /documents (PUT /api/documents/[id])",
+    "readPath": "Shipper Portal (GET /api/documents) & Admin Console /documents (GET /api/documents, GET /api/documents/[id])",
+    "testStatus": "PASS",
+    "finding": "Full CRUD persisted. Note: file_url is TEXT (65,535 bytes max), truncating base64 files > 48KB."
+  },
+  {
+    "table": "locations",
+    "purpose": "Key hub locations and designated customs ports",
+    "pk": "id",
+    "rows": 7,
+    "writePath": "Admin /locations",
+    "readPath": "Admin /locations & routing logic",
+    "testStatus": "PASS",
+    "finding": "7 core hub records configured."
+  },
+  {
+    "table": "media",
+    "purpose": "Media asset library files, dimensions, and URLs",
+    "pk": "id",
+    "rows": 9,
+    "writePath": "Admin /media (POST /api/media)",
+    "readPath": "Admin /media & CMS image pickers",
+    "testStatus": "PASS",
+    "finding": "9 media records stored with file_url and file_type."
+  },
+  {
+    "table": "partners",
+    "purpose": "Shipping line, airline, and enterprise partner logos",
+    "pk": "id",
+    "rows": 8,
+    "writePath": "Admin /cms Partners Section (POST/PUT/DELETE /api/partners)",
+    "readPath": "Public homepage Partners ticker",
+    "testStatus": "PASS",
+    "finding": "8 partner entries with logos and sort order."
+  },
+  {
+    "table": "ports",
+    "purpose": "Global sea and air ports database (6,010 ports with LOCODE, country, and status)",
+    "pk": "id",
+    "rows": 6010,
+    "writePath": "Admin /ports (POST/PUT/DELETE /api/ports) & Port CSV import",
+    "readPath": "Public booking origin/destination dropdowns & Admin /ports",
+    "testStatus": "PASS",
+    "finding": "High volume table (6,010 rows). Indexed locode, port_code, status. CRUD functional."
+  },
+  {
+    "table": "rate_activity_logs",
+    "purpose": "Audit log of freight rate creations, updates, and price changes",
+    "pk": "id",
+    "rows": 60,
+    "writePath": "Backend lib/db.ts logRateActivity() during rate mutation",
+    "readPath": "Admin /rates drawer/logs",
+    "testStatus": "PASS",
+    "finding": "Active audit trail with 59 entries recording rate mutations."
+  },
+  {
+    "table": "rates",
+    "purpose": "Legacy simple rates table kept for backward compatibility with older route queries",
+    "pk": "id",
+    "rows": 6,
+    "writePath": "Legacy endpoints /api/rates",
+    "readPath": "Legacy rate lookups /api/rates",
+    "testStatus": "PASS",
+    "finding": "Legacy table with 6 rows. Modern features use freight_rates."
+  },
+  {
+    "table": "services",
+    "purpose": "Freight forwarding and logistics service offerings",
+    "pk": "id",
+    "rows": 9,
+    "writePath": "Admin /cms Services Section (POST/PUT/DELETE /api/services)",
+    "readPath": "Public /services and homepage",
+    "testStatus": "PASS",
+    "finding": "9 services (core and value-added) with slugs, icons, and descriptions."
+  },
+  {
+    "table": "shipment_types",
+    "purpose": "Specific shipment sub-categories linked to freight_type_id",
+    "pk": "id",
+    "rows": 5,
+    "writePath": "Admin /shipment-types (POST/PUT/DELETE /api/shipment-types)",
+    "readPath": "Public booking form & Admin /shipment-types",
+    "testStatus": "PASS",
+    "finding": "Foreign key to freight_types. Validated and active."
+  },
+  {
+    "table": "statistics",
+    "purpose": "Key performance metrics (e.g. 1500+ Projects, 120+ Ports)",
+    "pk": "id",
+    "rows": 4,
+    "writePath": "Admin /cms Statistics Section (POST/PUT/DELETE /api/statistics)",
+    "readPath": "Public homepage stats bar",
+    "testStatus": "PASS",
+    "finding": "4 KPI stats records persisted and rendered on homepage."
+  },
+  {
+    "table": "terms",
+    "purpose": "Incoterms (FOB, CIF, EXW, CFR, DDP) definitions and statuses",
+    "pk": "id",
+    "rows": 5,
+    "writePath": "Admin /terms (POST/PUT/DELETE /api/terms)",
+    "readPath": "Public booking Incoterm selector & Admin /terms",
+    "testStatus": "PASS",
+    "finding": "5 standard Incoterms active and persisted."
+  },
+  {
+    "table": "users",
+    "purpose": "User credentials, authentication roles, contact details, and account status",
+    "pk": "id",
+    "rows": 5,
+    "writePath": "Admin /users (POST/PUT/DELETE /api/users) & Shipper Profile /user/profile",
+    "readPath": "Auth /api/auth/login, Admin /users, Header, Shipper Context",
+    "testStatus": "PASS",
+    "finding": "Persisted in MariaDB. Passwords properly hashed using bcrypt ($2a$). Active roles: Administrator, Manager, Content Moderator, Customer."
+  }
+]

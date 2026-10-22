@@ -1,0 +1,447 @@
+{
+  "tableCount": 26,
+  "tables": [
+    {
+      "name": "app_settings",
+      "rowCount": 1,
+      "columns": [
+        "id (int(11), PRI, NOT NULL)",
+        "data (longtext, NOT NULL)",
+        "updated_at (datetime, NOT NULL)"
+      ]
+    },
+    {
+      "name": "audit_logs",
+      "rowCount": 84,
+      "columns": [
+        "id (int(11), PRI, NOT NULL)",
+        "user_id (varchar(64), MUL)",
+        "user_name (varchar(255))",
+        "action (text, NOT NULL)",
+        "ip_address (varchar(64))",
+        "created_at (datetime, MUL, NOT NULL)"
+      ]
+    },
+    {
+      "name": "blogs",
+      "rowCount": 4,
+      "columns": [
+        "id (varchar(64), PRI, NOT NULL)",
+        "title (varchar(512), NOT NULL)",
+        "slug (varchar(512), MUL)",
+        "content (longtext)",
+        "excerpt (text)",
+        "image (longtext)",
+        "category (varchar(128))",
+        "author (varchar(128))",
+        "status (enum('Published','Draft','Archived'), MUL, NOT NULL)",
+        "published_at (datetime)",
+        "created_at (datetime, NOT NULL)",
+        "updated_at (datetime, NOT NULL)"
+      ]
+    },
+    {
+      "name": "bookings",
+      "rowCount": 19,
+      "columns": [
+        "id (varchar(64), PRI, NOT NULL)",
+        "booking_no (varchar(64), UNI, NOT NULL)",
+        "user_name (varchar(255), NOT NULL)",
+        "email (varchar(255), NOT NULL)",
+        "phone (varchar(100))",
+        "freight_type_id (varchar(64), MUL, NOT NULL)",
+        "shipment_type_id (varchar(64), MUL, NOT NULL)",
+        "term_id (varchar(64), MUL, NOT NULL)",
+        "loading_port_id (varchar(64), MUL, NOT NULL)",
+        "discharge_port_id (varchar(64), MUL, NOT NULL)",
+        "container_id (varchar(64), MUL)",
+        "freight_rate_id (varchar(64))",
+        "price (decimal(12,2))",
+        "currency (varchar(10))",
+        "carrier (varchar(255))",
+        "transit_time (int(11))",
+        "cargo_details (text)",
+        "status (enum('Pending','Confirmed','Completed'), NOT NULL)",
+        "created_at (datetime)",
+        "updated_at (datetime)"
+      ]
+    },
+    {
+      "name": "cms_data",
+      "rowCount": 1,
+      "columns": [
+        "id (int(11), PRI, NOT NULL)",
+        "data (longtext, NOT NULL)",
+        "updated_at (datetime, NOT NULL)"
+      ]
+    },
+    {
+      "name": "containers",
+      "rowCount": 8,
+      "columns": [
+        "id (varchar(64), PRI, NOT NULL)",
+        "name (varchar(128), NOT NULL)",
+        "description (text)",
+        "size (varchar(50))",
+        "status (enum('active','inactive'), NOT NULL)",
+        "created_at (datetime)",
+        "updated_at (datetime)"
+      ]
+    },
+    {
+      "name": "enquiries",
+      "rowCount": 16,
+      "columns": [
+        "id (varchar(64), PRI, NOT NULL)",
+        "name (varchar(255), NOT NULL)",
+        "email (varchar(255), NOT NULL)",
+        "phone (varchar(64))",
+        "subject (varchar(512))",
+        "notes (text)",
+        "assigned_to (varchar(255))",
+        "source (varchar(128))",
+        "status (enum('New','In Progress','Responded','Closed'), MUL, NOT NULL)",
+        "created_at (datetime, NOT NULL)",
+        "updated_at (datetime, NOT NULL)"
+      ]
+    },
+    {
+      "name": "faqs",
+      "rowCount": 3,
+      "columns": [
+        "id (varchar(64), PRI, NOT NULL)",
+        "category (varchar(128), NOT NULL)",
+        "question (varchar(512), NOT NULL)",
+        "answer (text, NOT NULL)",
+        "sort_order (int(11), MUL, NOT NULL)",
+        "is_active (tinyint(1), MUL, NOT NULL)",
+        "created_at (datetime, NOT NULL)",
+        "updated_at (datetime, NOT NULL)"
+      ]
+    },
+    {
+      "name": "freight_modes",
+      "rowCount": 2,
+      "columns": [
+        "id (varchar(64), PRI, NOT NULL)",
+        "name (varchar(100), NOT NULL)",
+        "status (enum('active','inactive'), NOT NULL)",
+        "created_at (datetime, NOT NULL)",
+        "updated_at (datetime, NOT NULL)"
+      ]
+    },
+    {
+      "name": "freight_rates",
+      "rowCount": 13,
+      "columns": [
+        "id (varchar(64), PRI, NOT NULL)",
+        "freight_mode_id (varchar(64), MUL, NOT NULL)",
+        "shipment_type_id (varchar(64), MUL, NOT NULL)",
+        "origin_id (varchar(64), MUL, NOT NULL)",
+        "destination_id (varchar(64), MUL, NOT NULL)",
+        "transhipment_id (varchar(64))",
+        "container_id (varchar(64), MUL)",
+        "price (decimal(12,2), NOT NULL)",
+        "local_thc (decimal(12,2), NOT NULL)",
+        "documentation_fee (decimal(12,2), NOT NULL)",
+        "customs_clearance (decimal(12,2), NOT NULL)",
+        "other_charges (decimal(12,2), NOT NULL)",
+        "currency (varchar(10), NOT NULL)",
+        "transit_time (int(11), NOT NULL)",
+        "carrier (varchar(255))",
+        "status (enum('active','inactive'), NOT NULL)",
+        "created_at (datetime)",
+        "updated_at (datetime)"
+      ]
+    },
+    {
+      "name": "freight_types",
+      "rowCount": 4,
+      "columns": [
+        "id (varchar(64), PRI, NOT NULL)",
+        "name (varchar(100), NOT NULL)",
+        "status (enum('active','inactive'), NOT NULL)",
+        "sort_order (int(11), NOT NULL)",
+        "created_at (datetime)",
+        "updated_at (datetime)"
+      ]
+    },
+    {
+      "name": "hero_slides",
+      "rowCount": 4,
+      "columns": [
+        "id (varchar(64), PRI, NOT NULL)",
+        "title (varchar(255), NOT NULL)",
+        "subtitle (varchar(255), NOT NULL)",
+        "description (text)",
+        "button_text (varchar(128), NOT NULL)",
+        "button_url (varchar(512), NOT NULL)",
+        "image (longtext)",
+        "status (enum('active','inactive'), NOT NULL)",
+        "sort_order (int(11), NOT NULL)",
+        "created_at (datetime, NOT NULL)",
+        "updated_at (datetime, NOT NULL)"
+      ]
+    },
+    {
+      "name": "iata_codes",
+      "rowCount": 20,
+      "columns": [
+        "id (int(11), PRI, NOT NULL)",
+        "city_airport (varchar(255), MUL, NOT NULL)",
+        "country (varchar(100), NOT NULL)",
+        "iata_code (varchar(10), MUL, NOT NULL)"
+      ]
+    },
+    {
+      "name": "industries",
+      "rowCount": 11,
+      "columns": [
+        "id (varchar(64), PRI, NOT NULL)",
+        "title (varchar(255), NOT NULL)",
+        "slug (varchar(255))",
+        "description (text)",
+        "icon (varchar(128), NOT NULL)",
+        "status (enum('active','inactive'), NOT NULL)",
+        "sort_order (int(11), NOT NULL)",
+        "created_at (datetime, NOT NULL)",
+        "updated_at (datetime, NOT NULL)"
+      ]
+    },
+    {
+      "name": "kyc_documents",
+      "rowCount": 5,
+      "columns": [
+        "id (varchar(64), PRI, NOT NULL)",
+        "user (varchar(255), MUL, NOT NULL)",
+        "name (varchar(512), NOT NULL)",
+        "type (varchar(128), NOT NULL)",
+        "date (date, NOT NULL)",
+        "status (enum('Pending Review','Approved','Rejected'), MUL, NOT NULL)",
+        "remarks (text)",
+        "file_url (text, NOT NULL)",
+        "file_type (varchar(64), NOT NULL)",
+        "created_at (datetime, NOT NULL)",
+        "updated_at (datetime, NOT NULL)"
+      ]
+    },
+    {
+      "name": "locations",
+      "rowCount": 7,
+      "columns": [
+        "id (varchar(64), PRI, NOT NULL)",
+        "port_code (varchar(10), UNI, NOT NULL)",
+        "name (varchar(255), NOT NULL)",
+        "country (varchar(100), NOT NULL)",
+        "type (varchar(64), NOT NULL)",
+        "created_at (datetime, NOT NULL)",
+        "updated_at (datetime, NOT NULL)"
+      ]
+    },
+    {
+      "name": "media",
+      "rowCount": 9,
+      "columns": [
+        "id (varchar(64), PRI, NOT NULL)",
+        "file_name (varchar(255), NOT NULL)",
+        "file_url (longtext, NOT NULL)",
+        "file_type (varchar(64), NOT NULL)",
+        "file_size (varchar(64), NOT NULL)",
+        "uploaded_at (datetime, NOT NULL)",
+        "updated_at (datetime, NOT NULL)"
+      ]
+    },
+    {
+      "name": "partners",
+      "rowCount": 8,
+      "columns": [
+        "id (varchar(64), PRI, NOT NULL)",
+        "name (varchar(255), NOT NULL)",
+        "logo (longtext)",
+        "website_url (varchar(512))",
+        "status (enum('active','inactive'), NOT NULL)",
+        "sort_order (int(11), NOT NULL)",
+        "created_at (datetime, NOT NULL)",
+        "updated_at (datetime, NOT NULL)"
+      ]
+    },
+    {
+      "name": "ports",
+      "rowCount": 6010,
+      "columns": [
+        "id (varchar(64), PRI, NOT NULL)",
+        "port_code (varchar(32), UNI, NOT NULL)",
+        "port_name (varchar(255), NOT NULL)",
+        "country (varchar(100), NOT NULL)",
+        "locode (varchar(20))",
+        "freight_type (varchar(64), NOT NULL)",
+        "status (enum('active','inactive'), NOT NULL)",
+        "created_at (datetime)",
+        "updated_at (datetime)",
+        "portname (varchar(255))"
+      ]
+    },
+    {
+      "name": "rate_activity_logs",
+      "rowCount": 59,
+      "columns": [
+        "id (varchar(64), PRI, NOT NULL)",
+        "rate_id (varchar(64), NOT NULL)",
+        "action_type (enum('create','update','delete'), NOT NULL)",
+        "old_value (text)",
+        "new_value (text)",
+        "updated_by (varchar(255), NOT NULL)",
+        "created_at (datetime, NOT NULL)"
+      ]
+    },
+    {
+      "name": "rates",
+      "rowCount": 6,
+      "columns": [
+        "id (varchar(64), PRI, NOT NULL)",
+        "origin (varchar(255), NOT NULL)",
+        "destination (varchar(255), NOT NULL)",
+        "container (varchar(128))",
+        "cost (decimal(12,2), NOT NULL)",
+        "transit (int(11), NOT NULL)",
+        "validity (varchar(64))",
+        "created_at (datetime, NOT NULL)",
+        "updated_at (datetime, NOT NULL)"
+      ]
+    },
+    {
+      "name": "services",
+      "rowCount": 9,
+      "columns": [
+        "id (varchar(64), PRI, NOT NULL)",
+        "title (varchar(255), NOT NULL)",
+        "slug (varchar(255), UNI, NOT NULL)",
+        "category (varchar(64), MUL, NOT NULL)",
+        "icon (varchar(128), NOT NULL)",
+        "description (text)",
+        "long_description (longtext)",
+        "details (longtext)",
+        "image (longtext)",
+        "banner_image (longtext)",
+        "sort_order (int(11), MUL, NOT NULL)",
+        "show_on_homepage (tinyint(1), MUL, NOT NULL)",
+        "active (tinyint(1), MUL, NOT NULL)",
+        "created_at (datetime, NOT NULL)",
+        "updated_at (datetime, NOT NULL)"
+      ]
+    },
+    {
+      "name": "shipment_types",
+      "rowCount": 5,
+      "columns": [
+        "id (varchar(64), PRI, NOT NULL)",
+        "freight_type_id (varchar(64), MUL, NOT NULL)",
+        "name (varchar(100), NOT NULL)",
+        "description (text)",
+        "status (enum('active','inactive'), NOT NULL)",
+        "created_at (datetime)",
+        "updated_at (datetime)"
+      ]
+    },
+    {
+      "name": "statistics",
+      "rowCount": 4,
+      "columns": [
+        "id (varchar(64), PRI, NOT NULL)",
+        "label (varchar(255), NOT NULL)",
+        "value (varchar(64), NOT NULL)",
+        "icon (varchar(128), NOT NULL)",
+        "status (enum('active','inactive'), NOT NULL)",
+        "sort_order (int(11), NOT NULL)",
+        "created_at (datetime, NOT NULL)",
+        "updated_at (datetime, NOT NULL)"
+      ]
+    },
+    {
+      "name": "terms",
+      "rowCount": 5,
+      "columns": [
+        "id (varchar(64), PRI, NOT NULL)",
+        "name (varchar(100), NOT NULL)",
+        "status (enum('active','inactive'), NOT NULL)",
+        "created_at (datetime)",
+        "updated_at (datetime)"
+      ]
+    },
+    {
+      "name": "users",
+      "rowCount": 5,
+      "columns": [
+        "id (varchar(64), PRI, NOT NULL)",
+        "name (varchar(255), NOT NULL)",
+        "email (varchar(255), UNI, NOT NULL)",
+        "phone (varchar(64))",
+        "password (varchar(512), NOT NULL)",
+        "role (enum('Administrator','Manager','Content Moderator','Customer'), NOT NULL)",
+        "status (enum('Active','Inactive'), NOT NULL)",
+        "avatar (varchar(512))",
+        "reg_date (datetime, NOT NULL)",
+        "last_login (datetime)",
+        "created_at (datetime, NOT NULL)",
+        "updated_at (datetime, NOT NULL)"
+      ]
+    }
+  ],
+  "sampleDocs": [
+    {
+      "id": "DOC-1792220532421-906",
+      "user": "acme_shipper@example.com",
+      "name": "PAN Certificate - ACME",
+      "type": "PAN Certificate",
+      "date": "2026-10-16T18:30:00.000Z",
+      "status": "Pending Review",
+      "remarks": "",
+      "file_type": "pdf",
+      "file_len": 27
+    },
+    {
+      "id": "DOC-1792221315794-810",
+      "user": "user318@easyfr8.com",
+      "name": "Automated Test GST Certificate",
+      "type": "PAN Certificate",
+      "date": "2026-10-16T18:30:00.000Z",
+      "status": "Pending Review",
+      "remarks": "Uploaded by Baseline User 318 on 17/10/2026",
+      "file_type": "pdf",
+      "file_len": 88
+    },
+    {
+      "id": "DOC-1792221371677-611",
+      "user": "user318@easyfr8.com",
+      "name": "Automated Test GST Certificate",
+      "type": "PAN Certificate",
+      "date": "2026-10-16T18:30:00.000Z",
+      "status": "Pending Review",
+      "remarks": "Uploaded by Baseline User 318 on 17/10/2026",
+      "file_type": "pdf",
+      "file_len": 88
+    },
+    {
+      "id": "DOC-1792225284080-171",
+      "user": "user318@easyfr8.com",
+      "name": "PAN",
+      "type": "PAN Certificate",
+      "date": "2026-10-16T18:30:00.000Z",
+      "status": "Pending Review",
+      "remarks": "Uploaded by Baseline User 318 on 10/17/2026",
+      "file_type": "pdf",
+      "file_len": 65535
+    },
+    {
+      "id": "DOC-1792647276793-460",
+      "user": "biswaswagat07@gmail.com",
+      "name": "PAN",
+      "type": "PAN Certificate",
+      "date": "2026-10-21T18:30:00.000Z",
+      "status": "Pending Review",
+      "remarks": "Uploaded by testing on 10/22/2026",
+      "file_type": "png",
+      "file_len": 65535
+    }
+  ]
+}

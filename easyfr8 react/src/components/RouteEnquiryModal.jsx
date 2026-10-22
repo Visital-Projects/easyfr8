@@ -7,17 +7,21 @@ export default function RouteEnquiryModal({ isOpen, onClose, searchContext, onSu
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
+  const [quantity, setQuantity] = useState(1)
   const [subject, setSubject] = useState('')
   const [message, setMessage] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(false)
+  const [submittedEnquiry, setSubmittedEnquiry] = useState(null)
+  const [shipperUserId, setShipperUserId] = useState('')
 
   // Initialize or reset form when modal opens
   useEffect(() => {
     if (!isOpen) {
       setSuccess(false)
       setError(null)
+      setSubmittedEnquiry(null)
       return
     }
 
@@ -25,6 +29,7 @@ export default function RouteEnquiryModal({ isOpen, onClose, searchContext, onSu
     let defaultName = ''
     let defaultEmail = ''
     let defaultPhone = ''
+    let defaultUid = ''
     try {
       const stored = localStorage.getItem('easyfr8_user')
       if (stored) {
@@ -32,6 +37,7 @@ export default function RouteEnquiryModal({ isOpen, onClose, searchContext, onSu
         defaultName = u.name || ''
         defaultEmail = u.email || ''
         defaultPhone = u.phone || ''
+        defaultUid = u.id || u.user_id || u._id || ''
       }
     } catch (e) {
       // ignore parse error
@@ -39,6 +45,8 @@ export default function RouteEnquiryModal({ isOpen, onClose, searchContext, onSu
     setName(defaultName)
     setEmail(defaultEmail)
     setPhone(defaultPhone)
+    setShipperUserId(defaultUid)
+    setQuantity(searchContext?.quantity || 1)
 
     const origin = searchContext?.originText || 'Origin'
     const dest = searchContext?.destinationText || 'Destination'
@@ -53,7 +61,9 @@ export default function RouteEnquiryModal({ isOpen, onClose, searchContext, onSu
       : `${origin} → ${dest}`
 
     // Dynamic intelligent subject
-    if (searchContext?.reason === 'origin_not_found') {
+    if (searchContext?.containerId || searchContext?.containerName) {
+      setSubject(`Container Rate Enquiry — ${origin} to ${dest} (${container})`)
+    } else if (searchContext?.reason === 'origin_not_found') {
       setSubject(`Port Enquiry — Availability for ${origin}`)
     } else if (searchContext?.reason === 'destination_not_found') {
       setSubject(`Port Enquiry — Availability for ${dest}`)
@@ -64,17 +74,21 @@ export default function RouteEnquiryModal({ isOpen, onClose, searchContext, onSu
     }
 
     // Dynamic helpful pre-filled message
-    let defaultMsg = `I could not find the requested ${searchContext?.reason === 'rate_not_found' ? 'rate' : 'port availability'} in the database for route: ${routeDisplay}.\n\n`
+    let defaultMsg = `I am requesting freight rate pricing for the following shipment:\n\n`
     defaultMsg += `Shipment Details:\n`
+    defaultMsg += `• Route: ${routeDisplay}\n`
+    if (searchContext?.routeId) defaultMsg += `• Route Reference ID: ${searchContext.routeId}\n`
+    if (searchContext?.carrier) defaultMsg += `• Preferred Carrier: ${searchContext.carrier}\n`
     defaultMsg += `• Freight Mode: ${mode}${shipment ? ` (${shipment})` : ''}\n`
-    if (transhipment) defaultMsg += `• Transhipment Port: ${transhipment}\n`
-    if (container) defaultMsg += `• Container Type: ${container}\n`
+    if (transhipment) defaultMsg += `• Transshipment Port: ${transhipment}\n`
+    if (container) defaultMsg += `• Container Specification: ${container}${searchContext?.containerId ? ` (ID: ${searchContext.containerId})` : ''}\n`
     if (weight) defaultMsg += `• Cargo Weight: ${weight}\n`
-    defaultMsg += `\nPlease provide availability, schedules, and custom pricing for this route.`
+    defaultMsg += `\nPlease provide contract availability, transit schedule, and competitive freight pricing.`
 
     setMessage(defaultMsg)
     setError(null)
     setSuccess(false)
+    setSubmittedEnquiry(null)
   }, [isOpen, searchContext])
 
   if (!isOpen) return null
@@ -94,6 +108,8 @@ export default function RouteEnquiryModal({ isOpen, onClose, searchContext, onSu
       return
     }
 
+    const qty = Math.max(1, parseInt(quantity, 10) || 1)
+
     setSubmitting(true)
     setError(null)
 
@@ -106,20 +122,28 @@ export default function RouteEnquiryModal({ isOpen, onClose, searchContext, onSu
       origin: searchContext?.originText || '',
       destination: searchContext?.destinationText || '',
       transhipment: searchContext?.transhipmentText || '',
-      freight_type: searchContext?.modeName || '',
-      shipment_type: searchContext?.shipmentTypeName || '',
+      route_id: searchContext?.routeId || '',
+      carrier: searchContext?.carrier || '',
+      transit_time: searchContext?.transitTime || '',
+      container_id: searchContext?.containerId || '',
       container_type: searchContext?.containerName || '',
+      quantity: qty,
+      user_id: shipperUserId || searchContext?.userId || '',
+      freight_type: searchContext?.modeName || 'Ocean Freight',
+      shipment_type: searchContext?.shipmentTypeName || '',
       weight: searchContext?.weight ? `${searchContext.weight} ${searchContext.weightUnit || 'KG'}` : '',
-      source: 'Port / Rate Search Enquiry'
+      source: searchContext?.containerId ? 'Container Pricing Enquiry' : 'Route Search Enquiry'
     }
 
     try {
-      const ok = await submitEnquiry(payload)
-      if (ok) {
+      const res = await submitEnquiry(payload)
+      if (res && (res.success || res.enquiry)) {
+        const saved = res.enquiry || payload
+        setSubmittedEnquiry(saved)
         setSuccess(true)
-        if (onSuccess) onSuccess(payload)
+        if (onSuccess) onSuccess(saved)
       } else {
-        throw new Error('Server returned unsuccessful response. Please try again.')
+        throw new Error('Server returned an unexpected response. Please try again.')
       }
     } catch (err) {
       console.error('[Enquiry] Submission error:', err)
@@ -206,33 +230,60 @@ export default function RouteEnquiryModal({ isOpen, onClose, searchContext, onSu
 
         {/* Modal Content */}
         <div style={{ padding: '24px', overflowY: 'auto', flex: 1 }}>
-          {/* Route Summary Pill */}
+          {/* Route & Container Context Pill */}
           <div
             style={{
               background: '#f8fafc',
               border: '1px solid #e2e8f0',
               borderLeft: '4px solid #d64238',
-              borderRadius: '4px',
-              padding: '12px 16px',
+              borderRadius: '6px',
+              padding: '14px 18px',
               marginBottom: '20px',
               fontSize: '13px'
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px', marginBottom: '6px' }}>
               <div>
                 <strong style={{ color: '#0f172a' }}>Requested Route:</strong>{' '}
-                <span style={{ color: '#d64238', fontWeight: 600 }}>
+                <span style={{ color: '#d64238', fontWeight: 700 }}>
                   {searchContext?.originText || 'Origin'} → {searchContext?.transhipmentText ? `Via ${searchContext.transhipmentText} → ` : ''}{searchContext?.destinationText || 'Destination'}
                 </span>
               </div>
-              <div style={{ color: '#64748b', fontSize: '12px' }}>
-                {searchContext?.modeName || 'Ocean'} {searchContext?.shipmentTypeName ? `· ${searchContext.shipmentTypeName}` : ''} {searchContext?.containerName ? `· ${searchContext.containerName}` : ''}
-              </div>
+              {searchContext?.routeId && (
+                <span style={{ fontSize: '11px', background: '#e2e8f0', color: '#475569', padding: '2px 8px', borderRadius: '4px', fontWeight: 600 }}>
+                  Route ID: {searchContext.routeId}
+                </span>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', fontSize: '12px', color: '#64748b' }}>
+              {searchContext?.containerName && (
+                <span>
+                  <strong style={{ color: '#334155' }}>Container:</strong>{' '}
+                  <span style={{ color: '#d64238', fontWeight: 600 }}>
+                    {searchContext.containerName}
+                  </span>
+                  {searchContext?.containerId && ` (${searchContext.containerId})`}
+                </span>
+              )}
+              {searchContext?.carrier && (
+                <span>
+                  <strong style={{ color: '#334155' }}>Carrier:</strong> {searchContext.carrier}
+                </span>
+              )}
+              {searchContext?.transitTime && (
+                <span>
+                  <strong style={{ color: '#334155' }}>Transit:</strong> {searchContext.transitTime} Days
+                </span>
+              )}
+              <span>
+                <strong style={{ color: '#334155' }}>Mode:</strong> {searchContext?.modeName || 'Ocean Freight'} {searchContext?.shipmentTypeName ? `(${searchContext.shipmentTypeName})` : ''}
+              </span>
             </div>
           </div>
 
           {success ? (
-            <div style={{ textAlign: 'center', padding: '30px 10px' }}>
+            <div style={{ textAlign: 'center', padding: '24px 12px' }}>
               <div
                 style={{
                   width: '64px',
@@ -244,17 +295,61 @@ export default function RouteEnquiryModal({ isOpen, onClose, searchContext, onSu
                   alignItems: 'center',
                   justifyContent: 'center',
                   fontSize: '32px',
-                  margin: '0 auto 16px'
+                  margin: '0 auto 16px',
+                  boxShadow: '0 4px 12px rgba(22, 163, 74, 0.2)'
                 }}
               >
                 ✓
               </div>
-              <h4 style={{ fontSize: '20px', fontWeight: 700, color: '#166534', margin: '0 0 10px' }}>
-                Enquiry Sent Successfully!
+              <h4 style={{ fontSize: '20px', fontWeight: 700, color: '#166534', margin: '0 0 8px' }}>
+                Enquiry Submitted Successfully!
               </h4>
-              <p style={{ color: '#4b5563', fontSize: '14px', lineHeight: '1.6', maxWidth: '440px', margin: '0 auto 24px' }}>
-                Your enquiry has been sent successfully. Our team will get back to you shortly with availability and customized freight quotes.
+              {submittedEnquiry?.id && (
+                <div style={{
+                  display: 'inline-block',
+                  background: '#f1f5f9',
+                  border: '1px solid #cbd5e1',
+                  color: '#0f172a',
+                  fontSize: '13px',
+                  fontWeight: 700,
+                  padding: '4px 14px',
+                  borderRadius: '16px',
+                  marginBottom: '16px'
+                }}>
+                  Enquiry Reference: <span style={{ color: '#d64238' }}>{submittedEnquiry.id}</span>
+                </div>
+              )}
+              <p style={{ color: '#4b5563', fontSize: '14px', lineHeight: '1.6', maxWidth: '480px', margin: '0 auto 20px' }}>
+                Your freight enquiry has been securely saved to our database. Our commercial operations team will review route availability and email customized contract rates to <strong>{submittedEnquiry?.email || email}</strong> shortly.
               </p>
+
+              <div style={{
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: '6px',
+                padding: '14px',
+                maxWidth: '460px',
+                margin: '0 auto 24px',
+                textAlign: 'left',
+                fontSize: '12px',
+                color: '#475569'
+              }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '6px', rowGap: '6px' }}>
+                  <span style={{ fontWeight: 600 }}>Route:</span>
+                  <span>{searchContext?.originText} → {searchContext?.destinationText}</span>
+                  {searchContext?.containerName && (
+                    <>
+                      <span style={{ fontWeight: 600 }}>Container:</span>
+                      <span>{searchContext.containerName}</span>
+                    </>
+                  )}
+                  <span style={{ fontWeight: 600 }}>Quantity:</span>
+                  <span>{quantity} container(s)</span>
+                  <span style={{ fontWeight: 600 }}>Contact:</span>
+                  <span>{name} ({email})</span>
+                </div>
+              </div>
+
               <button
                 type="button"
                 onClick={onClose}
@@ -262,11 +357,12 @@ export default function RouteEnquiryModal({ isOpen, onClose, searchContext, onSu
                   background: '#d64238',
                   color: 'white',
                   border: 'none',
-                  padding: '10px 28px',
+                  padding: '10px 32px',
                   fontWeight: 600,
                   fontSize: '14px',
                   borderRadius: '4px',
-                  cursor: 'pointer'
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 6px rgba(214, 66, 56, 0.3)'
                 }}
               >
                 Done
@@ -359,13 +455,15 @@ export default function RouteEnquiryModal({ isOpen, onClose, searchContext, onSu
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
-                    Subject <span style={{ color: '#d64238' }}>*</span>
+                    Required Quantity (Units)
                   </label>
                   <input
-                    type="text"
-                    value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
-                    required
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={quantity}
+                    onChange={(e) => setQuantity(e.target.value)}
+                    placeholder="1"
                     style={{
                       width: '100%',
                       padding: '10px 12px',
@@ -378,9 +476,29 @@ export default function RouteEnquiryModal({ isOpen, onClose, searchContext, onSu
                 </div>
               </div>
 
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
+                  Subject <span style={{ color: '#d64238' }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  value={subject}
+                  onChange={(e) => setSubject(e.target.value)}
+                  required
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+
               <div style={{ marginBottom: '20px' }}>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#334155', marginBottom: '6px' }}>
-                  Enquiry Message &amp; Shipment Details <span style={{ color: '#d64238' }}>*</span>
+                  Enquiry Message &amp; Shipment Requirements <span style={{ color: '#d64238' }}>*</span>
                 </label>
                 <textarea
                   rows={5}

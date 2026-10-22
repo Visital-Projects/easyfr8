@@ -5,6 +5,22 @@ import { authenticateRequest } from '@/lib/auth';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+export async function GET(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const rows: any = await query('SELECT * FROM enquiries WHERE id = ?', [id]);
+    if (!rows || rows.length === 0) {
+      return NextResponse.json({ success: false, error: 'Enquiry not found' }, { status: 404 });
+    }
+    return NextResponse.json({ success: true, enquiry: rows[0] });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+}
+
 export async function PUT(
   req: Request,
   { params }: { params: Promise<{ id: string }> }

@@ -181,7 +181,7 @@ export function CmsProvider({ children }) {
   const submitEnquiry = async (formData) => {
     try {
       const response = await api.post('/enquiries', formData);
-      return response.success;
+      return response;
     } catch (err) {
       console.error('Failed to submit enquiry:', err);
       throw err;

@@ -253,14 +253,19 @@ export default function Booking() {
   const location = useLocation()
   const navigate = useNavigate()
 
-  // Parse URL query parameters
+  // Parse URL query parameters & location.state
   const query = new URLSearchParams(location.search)
-  const queryFromPort = query.get('fromPort') || ''
-  const queryToPort = query.get('toPort') || ''
-  const queryContainerType = query.get('containerType') || ''
-  const queryFreightType = query.get('freight_type') || '' // fcl, lcl, air
-  const queryRateId = query.get('rate_id') || query.get('rateId') || ''
-  const queryTranshipment = query.get('transhipment') || query.get('transhipmentPort') || query.get('transshipment') || ''
+  const navState = location.state || {}
+  const navRate = navState.rate || null
+  const navRoute = navState.route || null
+  const navContainer = navState.container || null
+
+  const queryRateId = query.get('rate_id') || query.get('rateId') || navState.rate_id || navState.rateId || navRate?.id || ''
+  const queryFromPort = query.get('fromPort') || navState.fromPort || navRate?.origin_code || navRate?.origin_id || navRoute?.origin?.code || navRoute?.origin?.id || ''
+  const queryToPort = query.get('toPort') || navState.toPort || navRate?.destination_code || navRate?.destination_id || navRoute?.destination?.code || navRoute?.destination?.id || ''
+  const queryContainerType = query.get('containerType') || navState.containerType || navContainer?.name || navRate?.container_name || ''
+  const queryFreightType = query.get('freight_type') || navState.freight_type || navRoute?.shipmentName || navRoute?.modeName || navRate?.mode_name || ''
+  const queryTranshipment = query.get('transhipment') || query.get('transhipmentPort') || query.get('transshipment') || navState.transhipment || navRate?.transhipment_code || navRoute?.transhipment?.code || ''
 
   const { isAuthenticated, user, token } = useUserAuth()
 
@@ -271,8 +276,50 @@ export default function Booking() {
   const [containers, setContainers] = useState([])
   const [containersLoading, setContainersLoading] = useState(true)
   const [containersError, setContainersError] = useState(null)
-  const [selectedRate, setSelectedRate] = useState(null)
-  const [selectedTranshipmentPort, setSelectedTranshipmentPort] = useState(null)
+
+  // Initial objects derived from incoming navigation state
+  const initialOrigin = (navRoute?.origin?.code) ? {
+    id: navRoute.origin.id || `port-${navRoute.origin.code}`,
+    port_code: navRoute.origin.code,
+    port_name: navRoute.origin.name || navRoute.origin.code,
+    country: navRoute.origin.country || '',
+    freight_type: navRoute.modeName || 'Ocean'
+  } : (navRate?.origin_code ? {
+    id: navRate.origin_id || `port-${navRate.origin_code}`,
+    port_code: navRate.origin_code,
+    port_name: navRate.origin_name || navRate.origin_code,
+    country: navRate.origin_country || '',
+    freight_type: navRate.mode_name || 'Ocean'
+  } : null)
+
+  const initialDest = (navRoute?.destination?.code) ? {
+    id: navRoute.destination.id || `port-${navRoute.destination.code}`,
+    port_code: navRoute.destination.code,
+    port_name: navRoute.destination.name || navRoute.destination.code,
+    country: navRoute.destination.country || '',
+    freight_type: navRoute.modeName || 'Ocean'
+  } : (navRate?.destination_code ? {
+    id: navRate.destination_id || `port-${navRate.destination_code}`,
+    port_code: navRate.destination_code,
+    port_name: navRate.destination_name || navRate.destination_code,
+    country: navRate.destination_country || '',
+    freight_type: navRate.mode_name || 'Ocean'
+  } : null)
+
+  const initialTransPort = (navRoute?.transhipment?.code) ? {
+    id: navRoute.transhipment.id || `port-${navRoute.transhipment.code}`,
+    port_code: navRoute.transhipment.code,
+    port_name: navRoute.transhipment.name || navRoute.transhipment.code,
+    country: navRoute.transhipment.country || ''
+  } : (navRate?.transhipment_code ? {
+    id: navRate.transhipment_id || `port-${navRate.transhipment_code}`,
+    port_code: navRate.transhipment_code,
+    port_name: navRate.transhipment_name || navRate.transhipment_code,
+    country: navRate.transhipment_country || ''
+  } : null)
+
+  const [selectedRate, setSelectedRate] = useState(() => navRate)
+  const [selectedTranshipmentPort, setSelectedTranshipmentPort] = useState(() => initialTransPort)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -287,10 +334,10 @@ export default function Booking() {
   const [selectedFreightTypeId, setSelectedFreightTypeId] = useState('')
   const [selectedShipmentTypeId, setSelectedShipmentTypeId] = useState('')
   const [selectedTermId, setSelectedTermId] = useState('')
-  const [selectedLoadingPortId, setSelectedLoadingPortId] = useState('')
-  const [selectedLoadingPort, setSelectedLoadingPort] = useState(null)
-  const [selectedDischargePortId, setSelectedDischargePortId] = useState('')
-  const [selectedDischargePort, setSelectedDischargePort] = useState(null)
+  const [selectedLoadingPortId, setSelectedLoadingPortId] = useState(() => initialOrigin?.id || '')
+  const [selectedLoadingPort, setSelectedLoadingPort] = useState(() => initialOrigin)
+  const [selectedDischargePortId, setSelectedDischargePortId] = useState(() => initialDest?.id || '')
+  const [selectedDischargePort, setSelectedDischargePort] = useState(() => initialDest)
   const [portWarning, setPortWarning] = useState('')
   const [finalDelivery, setFinalDelivery] = useState('')
   const [selectedContainerId, setSelectedContainerId] = useState('')
@@ -312,7 +359,9 @@ export default function Booking() {
     special_instructions: ''
   })
 
-  const [containersList, setContainersList] = useState([createEmptyContainer(1)])
+  const initialEquipment = navContainer?.name || navRate?.container_name || queryContainerType || ''
+  const initialContId = navContainer?.id || navRate?.container_id || ''
+  const [containersList, setContainersList] = useState([createEmptyContainer(1, initialEquipment, initialContId)])
 
   // Step 2: Customer Information
   const [userName, setUserName] = useState('')
@@ -417,17 +466,19 @@ export default function Booking() {
           setContainersError('Failed to load container equipment options.')
         }
 
-        let rateData = null
+        let rateData = navRate || null
         if (queryRateId && responses[4]) {
           try {
             const parsedRateRes = await responses[4].json()
             if (parsedRateRes.success && parsedRateRes.rate) {
-              rateData = parsedRateRes.rate
+              rateData = { ...(navRate || {}), ...parsedRateRes.rate }
               setSelectedRate(rateData)
             }
           } catch (e) {
             console.warn('Could not parse rate info', e)
           }
+        } else if (navRate) {
+          setSelectedRate(navRate)
         }
 
         setFreightTypes(Array.isArray(dataFt) ? dataFt.filter(f => f.status === 'active') : [])
@@ -479,18 +530,9 @@ export default function Booking() {
 
         // 2. Resolve loading and discharge ports from rate or query parameters
         const resolvePortRecord = async (lookupTerm, ratePortInfo = null) => {
-          if (ratePortInfo && ratePortInfo.id && ratePortInfo.port_code && (ratePortInfo.port_name || ratePortInfo.name)) {
-            return {
-              id: ratePortInfo.id,
-              port_code: ratePortInfo.port_code,
-              port_name: ratePortInfo.port_name || ratePortInfo.name,
-              country: ratePortInfo.country || '',
-              freight_type: ratePortInfo.freight_type || 'Ocean'
-            }
-          }
-          if (!lookupTerm) return ratePortInfo || null
+          const raw = String(lookupTerm || ratePortInfo?.port_code || ratePortInfo?.id || '').trim()
+          if (!raw) return ratePortInfo || null
 
-          const raw = String(lookupTerm).trim()
           let searchCode = raw
           if (raw.startsWith('port-') || raw.startsWith('loc-')) {
             const extracted = raw.replace(/^(port|loc)-/, '').replace(/-\d+$/, '')
@@ -513,6 +555,16 @@ export default function Booking() {
             console.error('Error resolving port for term:', raw, e)
           }
 
+          if (ratePortInfo && ratePortInfo.port_code && (ratePortInfo.port_name || ratePortInfo.name)) {
+            return {
+              id: ratePortInfo.id || `port-${ratePortInfo.port_code}`,
+              port_code: ratePortInfo.port_code,
+              port_name: ratePortInfo.port_name || ratePortInfo.name,
+              country: ratePortInfo.country || '',
+              freight_type: ratePortInfo.freight_type || 'Ocean'
+            }
+          }
+
           return ratePortInfo || null
         }
 
@@ -522,7 +574,7 @@ export default function Booking() {
           port_name: rateData.origin_name || rateData.origin_code || '',
           country: rateData.origin_country || '',
           freight_type: rateData.mode_name || 'Ocean'
-        } : null
+        } : initialOrigin
 
         const fromLookup = rateData?.origin_code || queryFromPort || rateData?.origin_id
         const resolvedOrigin = await resolvePortRecord(fromLookup, rateOriginInfo)
@@ -533,7 +585,7 @@ export default function Booking() {
           port_name: rateData.destination_name || rateData.destination_code || '',
           country: rateData.destination_country || '',
           freight_type: rateData.mode_name || 'Ocean'
-        } : null
+        } : initialDest
 
         const toLookup = rateData?.destination_code || queryToPort || rateData?.destination_id
         const resolvedDest = await resolvePortRecord(toLookup, rateDestInfo)
@@ -545,7 +597,7 @@ export default function Booking() {
           port_name: rateData.transhipment_name || rateData.transhipment_code || '',
           country: rateData.transhipment_country || '',
           freight_type: rateData.mode_name || 'Ocean'
-        } : null
+        } : initialTransPort
 
         const transLookup = rateData?.transhipment_code || rateData?.transhipment_name || queryTranshipment || rateData?.transhipment_id
         if (transLookup) {
@@ -592,14 +644,14 @@ export default function Booking() {
         }
 
         // 3. Resolve container type
-        const contLookup = rateData?.container_name || rateData?.container_id || queryContainerType
+        const contLookup = rateData?.container_name || rateData?.container_id || queryContainerType || navContainer?.name || navContainer?.id
         if (contLookup) {
           const normQuery = contLookup.toLowerCase().replace(/[^a-z0-9]/g, '')
           const matchCont = activeContainers.find(c => c.name.toLowerCase().replace(/[^a-z0-9]/g, '') === normQuery || c.id === contLookup)
           if (matchCont) {
             resolvedContainerId = matchCont.id
             setContainersList(prev => {
-              if (prev.length === 1 && (!prev[0].equipment || !prev[0].container_id)) {
+              if (prev.length === 1 && (!prev[0].equipment || !prev[0].container_id || prev[0].equipment !== matchCont.name)) {
                 return [{ ...prev[0], equipment: matchCont.name, container_id: matchCont.id }]
               }
               return prev
@@ -968,11 +1020,20 @@ export default function Booking() {
                 <span style={{ fontSize: '13px', color: '#666', textTransform: 'uppercase', display: 'block', fontWeight: 600 }}>Your Booking reference number</span>
                 <strong style={{ fontSize: '22px', color: '#d64238', letterSpacing: '1px', display: 'block', marginTop: '5px' }}>{bookingNo}</strong>
               </div>
-              <div>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: '14px', flexWrap: 'wrap' }}>
+                {isAuthenticated && (
+                  <button 
+                    onClick={() => navigate('/user/bookings')} 
+                    className="btn" 
+                    style={{ background: '#0f172a', color: 'white', border: 'none', padding: '12px 28px', fontWeight: 600, fontSize: '15px', cursor: 'pointer', borderRadius: '4px', boxShadow: '0 2px 6px rgba(15, 23, 42, 0.2)' }}
+                  >
+                    View in My Bookings
+                  </button>
+                )}
                 <button 
                   onClick={() => navigate('/')} 
                   className="btn" 
-                  style={{ background: '#d64238', color: 'white', border: 'none', padding: '12px 30px', fontWeight: 600, fontSize: '15px', cursor: 'pointer', borderRadius: '4px' }}
+                  style={{ background: '#d64238', color: 'white', border: 'none', padding: '12px 30px', fontWeight: 600, fontSize: '15px', cursor: 'pointer', borderRadius: '4px', boxShadow: '0 2px 6px rgba(214, 66, 56, 0.2)' }}
                 >
                   Return to Home
                 </button>
@@ -1085,23 +1146,51 @@ export default function Booking() {
                     flexWrap: 'wrap',
                     gap: '15px'
                   }}>
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                        <span style={{
-                          background: '#ecfdf5',
-                          color: '#065f46',
-                          border: '1px solid #a7f3d0',
-                          padding: '2px 8px',
-                          borderRadius: '3px',
-                          fontSize: '11px',
-                          fontWeight: 700,
-                          textTransform: 'uppercase'
-                        }}>
-                          ✓ Rate Locked
-                        </span>
-                        <span style={{ fontSize: '12px', color: '#64748b' }}>
-                          Carrier: <strong style={{ color: '#1e293b' }}>{selectedRate.carrier || 'Standard'}</strong> · Rate ID: {selectedRate.id}
-                        </span>
+                    <div style={{ flex: '1', minWidth: '280px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '6px', flexWrap: 'wrap' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{
+                            background: '#ecfdf5',
+                            color: '#065f46',
+                            border: '1px solid #a7f3d0',
+                            padding: '2px 8px',
+                            borderRadius: '3px',
+                            fontSize: '11px',
+                            fontWeight: 700,
+                            textTransform: 'uppercase'
+                          }}>
+                            ✓ Rate Locked
+                          </span>
+                          <span style={{ fontSize: '12px', color: '#64748b' }}>
+                            Carrier: <strong style={{ color: '#1e293b' }}>{selectedRate.carrier || 'Standard'}</strong> · Rate ID: {selectedRate.id}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedRate(null)
+                            setSelectedTranshipmentPort(null)
+                          }}
+                          style={{
+                            background: '#f1f5f9',
+                            border: '1px solid #cbd5e1',
+                            borderRadius: '4px',
+                            color: '#475569',
+                            padding: '3px 9px',
+                            fontSize: '11px',
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px',
+                            transition: 'all 0.15s ease'
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.background = '#e2e8f0'}
+                          onMouseLeave={e => e.currentTarget.style.background = '#f1f5f9'}
+                          title="Unlock ports to configure a custom route"
+                        >
+                          ✕ Change / Unlock Route
+                        </button>
                       </div>
                       <div style={{ fontSize: '15px', fontWeight: 700, color: '#0f172a' }}>
                         {selectedRate.origin_name || selectedRate.origin_code} ({selectedRate.origin_code})

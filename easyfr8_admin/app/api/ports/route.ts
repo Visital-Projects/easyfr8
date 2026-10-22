@@ -41,7 +41,7 @@ export async function GET(req: Request) {
       if (lower === 'ocean freight' || lower === 'ocean' || lower === 'ocean-freight' || lower === 'mode-ocean') {
         whereClause += ' AND (freight_type = "Ocean" OR freight_type = "Ocean Freight" OR freight_type = "ocean-freight" OR freight_type = "mode-ocean" OR LOWER(freight_type) = "ocean")';
       } else if (lower === 'air freight' || lower === 'air' || lower === 'mode-air') {
-        whereClause += ' AND (freight_type = "Air" OR freight_type = "Air Freight" OR freight_type = "mode-air" OR LOWER(freight_type) = "air")';
+        whereClause += ' AND (freight_type = "Air" OR freight_type = "Air Freight" OR freight_type = "mode-air" OR LOWER(freight_type) = "air" OR id IN (SELECT origin_id FROM freight_rates WHERE freight_mode_id = "mode-air") OR id IN (SELECT destination_id FROM freight_rates WHERE freight_mode_id = "mode-air") OR port_code IN (SELECT origin_id FROM freight_rates WHERE freight_mode_id = "mode-air") OR port_code IN (SELECT destination_id FROM freight_rates WHERE freight_mode_id = "mode-air"))';
       } else {
         const [ftRows]: any = await pool.query(
           'SELECT id, name FROM freight_types WHERE id = ? OR LOWER(name) = LOWER(?)',
@@ -50,8 +50,8 @@ export async function GET(req: Request) {
         if (ftRows && ftRows.length > 0) {
           const ftId = ftRows[0].id;
           const ftName = ftRows[0].name;
-          whereClause += ' AND (freight_type = ? OR freight_type = ? OR LOWER(freight_type) = LOWER(?) OR LOWER(freight_type) = LOWER(?))';
-          params.push(ftId, ftName, ftId, ftName);
+          whereClause += ' AND (freight_type = ? OR freight_type = ? OR LOWER(freight_type) = LOWER(?) OR LOWER(freight_type) = LOWER(?) OR id IN (SELECT origin_id FROM freight_rates WHERE freight_mode_id = ?) OR id IN (SELECT destination_id FROM freight_rates WHERE freight_mode_id = ?))';
+          params.push(ftId, ftName, ftId, ftName, ftId, ftId);
         } else {
           whereClause += ' AND (freight_type = ? OR LOWER(freight_type) = LOWER(?))';
           params.push(cleanType, cleanType);

@@ -18,26 +18,33 @@ export async function GET(req: Request) {
   try {
     const auth = authenticateRequest(req);
     let rows: any[] = [];
+    const baseQuery = `
+      SELECT d.*, u.name as user_name, u.id as user_id, u.email as user_email
+      FROM kyc_documents d
+      LEFT JOIN users u ON LOWER(d.user) = LOWER(u.email)
+    `;
 
     if (auth.authenticated && auth.user) {
       const role = (auth.user.role || '').toLowerCase().trim();
       if (role === 'administrator' || role === 'manager') {
-        rows = await query<any>('SELECT * FROM kyc_documents ORDER BY created_at DESC');
+        rows = await query<any>(`${baseQuery} ORDER BY d.created_at DESC`);
       } else {
         const userEmail = (auth.user.email || '').toLowerCase().trim();
         rows = await query<any>(
-          'SELECT * FROM kyc_documents WHERE LOWER(`user`) = LOWER(?) ORDER BY created_at DESC',
+          `${baseQuery} WHERE LOWER(d.user) = LOWER(?) ORDER BY d.created_at DESC`,
           [userEmail]
         );
       }
     } else {
       // Fallback for unauthenticated admin access or legacy callers
-      rows = await query<any>('SELECT * FROM kyc_documents ORDER BY created_at DESC');
+      rows = await query<any>(`${baseQuery} ORDER BY d.created_at DESC`);
     }
 
-    const documents: KYCDocument[] = rows.map((r: any) => ({
+    const documents = rows.map((r: any) => ({
       id: r.id,
       user: r.user ?? '',
+      userName: r.user_name || r.user || 'Shipper',
+      userId: r.user_id || '',
       name: r.name ?? '',
       type: r.type ?? '',
       date: formatDate(r.date),
@@ -45,6 +52,8 @@ export async function GET(req: Request) {
       remarks: r.remarks ?? '',
       fileUrl: r.file_url ?? '#',
       fileType: r.file_type ?? 'pdf',
+      createdAt: r.created_at,
+      updatedAt: r.updated_at,
     }));
     return NextResponse.json(documents);
   } catch (error: any) {
